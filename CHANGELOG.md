@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.0
+
+- Live moments while recording: the snapshot button during video can save a motion photo (still plus a short 4K clip) instead of a regular photo. Choose in Settings > Video > Take photos while recording. Device flags `G4`/`K6` from the Xiaomi 17.
+- Subject tracking focus is also offered in Pro photo and Pro video (flag `U5`).
+- Tried and left out: Master Live mode (`v5`, crashes: no configuration data on this phone), the ultra-wide distortion flags (`T4`/`V2`, they remove the "Correct lens distortion" setting), and `k5`, `s9`, `f3`, `y5`, `Q6`, `c5` (no visible effect found).
+
 ## 1.2.1
 
 - Fix a camera crash (SIGSEGV in thread `p_aivs_init`). The camera's saliency checker, used when the focus area changes, runs the Xiaomi 17's `libmialgo_saliency.so` against the phone's older `/odm/lib64/libmialgo_ai_vision.so`. The module now reports the checker as unavailable so that native code never starts; focus falls back to the normal path.

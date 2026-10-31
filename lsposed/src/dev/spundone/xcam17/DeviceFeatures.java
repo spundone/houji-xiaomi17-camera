@@ -27,6 +27,9 @@ final class DeviceFeatures {
             {"z6", "front/rear camera switch while recording"},
             {"w5", "MiMediaCodecRecorder, which the recording camera switch needs"},
             {"h3", "Dolby Vision toggle in the viewfinder instead of settings (17 Ultra layout)"},
+            {"G4", "Live moments option for photos taken while recording"},
+            {"K6", "Live moments (motion photos) while recording video"},
+            {"U5", "subject tracking focus in Pro photo and Pro video as well"},
     };
 
     private DeviceFeatures() {}

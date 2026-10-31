@@ -81,6 +81,20 @@ Which qualities get Dolby comes from `com.xiaomi.HDRVideoDisplayMode.availableco
 
 The camera crashed with SIGSEGV in a native thread named `p_aivs_init`, which belongs to `/odm/lib64/libmialgo_ai_vision.so`. The only thing in the APK that links that library is `libmialgo_saliency.so`, loaded through `com.android.camera.saliencychecker.SaliencyChecker` (`mialgo_saliency_jni`). The checker is used by the focus code (`x6.p`, `Camera2Module.onFocusAreaChanged`). The APK's saliency library is the Xiaomi 17's; the vision library it links is houji's older HyperOS build, so its init crashes. `SaliencyChecker.init`, `process` and `hasInit` now return false before reaching native code. The library still gets loaded, but its init thread never starts. Tapping to focus repeatedly no longer crashes.
 
+## 12. Other Xiaomi 17 / 17 Ultra flags
+
+Comparing each no-argument boolean on the device profiles (`com.mi.device.Houji` against `Pudding`, the 17, and `Nezha`, the 17 Ultra) gave 46 flags that are on for the newer phones and off for houji. Each candidate was turned on and checked: by diffing every Settings entry against a build without it, by opening the relevant UI, and by recording.
+
+| Flag | Result |
+| --- | --- |
+| `G4`, `K6` | Kept: "Take photos while recording" gains a Live moments option; files are Google-format motion photos (`GCamera:MotionPhoto=1`) with an embedded 3840x2160 HEVC clip |
+| `U5` | Kept: tracking focus also offered in Pro photo and Pro video |
+| `v5` | Dropped: Master Live mode crashes in `ComponentRunningMasterLive` (null default-value map) |
+| `T4`, `V2` | Dropped: remove the "Correct lens distortion" setting |
+| `k5`, `s9`, `f3`, `y5`, `Q6`, `c5` | Dropped: no visible change found |
+
+Grain and a Leica-off style aren't in camera 6.7 at all: there's no grain label in any language, and the style toggle only has Leica Vibrant and Leica Authentic.
+
 ## Reading obfuscated names
 
 The camera hides some class names behind a per-character XOR. For example `䏖䏚䏘䎛…䏶䏚䏘䏘䏚䏛` decodes to `com.mi.device.common.Common`: XOR each character with the key that turns the 4th character into `.`. Each hook checks the class and method shape it expects and skips itself on any other build.
