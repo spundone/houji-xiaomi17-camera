@@ -1,13 +1,13 @@
 # Xiaomi 17 camera for the Xiaomi 14 (houji)
 
-Runs Xiaomi's camera app from the Xiaomi 17 series (MiuiCamera **6.7.000280.0**, CN build) on AOSP-based ROMs for the Xiaomi 14, in place of the older MiuiCamera the ROM ships. You get the newer interface, Leica looks and filters, and lens switching while recording at 4K60.
+Runs Xiaomi's camera app from the Xiaomi 17 series (MiuiCamera **6.7.000280.0**, CN build) on AOSP-based ROMs for the Xiaomi 14, in place of the older MiuiCamera the ROM ships. You get the newer interface, Leica looks and filters, lens switching while recording (including 4K60 and 4K30 Dolby Vision), and switching to the front camera mid-recording.
 
 It's two pieces that work together:
 
 | Piece | What it does |
 | --- | --- |
 | `xiaomi17_camera-<version>.zip` (KernelSU module) | Swaps the ROM's camera APK for the Xiaomi 17 one at boot, adds the SELinux rules it needs, and stops KernelSU hiding the swap from the camera |
-| `xcam17-lsposed-<version>.apk` (LSPosed module) | Skips the China-only privacy consent screen that needs Xiaomi's Security app, and allows lens switching at 4K60 |
+| `xcam17-lsposed-<version>.apk` (LSPosed module) | Patches the camera at runtime: skips the China-only consent screen, fixes a HAL crash at 2x, unlocks lens and front-camera switching while recording, and makes Xiaomi's recorder write standard video files |
 
 Xiaomi's camera APK is not included. You supply it.
 
@@ -27,8 +27,8 @@ Other houji ROMs should work if they ship Xiaomi's camera stack (`/system/priv-a
 | Photo (main, 0.6x, 2x, 3.2x), saved through Xiaomi's background processing | Works |
 | Leica Vibrant / Authentic, filters, watermarks | Works |
 | Video up to 4K60, Dolby Vision (profile 8.4, HLG) | Works |
-| Switching lenses while recording, including 4K60 | Works |
-| Switching to the front camera while recording | **Not supported**: see [known limitations](#known-limitations) |
+| Switching lenses while recording, including 4K60 and 4K30 Dolby Vision | Works |
+| Switching between rear and front camera while recording (720p, 1080p, 4K30) | Works, with a ~0.2 s hitch at the switch |
 
 ## Install
 
@@ -58,7 +58,8 @@ Remove the module in the KernelSU manager and reboot. The uninstaller restores t
 
 ## Known limitations
 
-- **Front camera while recording.** On the Xiaomi 17 the camera pauses the recorder and waits for a callback that only Xiaomi's own encoder sends. On this ROM it records with Android's standard recorder, so the switch would stall a recording. This module leaves the feature off.
+- **Front camera while recording** isn't offered at 4K60, or with Dolby Vision at 4K, matching Xiaomi's own rules. Switching drops about 0.2 s of video at the switch point.
+- **All video now goes through Xiaomi's own recorder** (needed for the front-camera switch). Every mode was tested to produce valid files: 720p30, 1080p30/60, 4K24/30/60, with and without Dolby Vision.
 - **4K60 lens switching isn't advertised by the hardware.** The Xiaomi 14's camera HAL lists multi-lens video for 720p, 1080p30, 1080p60, 4K24 and 4K30, not 4K60. The LSPosed module overrides that. In testing the lens changed cleanly and files stayed 3840x2160 at about 58 fps, but long 4K60 clips may run hot.
 - **Region.** The CN build's China-only extras stay on. Only the consent check is redirected.
 - **The camera app shows Xiaomi's terms on first launch.** Accepting them is up to you.

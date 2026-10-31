@@ -55,9 +55,21 @@ Photos at 2x killed the camera service with a null dereference in `CamX::SensorN
 
 The LSPosed module hooks `CameraDeviceImpl.createCaptureRequest` in the camera process and sets the tag to `com.android.camera` plus a terminating NUL on every builder. Hooking the framework method means it doesn't depend on the camera's obfuscated names.
 
-## Not done: front camera while recording
+## 7. Lens switching with Dolby Vision at 4K30
 
-The 6.7 camera gates this on the device profile being `com.mi.device.Annibale` (`Common.z6()`). Forcing that shows the switch button during recording. Tapping it pauses the recorder through `tq.o.c(IntFunction)` and waits for a "paused" callback before reopening the other camera. Only `MiMediaCodecRecorder` (`tq.s`, picked when `Common.w5()` is true) sends that callback; the recorder in use here doesn't. So the recording stalls, and the feature is left out until it can be made to work end to end.
+With Dolby Vision on, `j.U1` also asks the "True Colour" component, `t2.c.n(2, quality)`, whether the HAL's Dolby config allows multi-lens video at that quality. houji's config leaves out 4K30, so the lens locked, even though the `supportedRange` mask has the HDR bit for 4K30 (`0x800`). HDR10 (`t2.a.o`, `t2.b.n`) bails out the same way. The module answers those three checks only while `U1` is running, using a thread-local depth counter, so `U1` falls through to the mask. Recording 4K30 Dolby Vision then keeps all four lenses, and the file stays Dolby Vision profile 8.4.
+
+## 8. Front camera while recording
+
+The camera offers this only when the device profile says so. `Common.z6()` checks for one model, `com.mi.device.Annibale`. Tapping the switch pauses the recorder through `tq.o.c(IntFunction)` and waits for a "paused" callback before reopening the other camera. Only `MiMediaCodecRecorder` (`tq.s`) sends that callback, and the camera picks it when `w5()` is true.
+
+houji's profile class, `com.mi.device.Houji`, overrides 236 of `Common`'s flags, `w5` among them, so a hook on `Common` alone never runs. The module hooks each flag on both classes.
+
+With the codec recorder on, the switch works: the log shows `runContinuesVideoRecording ... success`. Tested at 1080p30 (with and without Dolby Vision) and 4K30. Each file is one continuous video with a ~0.2 s gap at the switch. The camera itself hides the button at 4K60, and with Dolby Vision at 4K.
+
+## 9. Xiaomi's recorder and start codes
+
+`MiMediaCodecRecorder` configures Qualcomm's HEVC encoder with `vendor.qti-ext-enc-nal-length-bs.num-bytes=4`, asking for length-prefixed NAL units. HyperOS's `MPEG4Writer` handles that; AOSP's needs Annex-B start codes (`csd0 doesn't start with a start code`, then `Video track stopped with an error`), so files came out with audio only. The module removes the NAL-length keys (Qualcomm, MediaTek and generic variants) in `MediaCodec.configure` and `setParameters` for video encoders. Verified with valid files in 720p30, 1080p30/60, 4K24/30/60.
 
 ## Reading obfuscated names
 
