@@ -88,4 +88,6 @@ Not affiliated with Xiaomi or Leica. The camera app and its trademarks belong to
 
 ### Release signing
 
-Release APKs are signed with a dedicated key, kept outside the repo, at `~/.config/xcam17/release.jks` (password in the macOS Keychain as `xcam17-release-keystore`). For CI to sign tagged builds, add these repository secrets: `XCAM17_KEYSTORE_B64` (the keystore, base64), `XCAM17_KEYSTORE_PASS` and `XCAM17_KEY_ALIAS` (`xcam17`). Without them the release workflow skips itself, and releases are published from a local `scripts/build.sh --release`.
+Release APKs are signed with a dedicated key (certificate SHA-256 `9bdc6988c94df28a23c372d6670414588601061a3464ca7fb66d0637e9fa017a`). Every future version has to be signed with the same key, or it won't install over the previous one. The key lives outside the repo at `~/.config/xcam17/release.jks`, with its password in the macOS Keychain as `xcam17-release-keystore`. CI gets it from the repository secrets `XCAM17_KEYSTORE_B64`, `XCAM17_KEYSTORE_PASS` and `XCAM17_KEY_ALIAS`.
+
+To release: bump `VERSION`, add a `CHANGELOG.md` entry, then push a matching `v*` tag. To check signing without publishing, run the release workflow by hand (Actions → release → Run workflow): it builds, signs and uploads the files as a workflow artifact.
