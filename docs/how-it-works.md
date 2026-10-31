@@ -71,6 +71,12 @@ With the codec recorder on, the switch works: the log shows `runContinuesVideoRe
 
 `MiMediaCodecRecorder` configures Qualcomm's HEVC encoder with `vendor.qti-ext-enc-nal-length-bs.num-bytes=4`, asking for length-prefixed NAL units. HyperOS's `MPEG4Writer` handles that; AOSP's needs Annex-B start codes (`csd0 doesn't start with a start code`, then `Video track stopped with an error`), so files came out with audio only. The module removes the NAL-length keys (Qualcomm, MediaTek and generic variants) in `MediaCodec.configure` and `setParameters` for video encoders. Verified with valid files in 720p30, 1080p30/60, 4K24/30/60.
 
+## 10. Dolby Vision in the viewfinder, and on the front camera
+
+The Dolby component, `t2.c` ("True Colour"), has two keys: a Settings switch (`pref_true_colour_video_mode_setting_key`) and quick-menu keys per mode (`pref_true_colour_video_mode_menu_key`, plus Pro video, Slow motion and Super night variants). `getKey` picks the menu keys when device flag `h3` is set, as on the 17 Ultra. All 25 readers of `h3` are Dolby-related, so the module turns it on.
+
+Which qualities get Dolby comes from `com.xiaomi.HDRVideoDisplayMode.availableconfigurations`, a list of (type, quality, fps) triplets checked by `n9.e.h1`. houji's rear camera lists (3, 1080p, 30/60) and (3, 4K, 24/30/60); its front camera only (3, 1080p, 30), though it advertises `DYNAMIC_RANGE_TEN_BIT` with HLG. The module also answers (3, 4K, 30), so front 4K30 offers Dolby Vision; the recorded file is 3840x2160 10-bit HLG with Dolby Vision profile 8.4.
+
 ## Reading obfuscated names
 
 The camera hides some class names behind a per-character XOR. For example `䏖䏚䏘䎛…䏶䏚䏘䏘䏚䏛` decodes to `com.mi.device.common.Common`: XOR each character with the key that turns the 4th character into `.`. Each hook checks the class and method shape it expects and skips itself on any other build.

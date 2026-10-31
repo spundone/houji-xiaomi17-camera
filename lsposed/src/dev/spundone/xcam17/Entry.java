@@ -29,6 +29,7 @@ public class Entry implements IXposedHookLoadPackage {
         AnnexBVideo.hook();
         hookConsentRegion(lp.classLoader);
         hookVideoLensSwitching(lp.classLoader);
+        hookFrontDolby4k(lp.classLoader);
         DeviceFeatures.enable(lp.classLoader);
     }
 
@@ -138,6 +139,39 @@ public class Entry implements IXposedHookLoadPackage {
             log("lens: switching allowed with HDR per the HAL mask, and at 4K60");
         } catch (Throwable t) {
             log("lens: not hooked: " + t);
+        }
+    }
+
+    /**
+     * Dolby Vision is offered per (type 3, quality, fps) entry in the HAL tag
+     * com.xiaomi.HDRVideoDisplayMode.availableconfigurations, checked by
+     * n9.e.h1(type, quality, fps, caps). houji's rear camera lists 1080p30/60 and 4K24/30/60;
+     * the front only 1080p30, though it advertises 10-bit HLG at every size. This adds front
+     * 4K30 (quality 8, 30 fps); the rear already has it, so nothing changes there.
+     */
+    static void hookFrontDolby4k(ClassLoader cl) {
+        try {
+            Class<?> caps = cl.loadClass("n9.d");
+            Method dolbyConfig = cl.loadClass("n9.e")
+                    .getDeclaredMethod("h1", int.class, int.class, int.class, caps);
+            if (dolbyConfig.getReturnType() != boolean.class) {
+                log("dolby 4k: unexpected signature, skipping");
+                return;
+            }
+            XposedBridge.hookMethod(dolbyConfig, new Allow4k30Dolby());
+            log("dolby 4k: front camera Dolby Vision allowed at 4K30");
+        } catch (Throwable t) {
+            log("dolby 4k: not hooked: " + t);
+        }
+    }
+
+    static final class Allow4k30Dolby extends XC_MethodHook {
+        @Override
+        protected void afterHookedMethod(MethodHookParam p) {
+            if (Integer.valueOf(3).equals(p.args[0]) && Integer.valueOf(8).equals(p.args[1])
+                    && Integer.valueOf(30).equals(p.args[2]) && Boolean.FALSE.equals(p.getResult())) {
+                p.setResult(Boolean.TRUE);
+            }
         }
     }
 

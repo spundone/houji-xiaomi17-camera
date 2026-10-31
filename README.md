@@ -29,6 +29,8 @@ Other houji ROMs should work if they ship Xiaomi's camera stack (`/system/priv-a
 | Video up to 4K60, Dolby Vision (profile 8.4, HLG) | Works |
 | Switching lenses while recording, including 4K60 and 4K30 Dolby Vision | Works |
 | Switching between rear and front camera while recording (720p, 1080p, 4K30) | Works, with a ~0.2 s hitch at the switch |
+| Dolby Vision toggle in the viewfinder's quick menu (17 Ultra layout), instead of in Settings | Works |
+| Dolby Vision on the front camera at 1080p30 and 4K30 | Works |
 
 ## Install
 
@@ -61,6 +63,7 @@ Remove the module in the KernelSU manager and reboot. The uninstaller restores t
 - **Front camera while recording** isn't offered at 4K60, or with Dolby Vision at 4K, matching Xiaomi's own rules. Switching drops about 0.2 s of video at the switch point.
 - **All video now goes through Xiaomi's own recorder** (needed for the front-camera switch). Every mode was tested to produce valid files: 720p30, 1080p30/60, 4K24/30/60, with and without Dolby Vision.
 - **4K60 lens switching isn't advertised by the hardware.** The Xiaomi 14's camera HAL lists multi-lens video for 720p, 1080p30, 1080p60, 4K24 and 4K30, not 4K60. The LSPosed module overrides that. In testing the lens changed cleanly and files stayed 3840x2160 at about 58 fps, but long 4K60 clips may run hot.
+- **HDR vs Dolby Vision.** They're separate. Dolby Vision records 10-bit HLG video with Dolby Vision profile 8.4 metadata. The HDR tile is multi-frame video HDR: it merges exposures for a wider dynamic range but, with Dolby Vision off, still records standard 8-bit SDR (BT.709). They can be on together.
 - **Region.** The CN build's China-only extras stay on. Only the consent check is redirected.
 - **The camera app shows Xiaomi's terms on first launch.** Accepting them is up to you.
 

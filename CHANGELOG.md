@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.0
+
+- Dolby Vision is a toggle in the viewfinder's quick menu (and in Pro video, Slow motion and Super night), like on the Xiaomi 17 Ultra, instead of a switch in Settings. Turned on through device flag `h3`.
+- Dolby Vision on the front camera at 4K30, as well as 1080p30. The HAL's Dolby list only had front 1080p30, though the front camera records 10-bit HLG at every size; tested to produce Dolby Vision profile 8.4 files at 4K30.
+
 ## 1.1.0
 
 - Lens switching while recording now works at 4K30 with Dolby Vision. The camera's Dolby ("True Colour") check locked 4K30 to one lens even though the hardware's HDR bit for 4K30 is set.

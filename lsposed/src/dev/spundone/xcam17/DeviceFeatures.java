@@ -26,6 +26,7 @@ final class DeviceFeatures {
     static final String[][] ENABLED = {
             {"z6", "front/rear camera switch while recording"},
             {"w5", "MiMediaCodecRecorder, which the recording camera switch needs"},
+            {"h3", "Dolby Vision toggle in the viewfinder instead of settings (17 Ultra layout)"},
     };
 
     private DeviceFeatures() {}
