@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Xiaomi 17 Camera for houji</string>
+    <string name="description">Skips the CN privacy consent that needs Xiaomi Security, and allows lens switching while recording 4K60.</string>
+    <string-array name="scope">
+        <item>com.android.camera</item>
+    </string-array>
+</resources>

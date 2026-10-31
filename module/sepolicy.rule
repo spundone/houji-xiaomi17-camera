@@ -1,0 +1,8 @@
+allow priv_app_36 hal_aidlbgservice_service service_manager find
+allow priv_app_36 hal_camera_default binder { call transfer }
+allow hal_camera_default priv_app_36 binder { call transfer }
+allow priv_app_36 hal_camera_default fd use
+allow hal_camera_default priv_app_36 fd use
+allow priv_app_36 vendor_hal_camerapostproc_xiaomi_hwservice hwservice_manager find
+allow priv_app_36 vendor_displayfeature_prop file { read open getattr map }
+allow priv_app_36 vendor_camera_prop file { read open getattr map }

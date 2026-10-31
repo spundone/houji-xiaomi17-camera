@@ -1,0 +1,48 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check tag matches VERSION
+        run: test "v$(tr -d '[:space:]' < VERSION)" = "$GITHUB_REF_NAME"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install Android platform
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-34" "build-tools;34.0.0" > /dev/null
+
+      - name: Build signed release
+        env:
+          XCAM17_KEYSTORE_B64: ${{ secrets.XCAM17_KEYSTORE_B64 }}
+          XCAM17_KEYSTORE_PASS: ${{ secrets.XCAM17_KEYSTORE_PASS }}
+          XCAM17_KEY_ALIAS: ${{ secrets.XCAM17_KEY_ALIAS }}
+        run: |
+          export XCAM17_KEYSTORE="$RUNNER_TEMP/release.jks"
+          echo "$XCAM17_KEYSTORE_B64" | base64 -d > "$XCAM17_KEYSTORE"
+          scripts/build.sh --release
+          rm -f "$XCAM17_KEYSTORE"
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          v="$(tr -d '[:space:]' < VERSION)"
+          gh release create "$GITHUB_REF_NAME" \
+            "dist/xcam17-lsposed-$v.apk" \
+            "dist/xiaomi17_camera-$v.zip" \
+            "dist/SHA256SUMS-$v" \
+            --title "$GITHUB_REF_NAME" \
+            --notes-file CHANGELOG.md

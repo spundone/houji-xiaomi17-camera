@@ -1,0 +1,31 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install Android platform
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-34" "build-tools;34.0.0" > /dev/null
+
+      - name: Lint shell scripts
+        run: shellcheck -S warning -s sh module/*.sh && shellcheck -S warning scripts/*.sh
+
+      - name: Build
+        run: scripts/build.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: xcam17-debug
+          path: dist/
