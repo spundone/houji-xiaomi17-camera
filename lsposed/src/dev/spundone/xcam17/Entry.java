@@ -1,6 +1,9 @@
 package dev.spundone.xcam17;
 
+import android.hardware.camera2.CaptureRequest;
+
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
@@ -22,8 +25,51 @@ public class Entry implements IXposedHookLoadPackage {
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lp) {
         if (!CAMERA.equals(lp.packageName) || !lp.isFirstApplication) return;
+        hookClientName(lp.classLoader);
         hookConsentRegion(lp.classLoader);
         hook4k60LensSwitching(lp.classLoader);
+    }
+
+    /**
+     * Qualcomm's camera HAL on houji reads the vendor tag com.xiaomi.sessionparams.clientName
+     * from capture requests and passes it straight to strcmp(). HyperOS fills it in; on AOSP
+     * nothing does, and the HAL crashes with a null dereference in
+     * CamX::SensorNode::ExecuteProcessRequest (reliably at 2x in photo mode). The ROM's own
+     * camera port fixes this by stamping its package name on every builder it creates; this
+     * does the same from CameraDeviceImpl.createCaptureRequest, so it doesn't depend on the
+     * camera's obfuscated names.
+     */
+    static void hookClientName(ClassLoader cl) {
+        try {
+            Class<?> device = cl.loadClass("android.hardware.camera2.impl.CameraDeviceImpl");
+            XposedBridge.hookAllMethods(device, "createCaptureRequest", new StampClientName());
+            log("client name: stamped on every capture request");
+        } catch (Throwable t) {
+            log("client name: not hooked: " + t);
+        }
+    }
+
+    static final class StampClientName extends XC_MethodHook {
+        static final CaptureRequest.Key<byte[]> CLIENT_NAME =
+                new CaptureRequest.Key<>("com.xiaomi.sessionparams.clientName", byte[].class);
+        // NUL-terminated, as the HAL reads it as a C string.
+        static final byte[] VALUE = (CAMERA + "\0").getBytes(StandardCharsets.US_ASCII);
+        private boolean warned;
+
+        @Override
+        protected void afterHookedMethod(MethodHookParam p) {
+            Object builder = p.getResult();
+            if (!(builder instanceof CaptureRequest.Builder)) return;
+            try {
+                ((CaptureRequest.Builder) builder).set(CLIENT_NAME, VALUE);
+            } catch (IllegalArgumentException e) {
+                // The HAL doesn't define the tag (another device or ROM): nothing to fix.
+                if (!warned) {
+                    warned = true;
+                    log("client name: tag not defined by this HAL: " + e.getMessage());
+                }
+            }
+        }
     }
 
     static void log(String s) {

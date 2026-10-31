@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.1
+
+- Fix the camera service crashing at 2x in photo mode. Qualcomm's camera HAL reads the requesting app's name from the `com.xiaomi.sessionparams.clientName` request tag and crashes when it's missing. The LSPosed module now sets it on every capture request, as the ROM's own camera port does.
+
 ## 1.0.0
 
 First release, for MiuiCamera 6.7.000280.0 on the Xiaomi 14 (houji).

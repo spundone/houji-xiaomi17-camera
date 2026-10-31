@@ -49,6 +49,12 @@ While recording, the camera only offers other lenses when multi-lens ("SAT") vid
 
 houji reports `0x8F8F`, so 4K60 and 8K are left out. The LSPosed module makes `U1` return true for `8,60`. The HAL handled it in testing: `satMasterCameraId` changed with the lens, and the file stayed 4K at about 58 fps.
 
+## 6. Camera service crash at 2x: the client name tag
+
+Photos at 2x killed the camera service with a null dereference in `CamX::SensorNode::ExecuteProcessRequest` (`strcmp` against `com.android.cts.verifier`). The HAL expects the request tag `com.xiaomi.sessionparams.clientName` to hold the app's package name. HyperOS sets it; the ROM's 6.4 port adds it through a patched `LeicaClientName` class on every request builder. The 6.7 camera has no such patch.
+
+The LSPosed module hooks `CameraDeviceImpl.createCaptureRequest` in the camera process and sets the tag to `com.android.camera` plus a terminating NUL on every builder. Hooking the framework method means it doesn't depend on the camera's obfuscated names.
+
 ## Not done: front camera while recording
 
 The 6.7 camera gates this on the device profile being `com.mi.device.Annibale` (`Common.z6()`). Forcing that shows the switch button during recording. Tapping it pauses the recorder through `tq.o.c(IntFunction)` and waits for a "paused" callback before reopening the other camera. Only `MiMediaCodecRecorder` (`tq.s`, picked when `Common.w5()` is true) sends that callback; the recorder in use here doesn't. So the recording stalls, and the feature is left out until it can be made to work end to end.
