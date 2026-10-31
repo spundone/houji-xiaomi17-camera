@@ -1,5 +1,5 @@
 # Shared helpers for the module scripts. Paths are absolute so this works from any stage.
-# shellcheck shell=sh disable=SC2154
+# shellcheck shell=sh disable=SC2034,SC2154
 
 MODDIR_COMMON=/data/adb/modules/xiaomi17_camera
 KSUD=/data/adb/ksud
