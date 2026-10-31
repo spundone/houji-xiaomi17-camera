@@ -27,7 +27,8 @@ public class Entry implements IXposedHookLoadPackage {
         if (!CAMERA.equals(lp.packageName) || !lp.isFirstApplication) return;
         hookClientName(lp.classLoader);
         hookConsentRegion(lp.classLoader);
-        hook4k60LensSwitching(lp.classLoader);
+        hookVideoLensSwitching(lp.classLoader);
+        DeviceFeatures.enable(lp.classLoader);
     }
 
     /**
@@ -104,24 +105,37 @@ public class Entry implements IXposedHookLoadPackage {
     }
 
     /**
-     * Multi-lens ("SAT") video is allowed per resolution and frame rate by the HAL tag
-     * com.xiaomi.videosat.supportedRange. On houji it is 0x8F8F: 720p, 1080p30, 1080p60,
-     * 4K24 and 4K30, but not 4K60, so the camera locks 4K60 recordings to one lens.
-     * j.U1(mode, quality, hdr) decodes that mask; this reports 4K60 ("8,60") as supported.
-     * Tested on houji: lens changes mid-recording, file stays 3840x2160 at ~58 fps.
+     * Multi-lens ("SAT") video is allowed per resolution, frame rate and HDR state by the
+     * HAL tag com.xiaomi.videosat.supportedRange, decoded by j.U1(mode, quality, hdr). On
+     * houji it is 0x8F8F: SDR and HDR bits for 720p, 1080p30, 1080p60, 4K24 and 4K30, none
+     * for 4K60 or 8K. Two changes:
+     *
+     * - With Dolby Vision / HDR10 on, U1 bails out before reading the mask unless a separate
+     *   capability says SAT and HDR can be combined, which houji doesn't declare even though
+     *   its mask has the HDR bits. While U1 runs, the HDR checks (t2.a.o, t2.b.n) report off,
+     *   so U1 reaches the mask and honours the HDR bit for the chosen quality.
+     * - 4K60 ("8,60") is reported as supported. Tested on houji: the lens changes
+     *   mid-recording and the file stays 3840x2160 at ~58 fps.
      */
-    static void hook4k60LensSwitching(ClassLoader cl) {
+    static void hookVideoLensSwitching(ClassLoader cl) {
         try {
             Method check = cl.loadClass("com.android.camera.data.data.j")
                     .getDeclaredMethod("U1", int.class, String.class, boolean.class);
-            if (check.getReturnType() != boolean.class) {
-                log("4k60: j.U1 has an unexpected return type, skipping");
+            Method hdr10 = cl.loadClass("t2.a").getDeclaredMethod("o");
+            Method hdr10Pro = cl.loadClass("t2.b").getDeclaredMethod("n");
+            Method dolbyAllows = cl.loadClass("t2.c").getDeclaredMethod("n", int.class, String.class);
+            if (check.getReturnType() != boolean.class || hdr10.getReturnType() != boolean.class
+                    || hdr10Pro.getReturnType() != boolean.class || dolbyAllows.getReturnType() != boolean.class) {
+                log("lens: unexpected signatures, skipping");
                 return;
             }
-            XposedBridge.hookMethod(check, new Allow4k60());
-            log("4k60: multi-lens video allowed at 4K60");
+            XposedBridge.hookMethod(check, new VideoSatCheck());
+            XposedBridge.hookMethod(hdr10, new HdrOffInsideSatCheck());
+            XposedBridge.hookMethod(hdr10Pro, new HdrOffInsideSatCheck());
+            XposedBridge.hookMethod(dolbyAllows, new DolbyAllowsInsideSatCheck());
+            log("lens: switching allowed with HDR per the HAL mask, and at 4K60");
         } catch (Throwable t) {
-            log("4k60: not hooked: " + t);
+            log("lens: not hooked: " + t);
         }
     }
 
@@ -138,11 +152,42 @@ public class Entry implements IXposedHookLoadPackage {
         }
     }
 
-    static final class Allow4k60 extends XC_MethodHook {
+    /** Depth of j.U1 calls on this thread, so the HDR hooks only act inside it. */
+    static final ThreadLocal<int[]> IN_SAT_CHECK = ThreadLocal.withInitial(() -> new int[1]);
+
+    static final class VideoSatCheck extends XC_MethodHook {
+        @Override
+        protected void beforeHookedMethod(MethodHookParam p) {
+            IN_SAT_CHECK.get()[0]++;
+        }
+
         @Override
         protected void afterHookedMethod(MethodHookParam p) {
+            IN_SAT_CHECK.get()[0]--;
+            android.util.Log.d("xcam17dbg", "U1(" + p.args[0] + "," + p.args[1] + "," + p.args[2] + ") = " + p.getResult());
             if ("8,60".equals(p.args[1]) && Boolean.FALSE.equals(p.getResult())) {
                 p.setResult(Boolean.TRUE);
+            }
+        }
+    }
+
+    static final class DolbyAllowsInsideSatCheck extends XC_MethodHook {
+        @Override
+        protected void afterHookedMethod(MethodHookParam p) {
+            android.util.Log.d("xcam17dbg", "t2.c.n(" + p.args[0] + "," + p.args[1] + ") = " + p.getResult() + " inU1=" + IN_SAT_CHECK.get()[0]);
+            if (IN_SAT_CHECK.get()[0] > 0 && Integer.valueOf(2).equals(p.args[0])
+                    && Boolean.FALSE.equals(p.getResult())) {
+                p.setResult(Boolean.TRUE);
+            }
+        }
+    }
+
+    static final class HdrOffInsideSatCheck extends XC_MethodHook {
+        @Override
+        protected void afterHookedMethod(MethodHookParam p) {
+            android.util.Log.d("xcam17dbg", p.method.getDeclaringClass().getName() + "." + p.method.getName() + " = " + p.getResult() + " inU1=" + IN_SAT_CHECK.get()[0]);
+            if (IN_SAT_CHECK.get()[0] > 0 && Boolean.TRUE.equals(p.getResult())) {
+                p.setResult(Boolean.FALSE);
             }
         }
     }
