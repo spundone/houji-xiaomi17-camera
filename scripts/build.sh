@@ -53,13 +53,15 @@ if [ "$release" = 1 ]; then
     suffix=""
 else
     debug_ks="$HOME/.android/debug.keystore"
-    [ -f "$debug_ks" ] || keytool -genkeypair -keystore "$debug_ks" -storepass android -keypass android \
+    mkdir -p "$(dirname "$debug_ks")"
+    [ -f "$debug_ks" ] || keytool -noprompt -genkeypair -keystore "$debug_ks" -storepass android -keypass android \
         -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US" >/dev/null
     sign=(--ks "$debug_ks" --ks-pass pass:android --key-pass pass:android)
     suffix="-debug"
 fi
 lsposed_apk="$DIST/xcam17-lsposed-$VERSION$suffix.apk"
-"$BT/apksigner" sign "${sign[@]}" --v4-signing-enabled false --out "$lsposed_apk" "$OUT/aligned.apk" 2>/dev/null
+"$BT/apksigner" sign "${sign[@]}" --v4-signing-enabled false --out "$lsposed_apk" "$OUT/aligned.apk" \
+    2> >(grep -v '^WARNING' >&2)
 "$BT/apksigner" verify "$lsposed_apk"
 echo "   $lsposed_apk"
 
