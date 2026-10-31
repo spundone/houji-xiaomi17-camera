@@ -85,3 +85,7 @@ Releases are built by GitHub Actions when a `v*` tag matching `VERSION` is pushe
 ## Legal
 
 Not affiliated with Xiaomi or Leica. The camera app and its trademarks belong to Xiaomi. This repo contains only original scripts and hooks.
+
+### Release signing
+
+Release APKs are signed with a dedicated key, kept outside the repo, at `~/.config/xcam17/release.jks` (password in the macOS Keychain as `xcam17-release-keystore`). For CI to sign tagged builds, add these repository secrets: `XCAM17_KEYSTORE_B64` (the keystore, base64), `XCAM17_KEYSTORE_PASS` and `XCAM17_KEY_ALIAS` (`xcam17`). Without them the release workflow skips itself, and releases are published from a local `scripts/build.sh --release`.

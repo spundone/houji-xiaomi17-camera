@@ -16,15 +16,34 @@ jobs:
       - name: Check tag matches VERSION
         run: test "v$(tr -d '[:space:]' < VERSION)" = "$GITHUB_REF_NAME"
 
+      - name: Check signing secrets
+        id: signing
+        env:
+          XCAM17_KEYSTORE_B64: ${{ secrets.XCAM17_KEYSTORE_B64 }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -z "$XCAM17_KEYSTORE_B64" ]; then
+            echo "::warning::XCAM17_* secrets are not set; publish this release with a locally signed build"
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          elif gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            echo "::notice::Release $GITHUB_REF_NAME already exists; leaving it as published"
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: actions/setup-java@v4
+        if: steps.signing.outputs.ready == 'true'
         with:
           distribution: temurin
           java-version: "17"
 
       - name: Install Android platform
+        if: steps.signing.outputs.ready == 'true'
         run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-34" "build-tools;34.0.0" > /dev/null
 
       - name: Build signed release
+        if: steps.signing.outputs.ready == 'true'
         env:
           XCAM17_KEYSTORE_B64: ${{ secrets.XCAM17_KEYSTORE_B64 }}
           XCAM17_KEYSTORE_PASS: ${{ secrets.XCAM17_KEYSTORE_PASS }}
@@ -36,6 +55,7 @@ jobs:
           rm -f "$XCAM17_KEYSTORE"
 
       - name: Publish release
+        if: steps.signing.outputs.ready == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
