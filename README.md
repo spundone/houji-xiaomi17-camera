@@ -1,6 +1,6 @@
 # Xiaomi 17 camera for the Xiaomi 14 (houji)
 
-Runs Xiaomi's camera app from the Xiaomi 17 series (MiuiCamera **6.7.000280.0**, CN build) on AOSP-based ROMs for the Xiaomi 14, in place of the older MiuiCamera the ROM ships. You get the newer interface, Leica looks and filters, lens switching while recording (including 4K60 and 4K30 Dolby Vision), and switching to the front camera mid-recording.
+Runs Xiaomi's newer camera app on AOSP-based ROMs for the Xiaomi 14, in place of the older MiuiCamera the ROM ships. Two CN builds are supported: **6.8.002090.2** from the Xiaomi 18 Pro (recommended) and **6.7.000280.0** from the Xiaomi 17. You get the newer interface, Leica looks and filters, lens switching while recording (including 4K60 and 4K30 Dolby Vision), and switching to the front camera mid-recording. With 6.8 you also get film grain, a Leica-off style and 50MP in Photo mode.
 
 It's two pieces that work together:
 
@@ -16,7 +16,8 @@ Xiaomi's camera APK is not included. You supply it.
 - Xiaomi 14 (houji), Infinity X 4.0, Android 17, kernel 6.1
 - KernelSU Next 3.4.2 with the Hybrid Mount metamodule
 - Vector (LSPosed fork) 2.2
-- MiuiCamera 6.7.000280.0, SHA-256 `1cec1ff2203d9d1c358b7ea24f6db5b62adeb5d3f6ceca48b0fa1df932d685d9`
+- MiuiCamera 6.8.002090.2 (Xiaomi 18 Pro), SHA-256 `729b0b193d1684e7c14ed0ca56ba15247d58016c70164329de233b49727a2c48`
+- MiuiCamera 6.7.000280.0 (Xiaomi 17), SHA-256 `1cec1ff2203d9d1c358b7ea24f6db5b62adeb5d3f6ceca48b0fa1df932d685d9`
 
 Other houji ROMs should work if they ship Xiaomi's camera stack (`/system/priv-app/MiuiCamera` plus the stock camera HAL). The installer refuses other devices and other camera builds.
 
@@ -32,12 +33,17 @@ Other houji ROMs should work if they ship Xiaomi's camera stack (`/system/priv-a
 | Dolby Vision toggle in the viewfinder's quick menu (17 Ultra layout), instead of in Settings | Works |
 | Dolby Vision on the front camera at 1080p30 and 4K30 | Works |
 | Live moments (motion photos with a 3 s clip) from the snapshot button while recording | Works |
-| Subject tracking focus in Pro photo and Pro video, not just Photo and Video | Works |
+| Subject tracking focus in Pro photo and Pro video, not just Photo and Video | Works (6.7) |
+| Film grain (Noise), with the 18 Pro's filter parameters, palette and presets | Works (6.8) |
+| Style ORIG (no Leica look) beside Leica Vibrant and Authentic | Works (6.8) |
+| 50MP Photo Resolution toggle in Photo mode | Works (6.8) |
+| Front screen fill light at a steady 60 fps | Works (6.8) |
+| Watermark shows "Xiaomi 14" | Works (6.8) |
 
 ## Install
 
 1. Root with **KernelSU** (KernelSU Next works) and install an **LSPosed** framework (Vector or LSPosed).
-2. Copy the Xiaomi 17 camera APK (6.7.000280.0) to the phone's `Download` folder.
+2. Copy a supported camera APK (6.8.002090.2 or 6.7.000280.0) to the phone's `Download` folder.
 3. In the KernelSU manager, install `xiaomi17_camera-<version>.zip`. It checks the device and the APK's SHA-256 before installing.
 4. Install `xcam17-lsposed-<version>.apk`, then enable **Xiaomi 17 Camera for houji** in LSPosed. Its scope is set to the camera already.
 5. Reboot.
@@ -45,7 +51,7 @@ Other houji ROMs should work if they ship Xiaomi's camera stack (`/system/priv-a
 From a computer with Vector, steps 4 and 5 can be scripted:
 
 ```bash
-adb install xcam17-lsposed-1.0.0.apk
+adb install xcam17-lsposed-1.4.0.apk
 ```
 
 ```bash
@@ -65,7 +71,9 @@ Remove the module in the KernelSU manager and reboot. The uninstaller restores t
 - **Front camera while recording** isn't offered at 4K60, or with Dolby Vision at 4K, matching Xiaomi's own rules. Switching drops about 0.2 s of video at the switch point.
 - **All video now goes through Xiaomi's own recorder** (needed for the front-camera switch). Every mode was tested to produce valid files: 720p30, 1080p30/60, 4K24/30/60, with and without Dolby Vision.
 - **4K60 lens switching isn't advertised by the hardware.** The Xiaomi 14's camera HAL lists multi-lens video for 720p, 1080p30, 1080p60, 4K24 and 4K30, not 4K60. The LSPosed module overrides that. In testing the lens changed cleanly and files stayed 3840x2160 at about 58 fps, but long 4K60 clips may run hot.
-- **Not in this camera build:** a grain control and a "Leica off" style. Camera 6.7 has no UI or strings for either (the style button only has Leica Vibrant and Authentic); they need a newer camera APK.
+- **Camera 6.8 runs on a shared profile.** It has no Xiaomi 14 profile, so the module gives it Xiaomi's generic flagship profile plus the flags above. Some 18 Pro features stay off: Leica Legendary mode (its looks are rendered by HAL support the Xiaomi 14 lacks), Street mode and the separate Ultra-pixel mode. There's no 25MP option; this sensor offers 12.5MP and 50MP.
+- **Switching camera builds** resets the camera's saved mode. If the camera closes with "invalid module index" after switching, clear its data (`pm clear com.android.camera`).
+- **Grain and Leica-off need 6.8.** Camera 6.7 has no UI for either.
 - **HDR vs Dolby Vision.** They're separate. Dolby Vision records 10-bit HLG video with Dolby Vision profile 8.4 metadata. The HDR tile is multi-frame video HDR: it merges exposures for a wider dynamic range but, with Dolby Vision off, still records standard 8-bit SDR (BT.709). They can be on together.
 - **Region.** The CN build's China-only extras stay on. Only the consent check is redirected.
 - **The camera app shows Xiaomi's terms on first launch.** Accepting them is up to you.

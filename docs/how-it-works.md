@@ -95,6 +95,18 @@ Comparing each no-argument boolean on the device profiles (`com.mi.device.Houji`
 
 Grain and a Leica-off style aren't in camera 6.7 at all: there's no grain label in any language, and the style toggle only has Leica Vibrant and Leica Authentic.
 
+## 13. Camera 6.8 (Xiaomi 18 Pro)
+
+Obfuscated names change between builds (6.7's `ei.c` is 6.8's `Th.c`), so `CameraBuild` keeps a table per build and identifies the build by its consent-region enum. On an unknown build only the name-independent hooks run.
+
+- **Closing after 3 seconds.** The profile loader (`Eu.f2.l`) looks for `com.mi.device.<Device>`; 6.8 has no Houji class, so it falls back to `Common` and sets a static flag that `Camera.onCreate` treats as an APK version error ("finish activity after 3 seconds"). The hook clears the flag and substitutes `com.mi.device.xiaomi.CommonFlagship`. Profile class names are XOR-scrambled with a different key per class, so the stored name is in the table rather than derived.
+- **Grain.** The filter parameter panel (with Noise) needs flag `k3` (on in CommonFlagship) and style version `q0` >= 2; the 18 Pro profiles return 2.
+- **Watermark name.** Watermarks print `@{series}@{versionNumber}` from the profile's name table `d()`; CommonFlagship has `{XIAOMI, MI PHONE}`. The hook answers `{XIAOMI, 14}` from `ro.product.marketname`.
+- **Style ORIG.** The Style choices come from the HAL mask `xiaomi.capabilities.stylizationTypeMask`, read a bit at a time. houji reports 6 (Authentic, Vibrant). Photo mode adds the natural style when bit 3 is set; with it forced on, photos come out with lower contrast, saturation and vignetting than Vibrant.
+- **50MP.** Photo mode gets the Ultra HD (Photo Resolution) item when profile flag `t1` is on; the sizes come from the HAL, which gives 12.5M and 50M.
+- **Fill light at 60 fps.** With the screen fill light on (flash value 104), the video quality code caps fps at 30 unless the profile's `W0()` list includes 60 (18 Pro: `[30, 60]`). Even then the front camera records with a dynamic `[30, 60]` range, and the brighter exposure target stretched frames to 30-50 ms (about 35 fps). While the fill light is on, `FillLight60` rewrites the range to `[60, 60]`; tested at front 4K: 291 frames, all 17 ms apart.
+- **Left out.** Legendary mode (`c3`, `b3`, module 256) shows its picker but passes the look to the HAL as `com.xiaomi.sessionparams.legendMode`, which houji's HAL doesn't define, so photos are unprocessed. Street (`c2`, 225) and Ultra-pixel (`o3`, 175) never appeared in the mode list.
+
 ## Reading obfuscated names
 
 The camera hides some class names behind a per-character XOR. For example `䏖䏚䏘䎛…䏶䏚䏘䏘䏚䏛` decodes to `com.mi.device.common.Common`: XOR each character with the key that turns the 4th character into `.`. Each hook checks the class and method shape it expects and skips itself on any other build.

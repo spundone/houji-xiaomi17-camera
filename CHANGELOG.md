@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.4.0
+
+Adds support for MiuiCamera **6.8.002090.2** from the Xiaomi 18 Pro, alongside 6.7. The module detects which camera build is installed and applies only the hooks written for it.
+
+- 6.8 has no profile for the Xiaomi 14, so it treated itself as the wrong APK version and closed after 3 seconds. The module clears that check and gives the camera the shared Xiaomi flagship profile instead of the bare generic one, which kept only 1080p30 and no lens buttons.
+- Film grain: Filters > tap the selected filter > Parameters now has Noise, next to Saturation, Tone, Soft light, Cold/Warm, Cyan/Magenta, Sharpness and Vignette, plus the 18 Pro's Palette pad and saved presets (style version 2).
+- Leica-off look: the Style picker offers Style ORIG beside Leica Vibrant and Leica Authentic. The HAL only reports the two Leica looks; the third is Xiaomi's own processing, and photos come out measurably flatter, brighter and less vignetted.
+- 50MP in Photo mode: a Photo Resolution tile switches between 12.5M and 50M, not just in Pro.
+- Front fill light at 60 fps: turning on the screen fill light no longer drops video to 30 fps, and the frame rate is held at 60 instead of drifting to about 35 fps.
+- The watermark shows the phone's own name (Xiaomi 14) instead of "MI PHONE".
+- Front/rear switching while recording and the Dolby Vision viewfinder toggle carry over to 6.8.
+- Tried and left out: Leica Legendary mode (M9 Iconic CCD, M3 B&W film, M10R; the look is rendered by HAL support the Xiaomi 14 doesn't have, so photos came out unprocessed), Street and Ultra-pixel modes (never appeared), Sticker avatars (needs Xiaomi's cloud download).
+
 ## 1.3.0
 
 - Live moments while recording: the snapshot button during video can save a motion photo (still plus a short 4K clip) instead of a regular photo. Choose in Settings > Video > Take photos while recording. Device flags `G4`/`K6` from the Xiaomi 17.

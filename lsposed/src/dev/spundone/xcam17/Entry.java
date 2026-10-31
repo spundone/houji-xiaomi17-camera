@@ -2,7 +2,9 @@ package dev.spundone.xcam17;
 
 import android.hardware.camera2.CaptureRequest;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
@@ -11,8 +13,8 @@ import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 /**
- * Runtime patches that let the Xiaomi 17 camera (MiuiCamera 6.7.000280.0, CN build)
- * run on an AOSP ROM for the Xiaomi 14 (houji).
+ * Runtime patches that let Xiaomi's newer camera (MiuiCamera 6.7 from the Xiaomi 17, or
+ * 6.8 from the Xiaomi 18 Pro, CN builds) run on an AOSP ROM for the Xiaomi 14 (houji).
  *
  * The camera is obfuscated, so every hook first checks that the class and method it
  * targets still have the shape it was written against. On any other camera build the
@@ -25,13 +27,24 @@ public class Entry implements IXposedHookLoadPackage {
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lp) {
         if (!CAMERA.equals(lp.packageName) || !lp.isFirstApplication) return;
+        // These don't depend on the camera's obfuscated names.
         hookClientName(lp.classLoader);
         AnnexBVideo.hook();
-        hookConsentRegion(lp.classLoader);
-        hookVideoLensSwitching(lp.classLoader);
-        hookFrontDolby4k(lp.classLoader);
         SaliencyOff.hook(lp.classLoader);
-        DeviceFeatures.enable(lp.classLoader);
+
+        CameraBuild build = CameraBuild.detect(lp.classLoader);
+        if (build == null) {
+            log("camera build not recognised: only build-independent hooks applied");
+            return;
+        }
+        log("camera build: " + build.label);
+        hookMissingProfile(lp.classLoader, build);
+        hookConsentRegion(lp.classLoader, build);
+        hookVideoLensSwitching(lp.classLoader, build);
+        hookFrontDolby4k(lp.classLoader, build);
+        DeviceFeatures.enable(lp.classLoader, build.profiles, build.features);
+        FillLight60.hook(lp.classLoader, build);
+        NaturalStyle.hook(lp.classLoader, build);
     }
 
     /**
@@ -81,23 +94,121 @@ public class Entry implements IXposedHookLoadPackage {
     }
 
     /**
+     * The camera loads its device profile by name (com.mi.device.<Device>). When the build has
+     * no profile for this phone (6.8 has none for houji), the loader falls back to the generic
+     * Common profile and sets a static flag that Camera.onCreate treats as "wrong APK version":
+     * it shows an error and finishes the activity three seconds later. The hook clears that
+     * flag and, when the build names a fallback, swaps the generic profile for that one: the
+     * bare Common profile turns off most modes, lens buttons and every video size above 1080p30.
+     */
+    static void hookMissingProfile(ClassLoader cl, CameraBuild build) {
+        if (build.profileLoaderClass == null) return;
+        try {
+            Class<?> loader = cl.loadClass(build.profileLoaderClass);
+            Method load = loader.getDeclaredMethod(build.profileLoaderMethod);
+            Field missing = loader.getDeclaredField(build.profileMissingField);
+            Field cache = null;
+            for (Field f : loader.getDeclaredFields()) {
+                if (f.getType() == load.getReturnType() && Modifier.isStatic(f.getModifiers())) cache = f;
+            }
+            if (missing.getType() != Boolean.class || !Modifier.isStatic(missing.getModifiers()) || cache == null) {
+                log("profile: " + build.profileLoaderClass + " has an unexpected shape, skipping");
+                return;
+            }
+            missing.setAccessible(true);
+            cache.setAccessible(true);
+            Class<?> fallback = null;
+            if (build.profileFallback != null) {
+                Class<?> c = cl.loadClass(build.profileFallbackStored);
+                if (load.getReturnType().isAssignableFrom(c)) fallback = c;
+            }
+            XposedBridge.hookMethod(load, new ReplaceMissingProfile(missing, cache, fallback));
+            log("profile: missing-profile version error suppressed"
+                    + (fallback != null ? ", using " + build.profileFallback : ""));
+            if (fallback != null) hookMarketingName(fallback, build.profileNamesMethod);
+        } catch (Throwable t) {
+            log("profile: not hooked: " + t);
+        }
+    }
+
+    /**
+     * Watermarks print the phone's name from the profile's table of {brand, model} pairs; a
+     * shared profile such as CommonFlagship has the placeholder {XIAOMI, MI PHONE}. This
+     * answers with the phone's own market name instead ("Xiaomi 14" becomes {XIAOMI, 14}).
+     */
+    static void hookMarketingName(Class<?> profile, String method) {
+        if (method == null) return;
+        try {
+            Method names = profile.getDeclaredMethod(method);
+            if (names.getReturnType() != android.util.SparseArray.class) {
+                log("name: " + method + "() has an unexpected signature, skipping");
+                return;
+            }
+            String market = (String) Class.forName("android.os.SystemProperties")
+                    .getMethod("get", String.class).invoke(null, "ro.product.marketname");
+            if (market == null || market.trim().isEmpty()) market = android.os.Build.MODEL;
+            String[] parts = market.trim().split("\\s+", 2);
+            final String[] pair = parts.length == 2 && parts[0].equalsIgnoreCase("xiaomi")
+                    ? new String[] {"XIAOMI", parts[1]}
+                    : new String[] {"XIAOMI", market.trim()};
+            XposedBridge.hookMethod(names, new MarketingName(pair));
+            log("name: watermark model set to " + pair[0] + " " + pair[1]);
+        } catch (Throwable t) {
+            log("name: not hooked: " + t);
+        }
+    }
+
+    static final class MarketingName extends XC_MethodHook {
+        private final String[] pair;
+
+        MarketingName(String[] pair) {
+            this.pair = pair;
+        }
+
+        @Override
+        protected void afterHookedMethod(MethodHookParam p) {
+            android.util.SparseArray<String[]> names = new android.util.SparseArray<>();
+            names.put(0, pair.clone());
+            p.setResult(names);
+        }
+    }
+
+    static final class ReplaceMissingProfile extends XC_MethodHook {
+        private final Field missing;
+        private final Field cache;
+        private final Class<?> fallback;
+
+        ReplaceMissingProfile(Field missing, Field cache, Class<?> fallback) {
+            this.missing = missing;
+            this.cache = cache;
+            this.fallback = fallback;
+        }
+
+        @Override
+        protected void afterHookedMethod(MethodHookParam p) throws Throwable {
+            if (!Boolean.TRUE.equals(missing.get(null))) return;
+            missing.set(null, Boolean.FALSE);
+            if (fallback == null) return;
+            Object profile = fallback.getDeclaredConstructor().newInstance();
+            cache.set(null, profile);
+            p.setResult(profile);
+        }
+    }
+
+    /**
      * CN builds ask com.miui.securitycenter to show a privacy consent (CTA) dialog before
      * opening the camera. AOSP has no securitycenter, so the request fails and the camera
-     * waits on its intro screen forever. ei.c.a() picks the consent region (CN, KR or
+     * waits on its intro screen forever. The consent class's a() (ei.c in 6.7) picks the consent region (CN, KR or
      * GLOBAL); GLOBAL needs no securitycenter dialog. The rest of the app keeps its CN
      * feature set because that comes from a separate region check.
      */
-    static void hookConsentRegion(ClassLoader cl) {
+    static void hookConsentRegion(ClassLoader cl, CameraBuild build) {
         try {
-            Class<?> regions = cl.loadClass("ei.c$c");
+            Class<?> regions = cl.loadClass(build.consent + "$c");
             Object global = regions.getField("c").get(null);
-            if (!(global instanceof Enum) || !"GLOBAL".equals(((Enum<?>) global).name())) {
-                log("consent: ei.c$c.c is not GLOBAL, skipping");
-                return;
-            }
-            Method pick = cl.loadClass("ei.c").getDeclaredMethod("a");
+            Method pick = cl.loadClass(build.consent).getDeclaredMethod("a");
             if (pick.getReturnType() != regions) {
-                log("consent: ei.c.a() has an unexpected signature, skipping");
+                log("consent: " + build.consent + ".a() has an unexpected signature, skipping");
                 return;
             }
             XposedBridge.hookMethod(pick, new ConstantResult(global));
@@ -121,13 +232,15 @@ public class Entry implements IXposedHookLoadPackage {
      * - 4K60 ("8,60") is reported as supported. Tested on houji: the lens changes
      *   mid-recording and the file stays 3840x2160 at ~58 fps.
      */
-    static void hookVideoLensSwitching(ClassLoader cl) {
+    static void hookVideoLensSwitching(ClassLoader cl, CameraBuild build) {
         try {
-            Method check = cl.loadClass("com.android.camera.data.data.j")
-                    .getDeclaredMethod("U1", int.class, String.class, boolean.class);
-            Method hdr10 = cl.loadClass("t2.a").getDeclaredMethod("o");
-            Method hdr10Pro = cl.loadClass("t2.b").getDeclaredMethod("n");
-            Method dolbyAllows = cl.loadClass("t2.c").getDeclaredMethod("n", int.class, String.class);
+            Class<?> satClass = cl.loadClass(build.satCheckClass);
+            Method check = build.satCheckHasHdrArg
+                    ? satClass.getDeclaredMethod("U1", int.class, String.class, boolean.class)
+                    : satClass.getDeclaredMethod("U1", int.class, String.class);
+            Method hdr10 = cl.loadClass(build.hdr10).getDeclaredMethod("o");
+            Method hdr10Pro = cl.loadClass(build.hdr10Pro).getDeclaredMethod("n");
+            Method dolbyAllows = cl.loadClass(build.dolby).getDeclaredMethod("n", int.class, String.class);
             if (check.getReturnType() != boolean.class || hdr10.getReturnType() != boolean.class
                     || hdr10Pro.getReturnType() != boolean.class || dolbyAllows.getReturnType() != boolean.class) {
                 log("lens: unexpected signatures, skipping");
@@ -150,11 +263,11 @@ public class Entry implements IXposedHookLoadPackage {
      * the front only 1080p30, though it advertises 10-bit HLG at every size. This adds front
      * 4K30 (quality 8, 30 fps); the rear already has it, so nothing changes there.
      */
-    static void hookFrontDolby4k(ClassLoader cl) {
+    static void hookFrontDolby4k(ClassLoader cl, CameraBuild build) {
         try {
-            Class<?> caps = cl.loadClass("n9.d");
-            Method dolbyConfig = cl.loadClass("n9.e")
-                    .getDeclaredMethod("h1", int.class, int.class, int.class, caps);
+            Class<?> caps = cl.loadClass(build.capabilitiesClass);
+            Method dolbyConfig = cl.loadClass(build.dolbyConfigClass)
+                    .getDeclaredMethod(build.dolbyConfigMethod, int.class, int.class, int.class, caps);
             if (dolbyConfig.getReturnType() != boolean.class) {
                 log("dolby 4k: unexpected signature, skipping");
                 return;
