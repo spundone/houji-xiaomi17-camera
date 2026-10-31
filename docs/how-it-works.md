@@ -77,6 +77,10 @@ The Dolby component, `t2.c` ("True Colour"), has two keys: a Settings switch (`p
 
 Which qualities get Dolby comes from `com.xiaomi.HDRVideoDisplayMode.availableconfigurations`, a list of (type, quality, fps) triplets checked by `n9.e.h1`. houji's rear camera lists (3, 1080p, 30/60) and (3, 4K, 24/30/60); its front camera only (3, 1080p, 30), though it advertises `DYNAMIC_RANGE_TEN_BIT` with HLG. The module also answers (3, 4K, 30), so front 4K30 offers Dolby Vision; the recorded file is 3840x2160 10-bit HLG with Dolby Vision profile 8.4.
 
+## 11. Saliency checker crash
+
+The camera crashed with SIGSEGV in a native thread named `p_aivs_init`, which belongs to `/odm/lib64/libmialgo_ai_vision.so`. The only thing in the APK that links that library is `libmialgo_saliency.so`, loaded through `com.android.camera.saliencychecker.SaliencyChecker` (`mialgo_saliency_jni`). The checker is used by the focus code (`x6.p`, `Camera2Module.onFocusAreaChanged`). The APK's saliency library is the Xiaomi 17's; the vision library it links is houji's older HyperOS build, so its init crashes. `SaliencyChecker.init`, `process` and `hasInit` now return false before reaching native code. The library still gets loaded, but its init thread never starts. Tapping to focus repeatedly no longer crashes.
+
 ## Reading obfuscated names
 
 The camera hides some class names behind a per-character XOR. For example `䏖䏚䏘䎛…䏶䏚䏘䏘䏚䏛` decodes to `com.mi.device.common.Common`: XOR each character with the key that turns the 4th character into `.`. Each hook checks the class and method shape it expects and skips itself on any other build.

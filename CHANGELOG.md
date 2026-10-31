@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.1
+
+- Fix a camera crash (SIGSEGV in thread `p_aivs_init`). The camera's saliency checker, used when the focus area changes, runs the Xiaomi 17's `libmialgo_saliency.so` against the phone's older `/odm/lib64/libmialgo_ai_vision.so`. The module now reports the checker as unavailable so that native code never starts; focus falls back to the normal path.
+
 ## 1.2.0
 
 - Dolby Vision is a toggle in the viewfinder's quick menu (and in Pro video, Slow motion and Super night), like on the Xiaomi 17 Ultra, instead of a switch in Settings. Turned on through device flag `h3`.

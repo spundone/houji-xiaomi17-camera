@@ -30,6 +30,7 @@ public class Entry implements IXposedHookLoadPackage {
         hookConsentRegion(lp.classLoader);
         hookVideoLensSwitching(lp.classLoader);
         hookFrontDolby4k(lp.classLoader);
+        SaliencyOff.hook(lp.classLoader);
         DeviceFeatures.enable(lp.classLoader);
     }
 
