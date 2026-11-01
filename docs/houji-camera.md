@@ -118,7 +118,7 @@ Features switch each other off through a rule table (`v3.g.b` returns the rules 
 
 - `RecorderController` (`com.android.camera.module.video.z`) builds Xiaomi's recorder:
   - `iq.t` MiMediaCodecRecorder for normal video.
-  - `iq.r` MiCinematicRecorder for Movie.
+  - `iq.r` MiCinematicRecorder for Movie. It refers to `android.media.AudioParaManger`; the module's stand-in is added to the camera's dex path (`BaseDexClassLoader.addDexPath` with the module APK), because ART resolves app classes natively and a `findClass` hook isn't consulted.
 - The video quality setup (`video.E`) picks sizes, including 4096x3072 for Open Gate.
 
 ## 3. This repo's pieces
@@ -147,7 +147,8 @@ Features switch each other off through a rule table (`v3.g.b` returns the rules 
 | `NaturalStyle` | Adds Style ORIG to the HAL style mask. |
 | `MutexDrop` | Lets 50MP and Style work together. |
 | `WatermarkSubimage` | Frame watermarks in HEIF: drops remover data when there is no covered area. |
-| `MovieRecorder` | Movie mode uses the regular recorder (MiCinematicRecorder needs a HyperOS audio class). |
+| `AudioParaStub` + `android/media/AudioParaManger` | A stand-in for HyperOS's audio parameter manager, added to the camera's class path, so Movie mode's own recorder loads. |
+| `StreetFocus` | Fastshot's AF/MF: an empty depth-of-field table instead of a missing one, so the camera's default values apply. |
 | `UltraHdLenses` | 50MP lens buttons and switching in Photo and Pro, and 1:1 at 50MP. |
 | `UltraHdrJpeg` | Estimated Ultra HDR gain map appended to JPEG photos. |
 | `VideoFilterLuts` | Hides video filters the phone has no colour table for. |

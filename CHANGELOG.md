@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Movie mode records with its own recorder again (MiCinematicRecorder) instead of the regular video one. Its recorder refers to a HyperOS audio class (android.media.AudioParaManger) this ROM lacks; the module now supplies a stand-in that reports "no AI audio", which the camera already handles. Tested: 1080p 24 fps with stereo sound.
+- Fastshot: opening AF/MF no longer crashes. Its depth-of-field maths reads a sensor table houji's HAL doesn't have; the camera's built-in values are used instead. Manual focus and the distance scale work.
+
 ## 1.6.0
 
 - Haptics: the camera vibrates again for the shutter, zoom ring and lens buttons, mode switches, Pro dials, the filter strip and its sliders. Its haptics need a HyperOS framework class (miui.util.HapticFeedbackUtil) this ROM lacks, so they were silent; the module plays Android's standard effects instead, following the touch-feedback setting.

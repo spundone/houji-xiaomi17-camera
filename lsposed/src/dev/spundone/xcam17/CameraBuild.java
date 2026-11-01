@@ -70,14 +70,6 @@ final class CameraBuild {
     final String wmRemoverField;
     final String wmSubimageField;
     /**
-     * Recorder controller and its create-recorder method, and the static mode check that
-     * answers "is Movie mode" there, for {@link MovieRecorder}.
-     */
-    final String recorderControllerClass;
-    final String recorderCreateMethod;
-    final String modeCheckClass;
-    final String movieModeMethod;
-    /**
      * Zoom toggle state builder (mode, ...) and its state field, the static "Ultra HD is on"
      * check, and the per-mode zoom ratio list, for {@link UltraHdLenses}.
      */
@@ -110,6 +102,10 @@ final class CameraBuild {
     final String vibratorContextInstance;
     final String hapticStrategyClass;
     final String hapticStrategyField;
+    /** Fastshot focus component, its depth-of-field table loader and table field, for {@link StreetFocus}. */
+    final String streetFocusClass;
+    final String streetDofLoadMethod;
+    final String streetDofField;
 
     private CameraBuild(String label, String consent, String satCheckClass, boolean satCheckHasHdrArg,
             String hdr10, String hdr10Pro, String dolby, String dolbyConfigClass,
@@ -118,7 +114,7 @@ final class CameraBuild {
             String profileLoaderClass, String profileLoaderMethod, String profileMissingField,
             String profileFallback, String profileFallbackStored, String profileNamesMethod,
             String fpsRangeClass, String[] fpsRangeMethods, String componentsClass, String componentsMethod,
-            String flashComponentClass, String styleMaskMethod, String[] mutex, String[] watermark, String[] movie, String[] lenses, String[] newImage, String filterComponent, String[] openGate, String[] haptics) {
+            String flashComponentClass, String styleMaskMethod, String[] mutex, String[] watermark, String[] lenses, String[] newImage, String filterComponent, String[] openGate, String[] haptics, String[] streetFocus) {
         this.label = label;
         this.consent = consent;
         this.satCheckClass = satCheckClass;
@@ -156,10 +152,6 @@ final class CameraBuild {
         this.wmJobClass = watermark == null ? null : watermark[2];
         this.wmRemoverField = watermark == null ? null : watermark[3];
         this.wmSubimageField = watermark == null ? null : watermark[4];
-        this.recorderControllerClass = movie == null ? null : movie[0];
-        this.recorderCreateMethod = movie == null ? null : movie[1];
-        this.modeCheckClass = movie == null ? null : movie[2];
-        this.movieModeMethod = movie == null ? null : movie[3];
         this.zoomStateClass = lenses == null ? null : lenses[0];
         this.zoomStateMethod = lenses == null ? null : lenses[1];
         this.zoomStateField = lenses == null ? null : lenses[2];
@@ -183,6 +175,9 @@ final class CameraBuild {
         this.vibratorContextInstance = haptics == null ? null : haptics[1];
         this.hapticStrategyClass = haptics == null ? null : haptics[2];
         this.hapticStrategyField = haptics == null ? null : haptics[3];
+        this.streetFocusClass = streetFocus == null ? null : streetFocus[0];
+        this.streetDofLoadMethod = streetFocus == null ? null : streetFocus[1];
+        this.streetDofField = streetFocus == null ? null : streetFocus[2];
     }
 
     static final CameraBuild[] KNOWN = {
@@ -201,12 +196,12 @@ final class CameraBuild {
                     "l9.i0", new String[] {"L", "f0"}, "g2.a", "a", "r2.w", "J0",
                     new String[] {"v3.g", "b", "v3.c", "a", "v3.h", "b", "r2.m", "v"},
                     new String[] {"U8.d", "f", "zi.a", "s", "t"},
-                    new String[] {"com.android.camera.module.video.z", "j", "com.android.camera.module.a0", "d"},
                     new String[] {"H4.p0", "a", "a", "com.android.camera.data.data.p", "l0",
                             "com.android.camera.data.data.i", "S", "r2.T", "r6.f0", "U5", "X0", "m0"},
                     new String[] {"l7.k", "w"}, "r2.a",
                     new String[] {"l9.g", "d", "l9.h", "L4"},
-                    new String[] {"Rr.d", "b", "Rr.a", "e"}),
+                    new String[] {"Rr.d", "b", "Rr.a", "e"},
+                    new String[] {"r2.b0", "o", "c"}),
     };
 
     static CameraBuild detect(ClassLoader cl) {

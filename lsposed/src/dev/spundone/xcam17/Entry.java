@@ -31,6 +31,7 @@ public class Entry implements IXposedHookLoadPackage {
         hookClientName(lp.classLoader);
         AnnexBVideo.hook();
         SaliencyOff.hook(lp.classLoader);
+        AudioParaStub.hook(lp.classLoader);
 
         CameraBuild build = CameraBuild.detect(lp.classLoader);
         if (build == null) {
@@ -47,13 +48,13 @@ public class Entry implements IXposedHookLoadPackage {
         NaturalStyle.hook(lp.classLoader, build);
         MutexDrop.hook(lp.classLoader, build);
         WatermarkSubimage.hook(lp.classLoader, build);
-        MovieRecorder.hook(lp.classLoader, build);
         UltraHdLenses.hook(lp.classLoader, build);
         UltraHdrJpeg.hook(lp.classLoader, build);
         VideoFilterLuts.hook(lp.classLoader, build);
         OpenGate.hook(lp.classLoader, build);
         CameraHaptics.hook(lp.classLoader, build);
         hookStreetMode(lp.classLoader);
+        StreetFocus.hook(lp.classLoader, build);
     }
 
     /**
