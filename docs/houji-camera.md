@@ -150,6 +150,8 @@ Features switch each other off through a rule table (`v3.g.b` returns the rules 
 | `AudioParaStub` + `android/media/AudioParaManger` | A stand-in for HyperOS's audio parameter manager, added to the camera's class path, so Movie mode's own recorder loads. |
 | `StreetFocus` | Fastshot's AF/MF: an empty depth-of-field table instead of a missing one, so the camera's default values apply. |
 | `UltraHdLenses` | 50MP lens buttons and switching in Photo and Pro, and 1:1 at 50MP. |
+| `UltraHdRaw` | 50MP RAW in Pro on the ultra-wide and telephoto: their full RAW16 size in the 50MP sessions' RAW lists. |
+| `Dng50` | Saves RAW frames whose size isn't the declared sensor size (50MP on every lens, the telephoto's 12.5MP crop) as DNG, which `DngCreator` refused. |
 | `UltraHdrJpeg` | Estimated Ultra HDR gain map appended to JPEG photos. |
 | `LeicaLegendary` + `Sh/t`, `Sh/h` (in `lsposed/src/Sh`) | Essential Moment's looks: runs the Leica port's processor on Legendary photos as they are saved, with stand-ins for the port's task classes. Off unless the installer copied the port's files. |
 | `VideoFilterLuts` | Hides video filters the phone has no colour table for. |

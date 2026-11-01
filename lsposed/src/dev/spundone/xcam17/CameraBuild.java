@@ -146,6 +146,12 @@ final class CameraBuild {
     /** In the static capability checks class: "telephoto fallback control supported" (caps), or null. */
     final String teleSupportedMethod;
     /**
+     * In the camera capabilities class, for {@link UltraHdRaw}, or null: output sizes for
+     * (format, session mode), and Pro's preferred RAW size.
+     */
+    final String rawSizesMethod;
+    final String proRawSizeMethod;
+    /**
      * For {@link NaturalStyle}, or null: the style component's list builder (data), the data's
      * mode field, and the static "Original style supported" check (caps) in the checks class.
      */
@@ -260,6 +266,8 @@ final class CameraBuild {
         this.settingsBooleanMethod = settings == null ? null : settings[1];
         this.capsTagCheckMethod = settings == null ? null : settings[2];
         this.teleSupportedMethod = settings == null || settings.length < 4 ? null : settings[3];
+        this.rawSizesMethod = settings == null || settings.length < 5 ? null : settings[4];
+        this.proRawSizeMethod = settings == null || settings.length < 6 ? null : settings[5];
         this.styleListClass = portraitStyle == null ? null : portraitStyle[0];
         this.styleListMethod = portraitStyle == null ? null : portraitStyle[1];
         this.styleListModeField = portraitStyle == null ? null : portraitStyle[2];
@@ -297,7 +305,7 @@ final class CameraBuild {
                     new String[] {"r2.b0", "o", "c"},
                     new String[] {"Q0", "X0", "J0", "Re.b"},
                     new String[] {"r2.g0", "C", "l9.h", "f2"},
-                    new String[] {"Xh.a", "h", "S0", "r5"},
+                    new String[] {"Xh.a", "h", "S0", "r5", "j0", "s"},
                     new String[] {"t7.d", "a", "Sh.t", "a", "b", "e", "f", "Q", "i", "g", "c",
                             "Vh.f", "d", "Vh.g", "a", "r2.B", "k6.l", "T", "l9.a", "B"},
                     new String[] {"r2.m", "u", "a", "E2"}),

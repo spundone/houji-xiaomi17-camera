@@ -3,6 +3,8 @@
 ## Unreleased
 
 - Portrait at 2.6x uses the telephoto again with every portrait style. Original portrait made the HAL render a crop of the main camera (it needs a HAL capability houji lacks; the module had offered it as a side effect of Style ORIG in Photo), so it's no longer offered, and a Portrait set to it switches to Master portrait. Style ORIG in Photo stays. Found by the AOSP kit.
+- 50MP RAW in Pro on the ultra-wide and telephoto (8160x6144 DNG). Pro turned RAW off at 50MP on those lenses because the HAL leaves their full RAW size out of the 50MP session's list, though it streams it; the module adds it.
+- RAW photos that came out as empty .dng files now save: 50MP RAW on every lens (the main camera's too) and 12.5MP RAW on the telephoto (a 3248x2448 crop for 3.2x). houji's HAL declares only the 12.5MP sensor size, and Android's DNG writer refused any other frame size; the module writes those with the frame's own size.
 - Adaptive telephoto off now reaches the HAL. The camera only sends it when the HAL reports telephoto fallback control, which houji doesn't; the module answered a different check before.
 
 ## 1.8.0

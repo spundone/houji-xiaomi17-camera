@@ -32,6 +32,7 @@ public class Entry implements IXposedHookLoadPackage {
         AnnexBVideo.hook();
         SaliencyOff.hook(lp.classLoader);
         AudioParaStub.hook(lp.classLoader);
+        Dng50.hook();
 
         CameraBuild build = CameraBuild.detect(lp.classLoader);
         if (build == null) {
@@ -49,6 +50,7 @@ public class Entry implements IXposedHookLoadPackage {
         MutexDrop.hook(lp.classLoader, build);
         WatermarkSubimage.hook(lp.classLoader, build);
         UltraHdLenses.hook(lp.classLoader, build);
+        UltraHdRaw.hook(lp.classLoader, build);
         UltraHdrJpeg.hook(lp.classLoader, build);
         LeicaLegendary.hook(lp.classLoader, build);
         VideoFilterLuts.hook(lp.classLoader, build);
