@@ -49,6 +49,7 @@ public class Entry implements IXposedHookLoadPackage {
         WatermarkSubimage.hook(lp.classLoader, build);
         MovieRecorder.hook(lp.classLoader, build);
         UltraHdLenses.hook(lp.classLoader, build);
+        UltraHdrJpeg.hook(lp.classLoader, build);
     }
 
     /**

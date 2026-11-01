@@ -93,6 +93,9 @@ final class CameraBuild {
     final String ratioChangeClass;
     final String ratioChangeMethod;
     final String ultraOffMethod;
+    /** Image saver and its new-image callback (uri, ?, title, mime type, is preview), for {@link UltraHdrJpeg}. */
+    final String newImageClass;
+    final String newImageMethod;
 
     private CameraBuild(String label, String consent, String satCheckClass, boolean satCheckHasHdrArg,
             String hdr10, String hdr10Pro, String dolby, String dolbyConfigClass,
@@ -101,7 +104,7 @@ final class CameraBuild {
             String profileLoaderClass, String profileLoaderMethod, String profileMissingField,
             String profileFallback, String profileFallbackStored, String profileNamesMethod,
             String fpsRangeClass, String[] fpsRangeMethods, String componentsClass, String componentsMethod,
-            String flashComponentClass, String styleMaskMethod, String[] mutex, String[] watermark, String[] movie, String[] lenses) {
+            String flashComponentClass, String styleMaskMethod, String[] mutex, String[] watermark, String[] movie, String[] lenses, String[] newImage) {
         this.label = label;
         this.consent = consent;
         this.satCheckClass = satCheckClass;
@@ -154,13 +157,15 @@ final class CameraBuild {
         this.ratioChangeClass = lenses == null ? null : lenses[8];
         this.ratioChangeMethod = lenses == null ? null : lenses[9];
         this.ultraOffMethod = lenses == null ? null : lenses[10];
+        this.newImageClass = newImage == null ? null : newImage[0];
+        this.newImageMethod = newImage == null ? null : newImage[1];
     }
 
     static final CameraBuild[] KNOWN = {
             new CameraBuild("6.7.000280.0 (Xiaomi 17)", "ei.c", "com.android.camera.data.data.j", true,
                     "t2.a", "t2.b", "t2.c", "n9.e", "h1", "n9.d",
                     DeviceFeatures.PROFILES_67, DeviceFeatures.FLAGS_67, null, null, null, null, null, null,
-                    null, null, null, null, null, null, null, null, null, null),
+                    null, null, null, null, null, null, null, null, null, null, null),
             new CameraBuild("6.8.002090.2 (Xiaomi 18 Pro)", "Th.c", "com.android.camera.data.data.i", false,
                     "s2.a", "s2.b", "s2.c", "l9.h", "g1", "l9.g",
                     DeviceFeatures.PROFILES_68, DeviceFeatures.FLAGS_68, "Eu.f2", "l", "a",
@@ -174,7 +179,8 @@ final class CameraBuild {
                     new String[] {"U8.d", "f", "zi.a", "s", "t"},
                     new String[] {"com.android.camera.module.video.z", "j", "com.android.camera.module.a0", "d"},
                     new String[] {"H4.p0", "a", "a", "com.android.camera.data.data.p", "l0",
-                            "com.android.camera.data.data.i", "S", "r2.T", "r6.f0", "U5", "X0"}),
+                            "com.android.camera.data.data.i", "S", "r2.T", "r6.f0", "U5", "X0"},
+                    new String[] {"l7.k", "w"}),
     };
 
     static CameraBuild detect(ClassLoader cl) {
