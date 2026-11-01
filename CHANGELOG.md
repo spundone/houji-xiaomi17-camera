@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.4.2
 
 - Ultra HDR for JPEG photos (Settings > Photo format: JPEG). houji's HAL never makes the HDR gain map, so the module estimates one from the photo, brightening highlights by up to 2 stops, and adds it as an Android Ultra HDR gain map. The photo itself is not re-encoded; HDR screens show brighter highlights and other screens show it unchanged. HEIF photos and motion photos are left as they are.
 - Leica Essential is the 17 Ultra's name for Legendary mode, which needs HAL support houji lacks (see 1.4.0).

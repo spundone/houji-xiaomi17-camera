@@ -57,7 +57,7 @@ Other houji ROMs should work if they ship Xiaomi's camera stack (`/system/priv-a
 From a computer with Vector, steps 4 and 5 can be scripted:
 
 ```bash
-adb install xcam17-lsposed-1.4.1.apk
+adb install xcam17-lsposed-1.4.2.apk
 ```
 
 ```bash
