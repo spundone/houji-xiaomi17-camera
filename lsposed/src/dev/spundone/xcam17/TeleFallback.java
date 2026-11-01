@@ -13,7 +13,9 @@ import de.robv.android.xposed.XposedBridge;
  *
  * The camera only sends that tag (com.xiaomi.teleFallback.isDisable) when the capabilities
  * list it, and houji's multi-lens camera doesn't, though the HAL defines the tag; so its
- * check is answered yes for this tag.
+ * check is answered yes for this tag. 6.8 also asks whether fallback control is supported at
+ * all (com.xiaomi.teleFallback.isSupported), which houji doesn't list either, so without that
+ * answer the setting never reached the HAL; it is answered yes for rear cameras.
  */
 final class TeleFallback {
     /** The master switch; the capture and video switches default to its value. */
@@ -42,6 +44,35 @@ final class TeleFallback {
             Entry.log("tele fallback: Adaptive telephoto off by default");
         } catch (Throwable t) {
             Entry.log("tele fallback: not hooked: " + t);
+            return;
+        }
+        if (build.teleSupportedMethod == null) return;
+        try {
+            Class<?> caps = cl.loadClass(build.capsClass);
+            java.lang.reflect.Method supported = cl.loadClass(build.capsChecksClass)
+                    .getDeclaredMethod(build.teleSupportedMethod, caps);
+            java.lang.reflect.Field characteristics = caps.getDeclaredField(build.capsCharacteristicsField);
+            if (supported.getReturnType() != boolean.class
+                    || characteristics.getType() != android.hardware.camera2.CameraCharacteristics.class) {
+                Entry.log("tele fallback: supported check has an unexpected shape, skipping");
+                return;
+            }
+            characteristics.setAccessible(true);
+            XposedBridge.hookMethod(supported, new XC_MethodHook() {
+                @Override
+                protected void afterHookedMethod(MethodHookParam p) throws Throwable {
+                    if (Boolean.TRUE.equals(p.getResult()) || p.args[0] == null) return;
+                    Object c = characteristics.get(p.args[0]);
+                    Integer facing = c == null ? null : ((android.hardware.camera2.CameraCharacteristics) c)
+                            .get(android.hardware.camera2.CameraCharacteristics.LENS_FACING);
+                    if (facing != null && facing == android.hardware.camera2.CameraCharacteristics.LENS_FACING_BACK) {
+                        p.setResult(Boolean.TRUE);
+                    }
+                }
+            });
+            Entry.log("tele fallback: fallback control reported supported on rear cameras");
+        } catch (Throwable t) {
+            Entry.log("tele fallback: supported check not hooked: " + t);
         }
     }
 }

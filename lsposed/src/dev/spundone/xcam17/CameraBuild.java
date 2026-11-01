@@ -143,6 +143,16 @@ final class CameraBuild {
     final String settingsBooleanMethod;
     /** In the camera capabilities class: the "is this vendor tag available" check (tag name). */
     final String capsTagCheckMethod;
+    /** In the static capability checks class: "telephoto fallback control supported" (caps), or null. */
+    final String teleSupportedMethod;
+    /**
+     * For {@link NaturalStyle}, or null: the style component's list builder (data), the data's
+     * mode field, and the static "Original style supported" check (caps) in the checks class.
+     */
+    final String styleListClass;
+    final String styleListMethod;
+    final String styleListModeField;
+    final String originalStyleMethod;
     final String qualityCheckMethod;
     final String capsChecksClass;
     final String allScenesDolbyMethod;
@@ -162,7 +172,7 @@ final class CameraBuild {
             String profileLoaderClass, String profileLoaderMethod, String profileMissingField,
             String profileFallback, String profileFallbackStored, String profileNamesMethod,
             String fpsRangeClass, String[] fpsRangeMethods, String componentsClass, String componentsMethod,
-            String flashComponentClass, String styleMaskMethod, String[] mutex, String[] watermark, String[] lenses, String[] newImage, String filterComponent, String[] openGate, String[] haptics, String[] streetFocus, String[] tables, String[] videoCaps, String[] settings, String[] leica) {
+            String flashComponentClass, String styleMaskMethod, String[] mutex, String[] watermark, String[] lenses, String[] newImage, String filterComponent, String[] openGate, String[] haptics, String[] streetFocus, String[] tables, String[] videoCaps, String[] settings, String[] leica, String[] portraitStyle) {
         this.label = label;
         this.consent = consent;
         this.satCheckClass = satCheckClass;
@@ -249,6 +259,11 @@ final class CameraBuild {
         this.settingsClass = settings == null ? null : settings[0];
         this.settingsBooleanMethod = settings == null ? null : settings[1];
         this.capsTagCheckMethod = settings == null ? null : settings[2];
+        this.teleSupportedMethod = settings == null || settings.length < 4 ? null : settings[3];
+        this.styleListClass = portraitStyle == null ? null : portraitStyle[0];
+        this.styleListMethod = portraitStyle == null ? null : portraitStyle[1];
+        this.styleListModeField = portraitStyle == null ? null : portraitStyle[2];
+        this.originalStyleMethod = portraitStyle == null ? null : portraitStyle[3];
         this.qualityCheckClass = videoCaps == null ? null : videoCaps[0];
         this.qualityCheckMethod = videoCaps == null ? null : videoCaps[1];
         this.capsChecksClass = videoCaps == null ? null : videoCaps[2];
@@ -260,7 +275,7 @@ final class CameraBuild {
             new CameraBuild("6.7.000280.0 (Xiaomi 17)", "ei.c", "com.android.camera.data.data.j", true,
                     "t2.a", "t2.b", "t2.c", "n9.e", "h1", "n9.d",
                     DeviceFeatures.PROFILES_67, DeviceFeatures.FLAGS_67, null, null, null, null, null, null,
-                    null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+                    null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
             new CameraBuild("6.8.002090.2 (Xiaomi 18 Pro)", "Th.c", "com.android.camera.data.data.i", false,
                     "s2.a", "s2.b", "s2.c", "l9.h", "g1", "l9.g",
                     DeviceFeatures.PROFILES_68, DeviceFeatures.FLAGS_68, "Eu.f2", "l", "a",
@@ -282,9 +297,10 @@ final class CameraBuild {
                     new String[] {"r2.b0", "o", "c"},
                     new String[] {"Q0", "X0", "J0", "Re.b"},
                     new String[] {"r2.g0", "C", "l9.h", "f2"},
-                    new String[] {"Xh.a", "h", "S0"},
+                    new String[] {"Xh.a", "h", "S0", "r5"},
                     new String[] {"t7.d", "a", "Sh.t", "a", "b", "e", "f", "Q", "i", "g", "c",
-                            "Vh.f", "d", "Vh.g", "a", "r2.B", "k6.l", "T", "l9.a", "B"}),
+                            "Vh.f", "d", "Vh.g", "a", "r2.B", "k6.l", "T", "l9.a", "B"},
+                    new String[] {"r2.m", "u", "a", "E2"}),
     };
 
     static CameraBuild detect(ClassLoader cl) {

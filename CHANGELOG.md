@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Portrait at 2.6x uses the telephoto again with every portrait style. Original portrait made the HAL render a crop of the main camera (it needs a HAL capability houji lacks; the module had offered it as a side effect of Style ORIG in Photo), so it's no longer offered, and a Portrait set to it switches to Master portrait. Style ORIG in Photo stays. Found by the AOSP kit.
+- Adaptive telephoto off now reaches the HAL. The camera only sends it when the HAL reports telephoto fallback control, which houji doesn't; the module answered a different check before.
+
 ## 1.8.0
 
 - Essential Moment (Leica Essential / Legendary mode, in More): the M9 Iconic CCD, M3 B&W film and M10R Modern vintage looks now apply to the photo. houji's HAL can't render them, so they're rendered in the app by the processor from a community Leica port of camera 6.8 (`com.kobbin.leica`). Put that APK in Download next to the camera APK when installing; the installer copies its processor, libraries and models into the module (the port app doesn't need to be installed), and updates keep them. Nothing of the port is in the release. JPEG only, about 3 to 5 s per photo; the AI style model needs the 8 Elite Gen 5, so its fallback tone is used. Watermarks (such as the Leica frame) are drawn by the camera over the finished look.

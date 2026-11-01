@@ -26,7 +26,7 @@ These depend on support the Xiaomi 14's 2024 camera HAL doesn't have. A module c
 | **Leica Legendary / Leica Essential without the Leica port** (M9 CCD, M3 film, M10R looks) | The looks are rendered by the HAL through `com.xiaomi.sessionparams.legendMode`, which houji doesn't define. With the community Leica port in Download they are rendered in the app instead (`LeicaLegendary`). |
 | **Open Gate in Video mode** | Video mode's recording pipeline aborts the camera service at 4096x3072, on the multi-lens camera and on the main camera alone. Pro video's Open Gate works. |
 | **Movie at 4K, video HDR at 4K60 or on the front** | The HAL lists none of them (video bokeh stops at 1080p30, HDR at 4K30, front HDR unsupported); forcing them crashed. |
-| **Telephoto in dim light (12.5MP)** | The HAL falls back to a main-camera crop on its own. The app's disable request (`com.xiaomi.teleFallback.isDisable`) isn't listed for the multi-lens camera; letting it through hasn't been seen to change anything. |
+| **Telephoto up close (12.5MP)** | Below the telephoto's focus distance the HAL uses a main-camera crop. Adaptive telephoto off now reaches the HAL (`TELE_FALLBACK_DISABLE`, gated by `l9.h.r5`); whether it keeps the telephoto in dim light is still to be confirmed. |
 | **MasterCinema (cinelook)** | The HAL reports `supportedfeatures.cinelook` = 0 on every camera. |
 | **Clone mode** | The QTI camera provider aborts (`Usecase::DumpSystemEvent`), then `configureStreams` fails with -38. |
 | **LOFIC Ultra HDR video** | Needs the 17 Ultra's LOFIC sensor. |
