@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.4.1
 
 - Camera 6.8: Take photos while recording offers Live moments (motion photo) or Regular photos (flag `d4`, the 6.7 feature carried over).
 - Camera 6.8: Motion tracking focus also works in Pro photo (flag `C3`).
