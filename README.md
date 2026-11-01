@@ -72,7 +72,7 @@ Other houji ROMs should work if they ship Xiaomi's camera stack (`/system/priv-a
 From a computer with Vector, steps 4 and 5 can be scripted:
 
 ```bash
-adb install xcam17-lsposed-1.7.1.apk
+adb install xcam17-lsposed-1.8.0.apk
 ```
 
 ```bash
@@ -97,7 +97,7 @@ Remove the module in the KernelSU manager and reboot. The uninstaller restores t
 - **The telephoto falls back to the main camera in dim light** in Photo and Portrait (12.5MP). That's the HAL's own choice ("Adaptive telephoto"); the setting defaults to off but the HAL doesn't seem to take the request. 50MP opens the telephoto directly.
 - **Not possible on this HAL:** Open Gate in normal Video mode (Pro video has it), Movie at 4K, video HDR at 4K60 or on the front camera. Each crashed the camera service when forced.
 - **Grain and Leica-off need 6.8.** Camera 6.7 has no UI for either.
-- **Essential Moment** renders each look in the app after the shot, which takes about 3 to 5 seconds, and only for JPEG photos (Settings > Photo format). The port's AI style model and person mask need the Snapdragon 8 Elite Gen 5's DSP, so on the Xiaomi 14 its fallback tone is used, without a toast. The Leica watermark isn't added in this mode.
+- **Essential Moment** renders each look in the app after the shot, which takes about 3 to 5 seconds, and only for JPEG photos (Settings > Photo format). The port's AI style model and person mask need the Snapdragon 8 Elite Gen 5's DSP, so on the Xiaomi 14 its fallback tone is used, without a toast. Watermarks work: the camera draws its own over the finished look.
 - **HDR vs Dolby Vision.** They're separate. Dolby Vision records 10-bit HLG video with Dolby Vision profile 8.4 metadata. The HDR tile is multi-frame video HDR: it merges exposures for a wider dynamic range but, with Dolby Vision off, still records standard 8-bit SDR (BT.709). They can be on together.
 - **Region.** The CN build's China-only extras stay on. Only the consent check is redirected.
 - **The camera app shows Xiaomi's terms on first launch.** Accepting them is up to you.

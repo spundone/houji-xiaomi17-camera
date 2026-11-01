@@ -1,8 +1,8 @@
 # Changelog
 
-## Unreleased
+## 1.8.0
 
-- Essential Moment (Leica Essential / Legendary mode, in More): the M9 Iconic CCD, M3 B&W film and M10R Modern vintage looks now apply to the photo. houji's HAL can't render them, so they're rendered in the app by the processor from a community Leica port of camera 6.8 (`com.kobbin.leica`). Put that APK in Download next to the camera APK when installing; the installer copies its processor, libraries and models into the module (the port app doesn't need to be installed), and updates keep them. Nothing of the port is in the release. JPEG only, about 3 to 5 s per photo; the AI style model needs the 8 Elite Gen 5, so its fallback tone is used, and the Leica watermark isn't added in this mode.
+- Essential Moment (Leica Essential / Legendary mode, in More): the M9 Iconic CCD, M3 B&W film and M10R Modern vintage looks now apply to the photo. houji's HAL can't render them, so they're rendered in the app by the processor from a community Leica port of camera 6.8 (`com.kobbin.leica`). Put that APK in Download next to the camera APK when installing; the installer copies its processor, libraries and models into the module (the port app doesn't need to be installed), and updates keep them. Nothing of the port is in the release. JPEG only, about 3 to 5 s per photo; the AI style model needs the 8 Elite Gen 5, so its fallback tone is used. Watermarks (such as the Leica frame) are drawn by the camera over the finished look.
 
 ## 1.7.1
 
