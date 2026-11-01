@@ -114,6 +114,15 @@ flag("K2", "Z", True, "macro in the fast-mode config list")
 flag("R0", "[I", None, "filter type 16: the 2024 flagship filter sets",
      helper=H + "Values;->ints(Ljava/lang/String;)[I", helper_pass=["str:16"])
 flag("S0", "I", 6, "filter version 6: front video filters from houji's firmware")
+flag("k1", "I", 2, "Vlog version 2, as houji's 6.7 profile")
+flag("m3", "Z", True, "newer Vlog Pro / Short film modes, as houji's 6.7 profile")
+flag("M3", "Z", True, "120 fps slow-motion sizes, as houji's 6.7 profile")
+flag("w3", "Z", True, "lens switching while zooming, as houji's 6.7 profile")
+flag("w5", "Z", True, "Ambilight exposure handling, as houji's 6.7 profile")
+flag("G5", "Z", True, "Portrait's own capture action, as houji's 6.7 profile")
+flag("C", "I", 3, "Portrait lens version 3 (CvLens), as houji's 6.7 profile")
+flag("g1", "I", 1, "Dolby Vision preview colour space, as houji's 6.7 profile")
+flag("e1", "I", 4, "viewfinder colour space, as houji's 6.7 profile")
 
 # --- Low to medium: small return-value edits ---------------------------------------------
 

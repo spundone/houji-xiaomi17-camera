@@ -773,6 +773,249 @@
    ]
   },
   {
+   "id": "flag-k1",
+   "hook": "DeviceFeatures k1: Vlog version 2, as houji's 6.7 profile",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "k1",
+    "proto": "()I",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": 2
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-m3",
+   "hook": "DeviceFeatures m3: newer Vlog Pro / Short film modes, as houji's 6.7 profile",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "m3",
+    "proto": "()Z",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": true
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-M3",
+   "hook": "DeviceFeatures M3: 120 fps slow-motion sizes, as houji's 6.7 profile",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "M3",
+    "proto": "()Z",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": true
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-w3",
+   "hook": "DeviceFeatures w3: lens switching while zooming, as houji's 6.7 profile",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "w3",
+    "proto": "()Z",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": true
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-w5",
+   "hook": "DeviceFeatures w5: Ambilight exposure handling, as houji's 6.7 profile",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "w5",
+    "proto": "()Z",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": true
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-G5",
+   "hook": "DeviceFeatures G5: Portrait's own capture action, as houji's 6.7 profile",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "G5",
+    "proto": "()Z",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": true
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-C",
+   "hook": "DeviceFeatures C: Portrait lens version 3 (CvLens), as houji's 6.7 profile",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "C",
+    "proto": "()I",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": 3
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-g1",
+   "hook": "DeviceFeatures g1: Dolby Vision preview colour space, as houji's 6.7 profile",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "g1",
+    "proto": "()I",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": 1
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-e1",
+   "hook": "DeviceFeatures e1: viewfinder colour space, as houji's 6.7 profile",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "e1",
+    "proto": "()I",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": 4
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
    "id": "street-mode",
    "hook": "Entry.hookStreetMode",
    "effort": "low",

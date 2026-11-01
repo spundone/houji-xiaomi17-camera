@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 /** Ports of StreetFocus and ShortVideo. */
 public final class Modes {
     static final String MILIVE_MODULE = "com.xiaomi.microfilm.milive.mode.MiLiveModule";
+    static final String VLOGPRO_MODULE = "com.xiaomi.microfilm.vlogpro.mode.VlogProModule";
 
     private Modes() {}
 
@@ -25,11 +26,13 @@ public final class Modes {
 
     /**
      * Short video (MiLive) asked for operating mode 0x8004, which houji's HAL runs as a video use
-     * case needing a recording stream; it gets the standard mode (0). field names the module's
+     * case needing a recording stream, and Short film (Vlog Pro) 0x800c; they get the standard mode (0). field names the module's
      * operating mode field.
      */
     public static int operatingMode(int mode, Object module, String field) {
-        if (module == null || !MILIVE_MODULE.equals(module.getClass().getName())) return mode;
+        if (module == null) return mode;
+        String name = module.getClass().getName();
+        if (!MILIVE_MODULE.equals(name) && !VLOGPRO_MODULE.equals(name)) return mode;
         try {
             Class<?> c = module.getClass();
             Field f = null;
