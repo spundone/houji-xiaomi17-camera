@@ -41,7 +41,7 @@ find "$OUT/classes" -name '*.class' -print0 | xargs -0 "$BT/d8" --release --min-
     --lib "$ANDROID_JAR" --classpath "$OUT/stubs.jar" --output "$OUT/dex"
 "$BT/aapt2" compile --dir "$src/res" -o "$OUT/res.zip"
 "$BT/aapt2" link -o "$OUT/unsigned.apk" -I "$ANDROID_JAR" --manifest "$src/AndroidManifest.xml" \
-    -A "$src/assets" --version-name "$VERSION" --version-code "$VERSION_CODE" "$OUT/res.zip"
+    -A "$src/assets" --version-name "$VERSION" --version-code "$VERSION_CODE" --replace-version "$OUT/res.zip"
 (cd "$OUT/dex" && zip -q "$OUT/unsigned.apk" classes.dex)
 "$BT/zipalign" -f -p 4 "$OUT/unsigned.apk" "$OUT/aligned.apk"
 
@@ -74,7 +74,7 @@ name=Xiaomi 17 Camera for houji
 version=$VERSION
 versionCode=$VERSION_CODE
 author=spundone
-description=Runs the Xiaomi 17 camera (6.7.000280.0) in place of MiuiCamera on AOSP ROMs for the Xiaomi 14. Pair with the LSPosed module.
+description=Runs Xiaomi's newer camera (6.8.002090.2 from the 18 Pro, or 6.7.000280.0 from the 17) in place of MiuiCamera on AOSP ROMs for the Xiaomi 14. Pair with the LSPosed module.
 EOF
 module_zip="$DIST/xiaomi17_camera-$VERSION.zip"
 rm -f "$module_zip"
