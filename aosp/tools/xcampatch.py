@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Applies the camera patches to an apktool-decoded smali tree, or checks a patched one.
 
-    xcampatch.py apply  SMALI_TREE PATCHES.json REPORT.json
-    xcampatch.py verify SMALI_TREE REPORT.json
+    xcampatch.py apply    SMALI_TREE PATCHES.json REPORT.json
+    xcampatch.py verify   SMALI_TREE REPORT.json
+    xcampatch.py assemble ORIGINAL.apk REBUILT.apk HELPERS.dex OUT.apk
 
 Patches are data (patches/<build>/patches.json), not smali diffs, so this repository carries
 no decompiled Xiaomi code. Each patch finds its method by class, name and prototype, and
@@ -543,10 +544,51 @@ def verify(tree_dir, report_file):
         die(f"{bad} patch(es) missing from the rebuilt APK")
 
 
+DEX = re.compile(r"classes\d*\.dex")
+SIGNATURE = re.compile(r"META-INF/([^/]+\.(SF|RSA|DSA|EC)|MANIFEST\.MF)")
+
+
+def assemble(original, rebuilt, helper_dex, out):
+    """The original APK with only its code replaced: every entry is copied from the original
+    (resources, libraries and assets never touch the disk, whose case-insensitivity can merge
+    Xiaomi's obfuscated resource names), the classes*.dex come from the rebuilt APK, and the
+    helper dex is added after them. The original signature is dropped."""
+    import zipfile
+    with zipfile.ZipFile(original) as src, zipfile.ZipFile(rebuilt) as new, \
+            zipfile.ZipFile(out, "w") as dst:
+        new_dex = sorted((n for n in new.namelist() if DEX.fullmatch(n)), key=lambda n: (len(n), n))
+        old_dex = [i for i in src.infolist() if DEX.fullmatch(i.filename)]
+        if len(new_dex) != len(old_dex):
+            die(f"rebuilt APK has {len(new_dex)} dex files, the original {len(old_dex)}")
+        dex_compress = old_dex[0].compress_type
+        written_dex = False
+        for info in src.infolist():
+            name = info.filename
+            if SIGNATURE.fullmatch(name):
+                continue
+            if DEX.fullmatch(name):
+                if not written_dex:
+                    for n in new_dex:
+                        dst.writestr(zipfile.ZipInfo(n, info.date_time), new.read(n), dex_compress)
+                    helper = f"classes{len(new_dex) + 1}.dex"
+                    with open(helper_dex, "rb") as f:
+                        dst.writestr(zipfile.ZipInfo(helper, info.date_time), f.read(), dex_compress)
+                    written_dex = True
+                continue
+            dst.writestr(info, src.read(name), info.compress_type)
+    with zipfile.ZipFile(original) as src, zipfile.ZipFile(out) as dst:
+        want = {n for n in src.namelist() if not SIGNATURE.fullmatch(n)} | {helper}
+        if set(dst.namelist()) != want:
+            die(f"assembled APK entries differ from the original: {sorted(set(dst.namelist()) ^ want)[:5]}")
+    print(f"  {len(new_dex)} dex files from the rebuild, helpers as {helper}, other entries from the original")
+
+
 if __name__ == "__main__":
     if len(sys.argv) == 5 and sys.argv[1] == "apply":
         apply(*sys.argv[2:])
     elif len(sys.argv) == 4 and sys.argv[1] == "verify":
         verify(*sys.argv[2:])
+    elif len(sys.argv) == 6 and sys.argv[1] == "assemble":
+        assemble(*sys.argv[2:])
     else:
         sys.exit(__doc__)

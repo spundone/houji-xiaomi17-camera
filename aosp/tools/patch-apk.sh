@@ -5,9 +5,9 @@
 #
 # 1. Checks the APK's SHA-256 against module/known-apks.sha256 and picks aosp/patches/<build>/.
 # 2. Builds the helper dex from aosp/helpers/ (and the AudioParaManger stand-in from lsposed/).
-# 3. Decodes the APK with apktool (code only, resources untouched), applies patches.json with
-#    xcampatch.py, rebuilds, adds the helper dex as one more classesN.dex, checks every patch
-#    is in the rebuilt APK, and zipaligns it.
+# 3. Decodes the APK's code with apktool, applies patches.json with xcampatch.py and rebuilds.
+# 4. Assembles the output from the original APK with only its dex files replaced, plus the
+#    helper dex as one more classesN.dex; checks every patch is in it, and zipaligns it.
 #
 # OUT.apk is unsigned: the ROM build signs it with the platform key (certificate: "platform").
 # To try it outside a ROM build, sign it yourself with apksigner.
@@ -82,22 +82,24 @@ echo "== Rebuild"
 apktool b -q -o "$work/rebuilt.apk" "$work/decoded"
 rm -rf "$work/decoded"
 
-# The helpers go in as one more dex; the camera's class loader reads every classesN.dex.
-n=$(unzip -Z1 "$work/rebuilt.apk" | grep -cE '^classes[0-9]*\.dex$')
-cp "$work/helpers/dex/classes.dex" "$work/helpers/classes$((n + 1)).dex"
-(cd "$work/helpers" && zip -q -0 "$work/rebuilt.apk" "classes$((n + 1)).dex")
-echo "   helpers added as classes$((n + 1)).dex"
+# Only the code comes from the rebuild: resources and libraries are copied from the original
+# APK entry by entry, as apktool's round trip through a case-insensitive disk (macOS) merges
+# resource files whose obfuscated names differ only in case. The helpers go in as one more
+# dex; the camera's class loader reads every classesN.dex.
+echo "== Assemble"
+python3 "$KIT/tools/xcampatch.py" assemble "$in" "$work/rebuilt.apk" "$work/helpers/dex/classes.dex" "$work/patched.apk"
+rm -f "$work/rebuilt.apk"
 
-# --- Check the rebuilt APK ---
+# --- Check the patched APK ---
 echo "== Verify"
-apktool d -q -f -r --no-assets -o "$work/check" "$work/rebuilt.apk"
+apktool d -q -f -r --no-assets -o "$work/check" "$work/patched.apk"
 python3 "$KIT/tools/xcampatch.py" verify "$work/check" "$work/report.json"
-helper_classes=$("$BT/dexdump" "$work/helpers/classes$((n + 1)).dex" 2>/dev/null | grep -cE "^ *Class descriptor" || true)
-[ -d "$work/check/smali_classes$((n + 1))/dev/spundone/xcam17/aosp" ] || die "helper dex missing from the rebuilt APK"
-echo "   helper dex: $helper_classes classes"
+n=$(unzip -Z1 "$work/patched.apk" | grep -cE '^classes[0-9]*\.dex$')
+[ -d "$work/check/smali_classes$n/dev/spundone/xcam17/aosp" ] || die "helper dex missing from the patched APK"
+unzip -p "$work/patched.apk" "classes$n.dex" > "$work/helpers.dex"
+echo "   helper dex: $("$BT/dexdump" "$work/helpers.dex" 2>/dev/null | grep -cE "^ *Class descriptor" || true) classes in classes$n.dex"
+rm -rf "$work/check" "$work/helpers.dex"
 
-rm -rf "$work/check"
-
-"$BT/zipalign" -f -p 4 "$work/rebuilt.apk" "$out"
+"$BT/zipalign" -f -p 4 "$work/patched.apk" "$out"
 "$BT/zipalign" -c -p 4 "$out" >/dev/null
 echo "== $out (unsigned; the ROM build signs it with the platform key)"

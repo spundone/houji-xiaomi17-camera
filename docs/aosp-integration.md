@@ -116,5 +116,7 @@ Upgrading from the KernelSU build: remove the KernelSU and LSPosed modules first
 - `patch-apk.sh` runs end to end on 6.8.002090.2 in under a minute. All 53 patches match exactly the methods they expect. The rebuilt APK keeps its package name and version, gains the helper dex as `classes11.dex`, and passes `zipalign -c`.
 - The script's own check (the rebuilt APK decoded again) finds all 59 generated methods and all 44 redirected call sites, with no calls to the original framework methods left outside the helpers.
 - The dex files were also checked independently with `dexdump -d`. Each patched method has its new body, each wrapper calls its `$xcam` original and its helper, and the helper dex holds the 15 helper and stand-in classes.
-- Not tested on a phone. Nothing here was flashed or installed, so ART's verifier and the runtime behaviour as `platform_app` are still unchecked.
+- The output is the original APK with only its dex files replaced (and the helper dex added). The first build repacked everything through apktool. On macOS's case-insensitive disk that merged 131 resource files whose obfuscated names differ only in case (`res/NSC.xml` and `res/nsc.xml`), and the camera crashed loading one.
+- On the phone (Nov 1, Infinity X 4.0) the patched APK ran debug-signed in place of the KernelSU module's APK, with the LSPosed module disabled. The camera opens, passes ART verification, and reaches the viewfinder in 4K30 Dolby Vision video (so the CommonFlagship profile is in use), with its encoder configured. Each feature hasn't been retested one by one yet.
+- Not tested as `platform_app`: that needs the ROM's platform key, so in a ROM build.
 - The run needs about 1 GB of free disk: apktool decodes the APK twice (to patch, then to verify).

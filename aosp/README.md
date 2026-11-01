@@ -24,7 +24,7 @@ It needs JDK 11+, Python 3, an Android SDK with build-tools and a platform 34 or
 2. compiles `helpers/` and the `AudioParaManger` stand-in (`lsposed/src/android/`) into a dex;
 3. decodes the APK with apktool, code only (resources stay as they are);
 4. applies `patches.json`; a patch that finds nothing, or more than it expects, stops the build;
-5. rebuilds, adds the helper dex as one more `classesN.dex`;
+5. rebuilds, then assembles the output from the original APK with only its dex files replaced, plus the helper dex as one more `classesN.dex` (resources never go through the disk, so a case-insensitive filesystem can't merge them);
 6. decodes the rebuilt APK again and checks every generated method and redirected call is there;
 7. zipaligns. The output is unsigned.
 
