@@ -1,7 +1,7 @@
 {
  "build": "6.8.002090.2",
  "sha256": "729b0b193d1684e7c14ed0ca56ba15247d58016c70164329de233b49727a2c48",
- "ported_from": "spundone/houji-xiaomi17-camera v1.7.0 (2f8c709), lsposed/src/dev/spundone/xcam17",
+ "ported_from": "spundone/houji-xiaomi17-camera v1.7.0 (2f8c709), lsposed/src/dev/spundone/xcam17; UltraHdrJpeg and HeifGainMap from 1b4f7b6 (HEIC Ultra HDR)",
  "patches": [
   {
    "id": "client-name",
@@ -1421,6 +1421,448 @@
      ]
     }
    ]
+  },
+  {
+   "id": "uhd-ultra-on",
+   "hook": "UltraHdLenses (Ultra HD reads off while re-reading)",
+   "effort": "high",
+   "find": {
+    "class": "Lcom/android/camera/data/data/p;",
+    "name": "l0",
+    "proto": "()Z",
+    "static": true
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/UltraHdLenses;->ultraOn(Z)Z",
+      "pass": [
+       "result"
+      ]
+     }
+    ]
+   },
+   "check": [
+    {
+     "class": "Lcom/android/camera/data/data/p;",
+     "has": [
+      ".method public static l0()Z",
+      ".method public static m0(I)Z",
+      ".method public static X0()V"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "uhd-ultra-off",
+   "hook": "UltraHdLenses (keep 50M for 1:1 and 4:3)",
+   "effort": "high",
+   "find": {
+    "class": "Lcom/android/camera/data/data/p;",
+    "name": "X0",
+    "proto": "()V",
+    "static": true
+   },
+   "action": {
+    "type": "wrap",
+    "guard": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/UltraHdLenses;->allowUltraOff()Z",
+      "pass": []
+     }
+    ]
+   },
+   "check": [
+    {
+     "class": "Lcom/android/camera/data/data/p;",
+     "has": [
+      ".method public static l0()Z",
+      ".method public static m0(I)Z",
+      ".method public static X0()V"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "uhd-zoom-state",
+   "hook": "UltraHdLenses (lens buttons at 50M)",
+   "effort": "high",
+   "find": {
+    "class": "LH4/p0;",
+    "name": "a",
+    "proto": "(IZZ)Lcom/android/camera/ui/zoom/ZoomRatioToggleView$f;",
+    "static": true
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/UltraHdLenses;->zoomState(Ljava/lang/Object;IZZLjava/lang/Class;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Object;",
+      "pass": [
+       "result",
+       "arg0",
+       "arg1",
+       "arg2",
+       "class:LH4/p0;",
+       "str:a",
+       "str:com.android.camera.data.data.p#l0#m0"
+      ]
+     }
+    ]
+   },
+   "check": [
+    {
+     "class": "Lcom/android/camera/ui/zoom/ZoomRatioToggleView$f;",
+     "has": [
+      ".field public final a:I"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "uhd-zoom-list",
+   "hook": "UltraHdLenses (per-mode lens list at 50M)",
+   "effort": "high",
+   "find": {
+    "class": "Lcom/android/camera/data/data/i;",
+    "name": "S",
+    "proto": "(I)[F",
+    "static": true
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/UltraHdLenses;->zoomList([FILjava/lang/Class;Ljava/lang/String;Ljava/lang/String;)[F",
+      "pass": [
+       "result",
+       "arg0",
+       "class:Lcom/android/camera/data/data/i;",
+       "str:S",
+       "str:com.android.camera.data.data.p#l0#m0"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "uhd-keep-lenses",
+   "hook": "UltraHdLenses (lens bar filter at 50M)",
+   "effort": "high",
+   "find": {
+    "class": "Lcom/android/camera/ui/zoom/ZoomRatioToggleView;",
+    "name": "u",
+    "proto": "([FZZZ)[F"
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/UltraHdLenses;->keepLenses([F[FLjava/lang/String;)[F",
+      "pass": [
+       "result",
+       "arg0",
+       "str:com.android.camera.data.data.p#l0#m0"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "uhd-allow-switch",
+   "hook": "UltraHdLenses (switch camera while zooming)",
+   "effort": "high",
+   "find": {
+    "class": "Lcom/android/camera/module/Camera2Module;",
+    "name": "isCameraSwitchingDuringZoomingAllowed",
+    "proto": "()Z"
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/UltraHdLenses;->allowLensSwitch(ZLjava/lang/Object;Ljava/lang/String;)Z",
+      "pass": [
+       "result",
+       "this",
+       "str:com.android.camera.data.data.p#l0#m0"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "uhd-ratio",
+   "hook": "UltraHdLenses (1:1 at 50M)",
+   "effort": "high",
+   "find": {
+    "class": "Lr2/T;",
+    "name": "getComponentValue",
+    "proto": "(I)Ljava/lang/String;"
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/UltraHdLenses;->ratio(Ljava/lang/String;Ljava/lang/Object;ILjava/lang/String;)Ljava/lang/String;",
+      "pass": [
+       "result",
+       "this",
+       "arg0",
+       "str:com.android.camera.data.data.p#l0#m0"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "uhd-ratio-change",
+   "hook": "UltraHdLenses (ratio change keeps 50M)",
+   "effort": "high",
+   "find": {
+    "class": "Lr6/f0;",
+    "name": "U5",
+    "proto": "(Ljava/lang/String;Z)V"
+   },
+   "action": {
+    "type": "wrap",
+    "before": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/UltraHdLenses;->ratioChangeEnter(Ljava/lang/String;)V",
+      "pass": [
+       "arg0"
+      ]
+     }
+    ],
+    "exit": "Ldev/spundone/xcam17/aosp/UltraHdLenses;->ratioChangeExit()V"
+   }
+  },
+  {
+   "id": "uhd-lens-switch",
+   "hook": "UltraHdLenses (lens changes at each lens's stop)",
+   "effort": "high",
+   "find": {
+    "class": "Li9/g;",
+    "name": "M7",
+    "proto": "(FFLcom/android/camera/module/Y;)Z"
+   },
+   "action": {
+    "type": "wrap",
+    "guard": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/UltraHdLenses;->lensSwitchGo(FLjava/lang/Object;Ljava/lang/String;)Z",
+      "pass": [
+       "arg1",
+       "arg2",
+       "str:com.android.camera.data.data.p#l0#m0"
+      ]
+     }
+    ],
+    "before": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/UltraHdLenses;->lensSwitchFrom(FFLjava/lang/Object;Ljava/lang/String;)F",
+      "pass": [
+       "arg0",
+       "arg1",
+       "arg2",
+       "str:com.android.camera.data.data.p#l0#m0"
+      ],
+      "set": "arg0"
+     }
+    ]
+   },
+   "check": [
+    {
+     "class": "Li9/g;",
+     "has": [
+      ".field public final b:Ljava/lang/ref/WeakReference;",
+      ".field public l:F",
+      ".method public setZoomRatio(F)V"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "uhd-snap-B7",
+   "hook": "UltraHdLenses (zoom snaps to the lens in use)",
+   "effort": "high",
+   "find": {
+    "class": "Lj9/e;",
+    "name": "B7",
+    "proto": "()V"
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/UltraHdLenses;->snapToLens(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V",
+      "pass": [
+       "this",
+       "str:b#l",
+       "str:com.android.camera.data.data.p#l0#m0"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "uhd-snap-n0",
+   "hook": "UltraHdLenses (zoom snaps to the lens in use)",
+   "effort": "high",
+   "find": {
+    "class": "Lj9/t;",
+    "name": "n0",
+    "proto": "(I)V"
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/UltraHdLenses;->snapToLens(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V",
+      "pass": [
+       "this",
+       "str:b#l",
+       "str:com.android.camera.data.data.p#l0#m0"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "uhd-zoom-apply",
+   "hook": "UltraHdLenses (main camera held at 1x at 50M)",
+   "effort": "high",
+   "find": {
+    "class": "Ll9/n0;",
+    "name": "l1",
+    "proto": "(Landroid/hardware/camera2/CaptureRequest$Builder;Ll9/g;Ll9/j0;)V",
+    "static": true
+   },
+   "action": {
+    "type": "wrap",
+    "before": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/UltraHdLenses;->zoomApplyBefore(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
+      "pass": [
+       "arg1",
+       "arg2",
+       "str:l9.h#j",
+       "str:d0",
+       "str:com.android.camera.data.data.p#l0#m0"
+      ]
+     }
+    ],
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/UltraHdLenses;->zoomApplyAfter(Ljava/lang/Object;Ljava/lang/String;)V",
+      "pass": [
+       "arg2",
+       "str:d0"
+      ]
+     }
+    ]
+   },
+   "check": [
+    {
+     "class": "Ll9/j0;",
+     "has": [
+      ".field public d0:F"
+     ]
+    },
+    {
+     "class": "Ll9/h;",
+     "has": [
+      ".method public static j(Ll9/g;)I"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ultra-hdr",
+   "hook": "UltraHdrJpeg + HeifGainMap (from 1b4f7b6)",
+   "effort": "high",
+   "find": {
+    "class": "Ll7/k;",
+    "name": "w",
+    "proto": "(Landroid/net/Uri;ZLjava/lang/String;IZ)V"
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/UltraHdrJpeg;->afterNewImage(Landroid/net/Uri;Z)V",
+      "pass": [
+       "arg0",
+       "arg4"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "haptics-strategy",
+   "hook": "CameraHaptics (vibrator strategy)",
+   "effort": "medium",
+   "find": {
+    "class": "LRr/d;",
+    "name": "b",
+    "proto": "()LRr/d;",
+    "static": true
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/CameraHaptics;->fillStrategy(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/Class;)Ljava/lang/Object;",
+      "pass": [
+       "result",
+       "str:e",
+       "class:LRr/a;"
+      ]
+     }
+    ]
+   },
+   "check": [
+    {
+     "class": "LRr/d;",
+     "has": [
+      ".field public e:LRr/a;"
+     ]
+    },
+    {
+     "class": "LRr/a;",
+     "has": [
+      ".class public interface abstract LRr/a;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "haptics-miuix",
+   "hook": "CameraHaptics (miuix haptic ids)",
+   "effort": "medium",
+   "find": {
+    "class": "Lmiuix/view/HapticCompat;",
+    "name": "performHapticFeedback",
+    "proto": "(Landroid/view/View;I)Z",
+    "static": true,
+    "has": [
+     "const/high16 v2, 0x10000000"
+    ]
+   },
+   "action": {
+    "type": "wrap",
+    "before": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/CameraHaptics;->feedbackId(I)I",
+      "pass": [
+       "arg1"
+      ],
+      "set": "arg1"
+     }
+    ]
+   }
   }
  ]
 }

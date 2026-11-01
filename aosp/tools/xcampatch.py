@@ -15,9 +15,10 @@ Actions:
            or the result of a static helper called with string or class constants.
   wrap     Xposed-style hook without Xposed. The original method is renamed to <name>$xcam
            and made private; a new method under the original name calls it and runs helpers:
-           "enter"/"exit" around it (exit also runs if it throws), "before" to replace an
-           argument, "after" to replace the result. Helpers are static methods in the helper
-           dex, given values listed in "pass":
+           "enter"/"exit" around it (exit also runs if it throws), "guard" to skip it (a
+           helper answering false returns void, zero or null instead), "before" to replace an
+           argument (or, without "set", just to run), "after" to replace the result. Helpers
+           are static methods in the helper dex, given values listed in "pass":
              result, this, argN, str:<text>, class:<Ldescriptor;>
   redirect Rewrite every call to a framework method into a call to a static helper taking
            the receiver as its first argument, for hooks that sat on framework classes.
@@ -379,8 +380,23 @@ def gen_wrap(patch, method):
     code = []
     if "enter" in a:
         code.append(f"    invoke-static {{}}, {a['enter']}")
+    for i, g in enumerate(a.get("guard", [])):
+        lines, hret, _ = call_helper(pid, g["helper"], g["pass"], method, block)
+        if hret != "Z":
+            die(f"{pid}: guard {g['helper']} must return a boolean")
+        code += lines + ["    move-result v0", f"    if-nez v0, :xcam_go_{i}"]
+        # A guard that answers false skips the original: void, or zero, false or null.
+        if t == "V":
+            code.append("    return-void")
+        else:
+            zero = "const-wide/16 v0, 0x0" if width(t) == 2 else "const/4 v0, 0x0"
+            code += [f"    {zero}", f"    {return_op(t)} v0"]
+        code.append(f"    :xcam_go_{i}")
     for b in a.get("before", []):
         lines, hret, _ = call_helper(pid, b["helper"], b["pass"], method, block)
+        if "set" not in b:
+            code += lines
+            continue
         target = b["set"]
         ttype = token_type(target, method)
         if not assignable(hret, ttype) and not (is_ref(ttype) and is_ref(hret)):
@@ -416,7 +432,7 @@ def gen_wrap(patch, method):
             code.append(f"    {move_result_op(t)} v0")
             if is_ref(t) and hret != t:
                 code.append(f"    check-cast v0, {t}")
-    for b in a.get("before", []):
+    for b in a.get("before", []) + a.get("guard", []):
         used = max(used, sum(width(token_type(x, method)) for x in b["pass"]))
     code.append(f"    {return_op(t)}" + ("" if t == "V" else " v0"))
     if "exit" in a:

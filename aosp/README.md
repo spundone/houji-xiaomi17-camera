@@ -64,9 +64,11 @@ Each patch finds its method by class, name and prototype, and checks fingerprint
 | `VideoFilterLuts` | wrap `r2.a.getItems` | Medium |
 | `FillLight60` | wrap `l9.i0.L` and `f0` (before) | Medium |
 | `AudioParaStub` | not a patch: the stand-in class is compiled into the helper dex | Low |
-| `UltraHdLenses` | not ported | High |
-| `UltraHdrJpeg`, `HeifGainMap` | not ported | High |
-| `CameraHaptics` | not ported | Medium |
+| `UltraHdLenses` | wrap 13 methods: the Ultra HD checks (`data.p.l0`, `X0` guarded), lens buttons and lists (`H4.p0.a`, `data.i.S`, `ZoomRatioToggleView.u`), the lens switch (`i9.g.M7`, guarded), snaps (`j9.e.B7`, `j9.t.n0`), the 1:1 ratio (`r2.T`, `r6.f0`) and the 1x zoom step (`l9.n0.l1`) | High |
+| `UltraHdrJpeg`, `HeifGainMap` (from 1b4f7b6) | wrap the image saver's new-image callback `l7.k.w`; HEIF gain maps only with `debug.xcam17.heic_ultrahdr=1` | High |
+| `CameraHaptics` | wrap `Rr.d.b` (vibrator strategy) and `HapticCompat.performHapticFeedback` (before: HyperOS ids mapped) | Medium |
 | KernelSU swap, profile, package cache | not needed: the ROM ships the app | None |
 
-All 53 patches apply to 6.8.002090.2, and the rebuilt APK was checked with apktool and dexdump. It hasn't run on a phone yet; see the status in [docs/aosp-integration.md](../docs/aosp-integration.md#status).
+All 68 patches apply to 6.8.002090.2, and the rebuilt APK was checked with apktool and dexdump, then run on the phone; see the status in [docs/aosp-integration.md](../docs/aosp-integration.md#status).
+
+For Ultra HDR on HEIF photos in a ROM build, set `debug.xcam17.heic_ultrahdr=1` (for example in `system.prop`). It's off by default because macOS, ffmpeg and Google Photos backup refuse HEIF files with a gain map.

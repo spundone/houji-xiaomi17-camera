@@ -227,10 +227,91 @@ for name, has in [("L", '"setFpsRange: "'), ("f0", '"setVideoFpsRange: "')]:
             "pass": ["arg0", "class:Lg2/a;", "str:a", "class:Lr2/w;"], "set": "arg0"}]},
         [{"class": "Lg2/a;", "has": [".method public static a()Lr2/n1;"]}])
 
+# --- High: 50MP lenses, Ultra HDR, haptics ---------------------------------------------------
+
+ULTRA = "str:com.android.camera.data.data.p#l0#m0"
+UHD = H + "UltraHdLenses;->"
+ULTRA_CHECK = {"class": "Lcom/android/camera/data/data/p;",
+               "has": [".method public static l0()Z", ".method public static m0(I)Z", ".method public static X0()V"]}
+
+add("uhd-ultra-on", "UltraHdLenses (Ultra HD reads off while re-reading)", "high",
+    {"class": "Lcom/android/camera/data/data/p;", "name": "l0", "proto": "()Z", "static": True},
+    {"type": "wrap", "after": [{"helper": UHD + "ultraOn(Z)Z", "pass": ["result"]}]}, [ULTRA_CHECK])
+add("uhd-ultra-off", "UltraHdLenses (keep 50M for 1:1 and 4:3)", "high",
+    {"class": "Lcom/android/camera/data/data/p;", "name": "X0", "proto": "()V", "static": True},
+    {"type": "wrap", "guard": [{"helper": UHD + "allowUltraOff()Z", "pass": []}]}, [ULTRA_CHECK])
+add("uhd-zoom-state", "UltraHdLenses (lens buttons at 50M)", "high",
+    {"class": "LH4/p0;", "name": "a", "proto": "(IZZ)Lcom/android/camera/ui/zoom/ZoomRatioToggleView$f;", "static": True},
+    {"type": "wrap", "after": [{
+        "helper": UHD + "zoomState(Ljava/lang/Object;IZZLjava/lang/Class;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Object;",
+        "pass": ["result", "arg0", "arg1", "arg2", "class:LH4/p0;", "str:a", ULTRA]}]},
+    [{"class": "Lcom/android/camera/ui/zoom/ZoomRatioToggleView$f;", "has": [".field public final a:I"]}])
+add("uhd-zoom-list", "UltraHdLenses (per-mode lens list at 50M)", "high",
+    {"class": "Lcom/android/camera/data/data/i;", "name": "S", "proto": "(I)[F", "static": True},
+    {"type": "wrap", "after": [{
+        "helper": UHD + "zoomList([FILjava/lang/Class;Ljava/lang/String;Ljava/lang/String;)[F",
+        "pass": ["result", "arg0", "class:Lcom/android/camera/data/data/i;", "str:S", ULTRA]}]})
+add("uhd-keep-lenses", "UltraHdLenses (lens bar filter at 50M)", "high",
+    {"class": "Lcom/android/camera/ui/zoom/ZoomRatioToggleView;", "name": "u", "proto": "([FZZZ)[F"},
+    {"type": "wrap", "after": [{"helper": UHD + "keepLenses([F[FLjava/lang/String;)[F",
+                                "pass": ["result", "arg0", ULTRA]}]})
+add("uhd-allow-switch", "UltraHdLenses (switch camera while zooming)", "high",
+    {"class": "Lcom/android/camera/module/Camera2Module;", "name": "isCameraSwitchingDuringZoomingAllowed", "proto": "()Z"},
+    {"type": "wrap", "after": [{"helper": UHD + "allowLensSwitch(ZLjava/lang/Object;Ljava/lang/String;)Z",
+                                "pass": ["result", "this", ULTRA]}]})
+add("uhd-ratio", "UltraHdLenses (1:1 at 50M)", "high",
+    {"class": "Lr2/T;", "name": "getComponentValue", "proto": "(I)Ljava/lang/String;"},
+    {"type": "wrap", "after": [{"helper": UHD + "ratio(Ljava/lang/String;Ljava/lang/Object;ILjava/lang/String;)Ljava/lang/String;",
+                                "pass": ["result", "this", "arg0", ULTRA]}]})
+add("uhd-ratio-change", "UltraHdLenses (ratio change keeps 50M)", "high",
+    {"class": "Lr6/f0;", "name": "U5", "proto": "(Ljava/lang/String;Z)V"},
+    {"type": "wrap", "before": [{"helper": UHD + "ratioChangeEnter(Ljava/lang/String;)V", "pass": ["arg0"]}],
+     "exit": UHD + "ratioChangeExit()V"})
+add("uhd-lens-switch", "UltraHdLenses (lens changes at each lens's stop)", "high",
+    {"class": "Li9/g;", "name": "M7", "proto": "(FFLcom/android/camera/module/Y;)Z"},
+    {"type": "wrap",
+     "guard": [{"helper": UHD + "lensSwitchGo(FLjava/lang/Object;Ljava/lang/String;)Z", "pass": ["arg1", "arg2", ULTRA]}],
+     "before": [{"helper": UHD + "lensSwitchFrom(FFLjava/lang/Object;Ljava/lang/String;)F",
+                 "pass": ["arg0", "arg1", "arg2", ULTRA], "set": "arg0"}]},
+    [{"class": "Li9/g;", "has": [".field public final b:Ljava/lang/ref/WeakReference;", ".field public l:F",
+                                 ".method public setZoomRatio(F)V"]}])
+for cls, name, proto in [("Lj9/e;", "B7", "()V"), ("Lj9/t;", "n0", "(I)V")]:
+    add("uhd-snap-" + name, "UltraHdLenses (zoom snaps to the lens in use)", "high",
+        {"class": cls, "name": name, "proto": proto},
+        {"type": "wrap", "after": [{"helper": UHD + "snapToLens(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V",
+                                    "pass": ["this", "str:b#l", ULTRA]}]})
+add("uhd-zoom-apply", "UltraHdLenses (main camera held at 1x at 50M)", "high",
+    {"class": "Ll9/n0;", "name": "l1",
+     "proto": "(Landroid/hardware/camera2/CaptureRequest$Builder;Ll9/g;Ll9/j0;)V", "static": True},
+    {"type": "wrap",
+     "before": [{"helper": UHD + "zoomApplyBefore(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;"
+                           "Ljava/lang/String;Ljava/lang/String;)V",
+                 "pass": ["arg1", "arg2", "str:l9.h#j", "str:d0", ULTRA]}],
+     "after": [{"helper": UHD + "zoomApplyAfter(Ljava/lang/Object;Ljava/lang/String;)V", "pass": ["arg2", "str:d0"]}]},
+    [{"class": "Ll9/j0;", "has": [".field public d0:F"]},
+     {"class": "Ll9/h;", "has": [".method public static j(Ll9/g;)I"]}])
+
+add("ultra-hdr", "UltraHdrJpeg + HeifGainMap (from 1b4f7b6)", "high",
+    {"class": "Ll7/k;", "name": "w", "proto": "(Landroid/net/Uri;ZLjava/lang/String;IZ)V"},
+    {"type": "wrap", "after": [{"helper": H + "UltraHdrJpeg;->afterNewImage(Landroid/net/Uri;Z)V",
+                                "pass": ["arg0", "arg4"]}]})
+
+add("haptics-strategy", "CameraHaptics (vibrator strategy)", "medium",
+    {"class": "LRr/d;", "name": "b", "proto": "()LRr/d;", "static": True},
+    {"type": "wrap", "after": [{"helper": H + "CameraHaptics;->fillStrategy(Ljava/lang/Object;Ljava/lang/String;"
+                                          "Ljava/lang/Class;)Ljava/lang/Object;",
+                                "pass": ["result", "str:e", "class:LRr/a;"]}]},
+    [{"class": "LRr/d;", "has": [".field public e:LRr/a;"]}, {"class": "LRr/a;", "has": [".class public interface abstract LRr/a;"]}])
+add("haptics-miuix", "CameraHaptics (miuix haptic ids)", "medium",
+    {"class": "Lmiuix/view/HapticCompat;", "name": "performHapticFeedback", "proto": "(Landroid/view/View;I)Z",
+     "static": True, "has": ["const/high16 v2, 0x10000000"]},
+    {"type": "wrap", "before": [{"helper": H + "CameraHaptics;->feedbackId(I)I", "pass": ["arg1"], "set": "arg1"}]})
+
 spec = {
     "build": "6.8.002090.2",
     "sha256": "729b0b193d1684e7c14ed0ca56ba15247d58016c70164329de233b49727a2c48",
-    "ported_from": "spundone/houji-xiaomi17-camera v1.7.0 (2f8c709), lsposed/src/dev/spundone/xcam17",
+    "ported_from": "spundone/houji-xiaomi17-camera v1.7.0 (2f8c709), lsposed/src/dev/spundone/xcam17; "
+                   "UltraHdrJpeg and HeifGainMap from 1b4f7b6 (HEIC Ultra HDR)",
     "patches": patches,
 }
 out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "patches.json")

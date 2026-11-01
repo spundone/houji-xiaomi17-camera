@@ -109,7 +109,7 @@ Upgrading from the KernelSU build: remove the KernelSU and LSPosed modules first
 
 ### What each hook became
 
-[aosp/README.md](../aosp/README.md#ported-hooks) has the table. In short: all low-effort rows, and every medium row except `CameraHaptics`, are ported (53 patches). `UltraHdLenses`, `UltraHdrJpeg`/`HeifGainMap` and `CameraHaptics` aren't, so a ROM build doesn't get 50MP lens switching at the zoom stops, Ultra HDR JPEG, or haptics yet.
+[aosp/README.md](../aosp/README.md#ported-hooks) has the table. Every hook in v1.7.0 is ported (68 patches), plus HEIC Ultra HDR from 1b4f7b6. Hooks that re-ran the original method under different conditions (`UltraHdLenses`) call the renamed original (`<name>$xcam`) through reflection, and two of its hooks skip the original through a "guard".
 
 ### Status
 
@@ -117,6 +117,7 @@ Upgrading from the KernelSU build: remove the KernelSU and LSPosed modules first
 - The script's own check (the rebuilt APK decoded again) finds all 59 generated methods and all 44 redirected call sites, with no calls to the original framework methods left outside the helpers.
 - The dex files were also checked independently with `dexdump -d`. Each patched method has its new body, each wrapper calls its `$xcam` original and its helper, and the helper dex holds the 15 helper and stand-in classes.
 - The output is the original APK with only its dex files replaced (and the helper dex added). The first build repacked everything through apktool. On macOS's case-insensitive disk that merged 131 resource files whose obfuscated names differ only in case (`res/NSC.xml` and `res/nsc.xml`), and the camera crashed loading one.
-- On the phone (Nov 1, Infinity X 4.0) the patched APK ran debug-signed in place of the KernelSU module's APK, with the LSPosed module disabled. The camera opens, passes ART verification, and reaches the viewfinder in 4K30 Dolby Vision video (so the CommonFlagship profile is in use), with its encoder configured. Each feature hasn't been retested one by one yet.
+- On the phone (Nov 1, Infinity X 4.0) the patched APK ran debug-signed in place of the KernelSU module's APK, with the LSPosed module disabled. The camera opens, the helpers log the profile swap and haptics, and the user's checks passed: 50MP lens switching, haptics, Portrait's 2.6x button and the rest. JPEG photos carry the Ultra HDR gain map.
+- Portrait 2.6x showed the main camera because Settings > Adaptive telephoto was switched on (saved in the camera's settings). The patch, like the LSPosed hook, only makes "off" the default.
 - Not tested as `platform_app`: that needs the ROM's platform key, so in a ROM build.
 - The run needs about 1 GB of free disk: apktool decodes the APK twice (to patch, then to verify).
