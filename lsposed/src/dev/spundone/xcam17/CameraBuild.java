@@ -100,6 +100,11 @@ final class CameraBuild {
     final String newImageMethod;
     /** Master (video) filter component, for {@link VideoFilterLuts}. */
     final String filterComponentClass;
+    /** Camera capabilities class and its CameraCharacteristics field, and the Open Gate check, for {@link OpenGate}. */
+    final String capsClass;
+    final String capsCharacteristicsField;
+    final String openGateClass;
+    final String openGateMethod;
 
     private CameraBuild(String label, String consent, String satCheckClass, boolean satCheckHasHdrArg,
             String hdr10, String hdr10Pro, String dolby, String dolbyConfigClass,
@@ -108,7 +113,7 @@ final class CameraBuild {
             String profileLoaderClass, String profileLoaderMethod, String profileMissingField,
             String profileFallback, String profileFallbackStored, String profileNamesMethod,
             String fpsRangeClass, String[] fpsRangeMethods, String componentsClass, String componentsMethod,
-            String flashComponentClass, String styleMaskMethod, String[] mutex, String[] watermark, String[] movie, String[] lenses, String[] newImage, String filterComponent) {
+            String flashComponentClass, String styleMaskMethod, String[] mutex, String[] watermark, String[] movie, String[] lenses, String[] newImage, String filterComponent, String[] openGate) {
         this.label = label;
         this.consent = consent;
         this.satCheckClass = satCheckClass;
@@ -165,13 +170,17 @@ final class CameraBuild {
         this.newImageClass = newImage == null ? null : newImage[0];
         this.newImageMethod = newImage == null ? null : newImage[1];
         this.filterComponentClass = filterComponent;
+        this.capsClass = openGate == null ? null : openGate[0];
+        this.capsCharacteristicsField = openGate == null ? null : openGate[1];
+        this.openGateClass = openGate == null ? null : openGate[2];
+        this.openGateMethod = openGate == null ? null : openGate[3];
     }
 
     static final CameraBuild[] KNOWN = {
             new CameraBuild("6.7.000280.0 (Xiaomi 17)", "ei.c", "com.android.camera.data.data.j", true,
                     "t2.a", "t2.b", "t2.c", "n9.e", "h1", "n9.d",
                     DeviceFeatures.PROFILES_67, DeviceFeatures.FLAGS_67, null, null, null, null, null, null,
-                    null, null, null, null, null, null, null, null, null, null, null, null),
+                    null, null, null, null, null, null, null, null, null, null, null, null, null),
             new CameraBuild("6.8.002090.2 (Xiaomi 18 Pro)", "Th.c", "com.android.camera.data.data.i", false,
                     "s2.a", "s2.b", "s2.c", "l9.h", "g1", "l9.g",
                     DeviceFeatures.PROFILES_68, DeviceFeatures.FLAGS_68, "Eu.f2", "l", "a",
@@ -186,7 +195,8 @@ final class CameraBuild {
                     new String[] {"com.android.camera.module.video.z", "j", "com.android.camera.module.a0", "d"},
                     new String[] {"H4.p0", "a", "a", "com.android.camera.data.data.p", "l0",
                             "com.android.camera.data.data.i", "S", "r2.T", "r6.f0", "U5", "X0", "m0"},
-                    new String[] {"l7.k", "w"}, "r2.a"),
+                    new String[] {"l7.k", "w"}, "r2.a",
+                    new String[] {"l9.g", "d", "l9.h", "L4"}),
     };
 
     static CameraBuild detect(ClassLoader cl) {
