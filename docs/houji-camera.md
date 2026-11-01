@@ -127,7 +127,7 @@ Features switch each other off through a rule table (`v3.g.b` returns the rules 
 
 | File | Does |
 | --- | --- |
-| `customize.sh` | Checks the device (houji), KernelSU and Android 15+. Takes the camera APK from the zip or `/sdcard/Download` and checks its SHA-256 against `known-apks.sha256`. |
+| `customize.sh` | Checks the device (houji), KernelSU and Android 15+. Takes the camera APK from the zip or `/sdcard/Download` and checks its SHA-256 against `known-apks.sha256`. If the Leica port is in Download, copies its processor dex files, native libraries and models to `system/etc/xcam17/leica`, or keeps the installed copy. |
 | `post-fs-data.sh` | Before zygote: bind-mounts the APK over `/system/priv-app/MiuiCamera/MiuiCamera.apk` and sets the camera's KernelSU profile so module files stay visible to it. |
 | `common.sh` | Shared helpers: APK hash check, package-cache clearing, KernelSU profile edits. |
 | `sepolicy.rule` | Lets the Xiaomi-signed camera (`priv_app_36`) reach the background save service and the camera HAL, as the ROM's platform-signed camera can. |
@@ -151,6 +151,7 @@ Features switch each other off through a rule table (`v3.g.b` returns the rules 
 | `StreetFocus` | Fastshot's AF/MF: an empty depth-of-field table instead of a missing one, so the camera's default values apply. |
 | `UltraHdLenses` | 50MP lens buttons and switching in Photo and Pro, and 1:1 at 50MP. |
 | `UltraHdrJpeg` | Estimated Ultra HDR gain map appended to JPEG photos. |
+| `LeicaLegendary` + `Sh/t`, `Sh/h` (in `lsposed/src/Sh`) | Essential Moment's looks: runs the Leica port's processor on Legendary photos as they are saved, with stand-ins for the port's task classes. Off unless the installer copied the port's files. |
 | `VideoFilterLuts` | Hides video filters the phone has no colour table for. |
 | `OpenGate` | Answers the HAL's Open Gate capability for rear cameras. |
 | `CameraHaptics` | Plays the camera's haptics with Android's standard effects (see below). |
@@ -169,6 +170,8 @@ The APK is Xiaomi's and isn't in this repo. Pull it from the matching phone's fi
 | 6.7.000280.0 | Xiaomi 17, CN | `1cec1ff2203d9d1c358b7ea24f6db5b62adeb5d3f6ceca48b0fa1df932d685d9` |
 
 A new build needs its own `CameraBuild` entry before the name-based hooks apply.
+
+Optional, for Essential Moment: the community Leica port of camera 6.8 (package `com.kobbin.leica`, 6.8.001960.0, debug-signed), tested with SHA-256 `b2bf1186e6c0004621e19d914feb1d0e8106e2d976edc0634e01c30d6bc90082`. The rest of that app doesn't work on houji (it opens straight into Leica Essential with the 17 Ultra's zoom stops); only its processor, libraries and models are used. The installer recognises it by its contents (`assets/legend18/` and `LegendaryPostProcessor` in `classes11.dex`), not by hash.
 
 ## 5. How to investigate
 

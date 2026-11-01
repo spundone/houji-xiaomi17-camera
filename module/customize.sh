@@ -39,10 +39,43 @@ set_perm "$MODPATH/action.sh" 0 0 0755
 # Keep the HEIC Ultra HDR choice across updates.
 [ -f /data/adb/modules/xiaomi17_camera/heic_ultrahdr ] && touch "$MODPATH/heic_ultrahdr"
 
-# The camera APK is bind-mounted by post-fs-data.sh; system/ only holds the icon overlay
-# (product/overlay), mounted by the module manager. Older versions set skip_mount.
+# Leica Essential looks (optional). A community port of camera 6.8 (com.kobbin.leica) renders
+# them in the app; its code, libraries and models are copied from the user's copy of it to
+# /system/etc/xcam17/leica. Nothing of it is redistributed. Kept across updates.
+kit="$MODPATH/system/etc/xcam17/leica"
+old_kit=/data/adb/modules/xiaomi17_camera/system/etc/xcam17/leica
+leica_apk=""
+for f in /sdcard/Download/*.apk; do
+    [ -f "$f" ] || continue
+    unzip -l "$f" assets/legend18/provenance.json 2>/dev/null | grep -q provenance.json || continue
+    unzip -p "$f" classes11.dex 2>/dev/null | grep -q LegendaryPostProcessor && leica_apk="$f" && break
+done
+if [ -n "$leica_apk" ]; then
+    ui_print "- Leica Essential looks from $(basename "$leica_apk")"
+    mkdir -p "$kit/lib"
+    unzip -o -q "$leica_apk" classes11.dex classes12.dex 'assets/legend18/*' 'assets/leica-v4/*' \
+        'assets/leica-v43-ui/*' 'assets/leica_filter_param_*' -d "$kit"
+    # The port's own native libraries: those the camera APK doesn't have, and the C++ runtime
+    # its helper programs load from the same folder.
+    have=$(unzip -l "$MODPATH/MiuiCamera.apk" 'lib/arm64-v8a/*' | awk '{print $4}')
+    for lib in $(unzip -l "$leica_apk" 'lib/arm64-v8a/*' | awk '{print $4}' | grep '^lib/arm64-v8a/.*\.so$'); do
+        [ "$lib" != lib/arm64-v8a/libc++_shared.so ] && echo "$have" | grep -qx "$lib" && continue
+        unzip -o -q -p "$leica_apk" "$lib" > "$kit/lib/${lib##*/}"
+    done
+    [ -f "$kit/classes11.dex" ] && [ -f "$kit/lib/libmonopan_runner.so" ] \
+        || { rm -rf "$MODPATH/system/etc/xcam17"; ui_print "! Could not copy the Leica port's files; Leica Essential stays off"; }
+elif [ -f "$old_kit/classes11.dex" ]; then
+    mkdir -p "${kit%/*}" && cp -a "$old_kit" "${kit%/*}/" && ui_print "- Leica Essential looks kept from the installed version"
+fi
+
+# The camera APK is bind-mounted by post-fs-data.sh; system/ holds the icon overlay
+# (product/overlay) and the Leica files, mounted by the module manager. Older versions set skip_mount.
 rm -f "$MODPATH/skip_mount"
 [ -d "$MODPATH/system" ] && set_perm_recursive "$MODPATH/system" 0 0 0755 0644 u:object_r:system_file:s0
+# The Leica processor runs its helpers as programs.
+for f in "$kit"/lib/*_runner.so; do
+    [ -f "$f" ] && set_perm "$f" 0 0 0755 u:object_r:system_file:s0
+done
 
 # The launcher reads the camera's label and icon from the camera's files, so it must see the
 # module's files too. Remember the current home app for post-fs-data.sh and uninstall.sh.

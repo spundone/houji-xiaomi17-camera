@@ -146,6 +146,14 @@ final class CameraBuild {
     final String qualityCheckMethod;
     final String capsChecksClass;
     final String allScenesDolbyMethod;
+    /**
+     * For {@link LeicaLegendary}, or null: the save step (task), the photo task class and its
+     * image holder, info, Exif, result holder and total-result members; the image holder's image
+     * field, the info's module field, the result holder's result field; the image interface's
+     * bytes getter and the image factory; the Legendary look component; the camera manager
+     * interface's preview state getter and the state's latest-result getter.
+     */
+    final String[] leica;
 
     private CameraBuild(String label, String consent, String satCheckClass, boolean satCheckHasHdrArg,
             String hdr10, String hdr10Pro, String dolby, String dolbyConfigClass,
@@ -154,7 +162,7 @@ final class CameraBuild {
             String profileLoaderClass, String profileLoaderMethod, String profileMissingField,
             String profileFallback, String profileFallbackStored, String profileNamesMethod,
             String fpsRangeClass, String[] fpsRangeMethods, String componentsClass, String componentsMethod,
-            String flashComponentClass, String styleMaskMethod, String[] mutex, String[] watermark, String[] lenses, String[] newImage, String filterComponent, String[] openGate, String[] haptics, String[] streetFocus, String[] tables, String[] videoCaps, String[] settings) {
+            String flashComponentClass, String styleMaskMethod, String[] mutex, String[] watermark, String[] lenses, String[] newImage, String filterComponent, String[] openGate, String[] haptics, String[] streetFocus, String[] tables, String[] videoCaps, String[] settings, String[] leica) {
         this.label = label;
         this.consent = consent;
         this.satCheckClass = satCheckClass;
@@ -245,13 +253,14 @@ final class CameraBuild {
         this.qualityCheckMethod = videoCaps == null ? null : videoCaps[1];
         this.capsChecksClass = videoCaps == null ? null : videoCaps[2];
         this.allScenesDolbyMethod = videoCaps == null ? null : videoCaps[3];
+        this.leica = leica;
     }
 
     static final CameraBuild[] KNOWN = {
             new CameraBuild("6.7.000280.0 (Xiaomi 17)", "ei.c", "com.android.camera.data.data.j", true,
                     "t2.a", "t2.b", "t2.c", "n9.e", "h1", "n9.d",
                     DeviceFeatures.PROFILES_67, DeviceFeatures.FLAGS_67, null, null, null, null, null, null,
-                    null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+                    null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
             new CameraBuild("6.8.002090.2 (Xiaomi 18 Pro)", "Th.c", "com.android.camera.data.data.i", false,
                     "s2.a", "s2.b", "s2.c", "l9.h", "g1", "l9.g",
                     DeviceFeatures.PROFILES_68, DeviceFeatures.FLAGS_68, "Eu.f2", "l", "a",
@@ -273,7 +282,9 @@ final class CameraBuild {
                     new String[] {"r2.b0", "o", "c"},
                     new String[] {"Q0", "X0", "J0", "Re.b"},
                     new String[] {"r2.g0", "C", "l9.h", "f2"},
-                    new String[] {"Xh.a", "h", "S0"}),
+                    new String[] {"Xh.a", "h", "S0"},
+                    new String[] {"t7.d", "a", "Sh.t", "a", "b", "e", "f", "Q", "i", "g", "c",
+                            "Vh.f", "d", "Vh.g", "a", "r2.B", "k6.l", "T", "l9.a", "B"}),
     };
 
     static CameraBuild detect(ClassLoader cl) {

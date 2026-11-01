@@ -13,6 +13,8 @@ What's known not to work on the Xiaomi 14 with camera 6.8, why, and the next ste
 | **Lens switching while recording in Pro video** | Not looked at yet. | |
 | **Remove-watermark data for frame watermarks in HEIF** | `WatermarkSubimage` drops the remover data when the watermark covers nothing (the HEIF path crashed without it), so the Gallery can't strip frame watermarks later. JPEG behaves the same. | Low value. Fill the missing source of the XMP helper (`Qg.r`) instead of dropping the data. |
 | **Movie mode audio effects** | Movie now uses its own recorder with a stand-in for HyperOS's `AudioParaManger`, which does nothing; the zoom- and focus-following audio needs HyperOS's audio stack. | Low priority; would need Xiaomi's audio HAL and framework. |
+| **Leica watermark in Essential Moment** | The port's processor draws the Leica watermark through reflection on its own camera build's task (fields `l`, `e`, `w` and others of `Sh.t`); the stand-in `LeicaLegendary` passes doesn't have them, so the step is skipped. | Fill those fields on the stand-in from 6.8.002090.2's task (the watermark classes `U8.d`, `zi.a` have the same names in both builds), or let the camera's own watermark run on the processed JPEG. |
+| **Leica styles in software in Photo, Pro and Portrait** | The port also renders the Leica Vibrant / Authentic choice and a saved Pro palette in software (`PalettePostProcessor`). houji's HAL already renders Vibrant and Authentic, so it wasn't ported. | Only worth it for looks the HAL lacks. |
 | **Haptic fine-tuning** | `CameraHaptics` uses Android's predefined click/tick effects, chosen per action; HyperOS uses Xiaomi's own effect ids. | Tune the per-action effects on the device, or use composed primitives (the HAL supports COMPOSE_EFFECTS) for closer matches. |
 
 ## Needs the phone's camera HAL
@@ -22,7 +24,7 @@ These depend on support the Xiaomi 14's 2024 camera HAL doesn't have. A module c
 | Item | What's missing |
 | --- | --- |
 | **Real Ultra HDR / HDR display photos** | The HAL never produces Xiaomi's XDR gain map, even with `xiaomi.snapshot.XDREnable` requested. The module's gain map is an estimate. |
-| **Leica Legendary / Leica Essential** (M9 CCD, M3 film, M10R looks) | The looks are rendered by the HAL through `com.xiaomi.sessionparams.legendMode`, which houji doesn't define; photos come out unprocessed. |
+| **Leica Legendary / Leica Essential without the Leica port** (M9 CCD, M3 film, M10R looks) | The looks are rendered by the HAL through `com.xiaomi.sessionparams.legendMode`, which houji doesn't define. With the community Leica port in Download they are rendered in the app instead (`LeicaLegendary`). |
 | **Open Gate in Video mode** | Video mode's recording pipeline aborts the camera service at 4096x3072, on the multi-lens camera and on the main camera alone. Pro video's Open Gate works. |
 | **Movie at 4K, video HDR at 4K60 or on the front** | The HAL lists none of them (video bokeh stops at 1080p30, HDR at 4K30, front HDR unsupported); forcing them crashed. |
 | **Telephoto in dim light (12.5MP)** | The HAL falls back to a main-camera crop on its own. The app's disable request (`com.xiaomi.teleFallback.isDisable`) isn't listed for the multi-lens camera; letting it through hasn't been seen to change anything. |

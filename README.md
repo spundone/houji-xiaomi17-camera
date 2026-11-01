@@ -58,11 +58,13 @@ Other houji ROMs should work if they ship Xiaomi's camera stack (`/system/priv-a
 | Movie mode (swipe up on the viewfinder > Movie) | Works (6.8), 1080p 24 fps |
 | Live moments while recording, tracking focus in Pro photo | Works (6.7 and 6.8) |
 | Import LUT for Pro video Log | Works (6.8) |
+| Essential Moment (Leica Essential): M9 Iconic CCD, M3 B&W film and M10R Modern vintage looks, rendered in the app by the Leica port's processor (see Install, step 2) | Works (6.8), JPEG, about 3 to 5 s per photo |
 
 ## Install
 
 1. Root with **KernelSU** (KernelSU Next works) and install an **LSPosed** framework (Vector or LSPosed).
 2. Copy a supported camera APK (6.8.002090.2 or 6.7.000280.0) to the phone's `Download` folder. [docs/houji-camera.md](docs/houji-camera.md#4-getting-the-camera-apks) says where to find them and lists their SHA-256.
+   Optional, for Essential Moment's Leica looks: also copy the community Leica port of camera 6.8 (package `com.kobbin.leica`, 6.8.001960.0; tested SHA-256 `b2bf1186e6c0004621e19d914feb1d0e8106e2d976edc0634e01c30d6bc90082`). The installer copies the port's processor, libraries and models from it into the module; the port app itself doesn't need to be installed. Updates keep the copied files if the APK is no longer there.
 3. In the KernelSU manager, install `xiaomi17_camera-<version>.zip`. It checks the device and the APK's SHA-256, then installs the LSPosed module it carries (and, with Vector, enables it for the camera).
 4. With an LSPosed build other than Vector, enable **Xiaomi 17 Camera for houji** in LSPosed. Its scope is set to the camera already.
 5. Reboot. The camera gets an adaptive icon on AOSP launchers; this needs a KernelSU mount module (such as hybrid_mount) to mount the module's system/ folder.
@@ -90,11 +92,12 @@ Remove the module in the KernelSU manager and reboot. The uninstaller restores t
 - **Front camera while recording** isn't offered at 4K60, or with Dolby Vision at 4K, matching Xiaomi's own rules. Switching drops about 0.2 s of video at the switch point.
 - **All video now goes through Xiaomi's own recorder** (needed for the front-camera switch). Every mode was tested to produce valid files: 720p30, 1080p30/60, 4K24/30/60, with and without Dolby Vision.
 - **4K60 lens switching isn't advertised by the hardware.** The Xiaomi 14's camera HAL lists multi-lens video for 720p, 1080p30, 1080p60, 4K24 and 4K30, not 4K60. The LSPosed module overrides that. In testing the lens changed cleanly and files stayed 3840x2160 at about 58 fps, but long 4K60 clips may run hot.
-- **Camera 6.8 runs on a shared profile.** It has no Xiaomi 14 profile, so the module gives it Xiaomi's generic flagship profile plus the flags above. Some 18 Pro features stay off: Leica Legendary mode (its looks are rendered by HAL support the Xiaomi 14 lacks), Street mode and the separate Ultra-pixel mode. There's no 25MP option; this sensor offers 12.5MP and 50MP.
+- **Camera 6.8 runs on a shared profile.** It has no Xiaomi 14 profile, so the module gives it Xiaomi's generic flagship profile plus the flags above. Some 18 Pro features stay off: the separate Ultra-pixel mode, and Essential Moment unless the Leica port is installed (its looks are otherwise rendered by HAL support the Xiaomi 14 lacks). There's no 25MP option; this sensor offers 12.5MP and 50MP.
 - **Switching camera builds** resets the camera's saved mode. If the camera closes with "invalid module index" after switching, clear its data (`pm clear com.android.camera`).
 - **The telephoto falls back to the main camera in dim light** in Photo and Portrait (12.5MP). That's the HAL's own choice ("Adaptive telephoto"); the setting defaults to off but the HAL doesn't seem to take the request. 50MP opens the telephoto directly.
 - **Not possible on this HAL:** Open Gate in normal Video mode (Pro video has it), Movie at 4K, video HDR at 4K60 or on the front camera. Each crashed the camera service when forced.
 - **Grain and Leica-off need 6.8.** Camera 6.7 has no UI for either.
+- **Essential Moment** renders each look in the app after the shot, which takes about 3 to 5 seconds, and only for JPEG photos (Settings > Photo format). The port's AI style model and person mask need the Snapdragon 8 Elite Gen 5's DSP, so on the Xiaomi 14 its fallback tone is used, without a toast. The Leica watermark isn't added in this mode.
 - **HDR vs Dolby Vision.** They're separate. Dolby Vision records 10-bit HLG video with Dolby Vision profile 8.4 metadata. The HDR tile is multi-frame video HDR: it merges exposures for a wider dynamic range but, with Dolby Vision off, still records standard 8-bit SDR (BT.709). They can be on together.
 - **Region.** The CN build's China-only extras stay on. Only the consent check is redirected.
 - **The camera app shows Xiaomi's terms on first launch.** Accepting them is up to you.
@@ -124,7 +127,7 @@ Releases are built by GitHub Actions when a `v*` tag matching `VERSION` is pushe
 
 ## Legal
 
-Not affiliated with Xiaomi or Leica. The camera app and its trademarks belong to Xiaomi. This repo contains only original scripts and hooks.
+Not affiliated with Xiaomi or Leica. The camera app and its trademarks belong to Xiaomi. This repo contains only original scripts and hooks. The Leica port's code, libraries and models belong to their authors and to Xiaomi; the installer copies them from your own copy of the port and they are never part of a release.
 
 ### Release signing
 
