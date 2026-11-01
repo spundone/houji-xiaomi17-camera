@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# Local-only KernelSU module zips that need no LSPosed: they carry the camera APK patched by the
+# AOSP kit (feature/aosp-kit: aosp/tools/patch-apk.sh), signed here. They contain Xiaomi's APK,
+# so never publish them.
+#
+#   scripts/build-kit-zip.sh PATCHED_UNSIGNED_APK [MIUI_GALLERY_MODULE_ZIP]
+#
+# Run scripts/build.sh first (it builds the module files and icon overlay this reuses). With a
+# MIUI Gallery Global module zip, a second zip also installs that module.
+set -euo pipefail
+
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+VERSION=$(tr -d '[:space:]' < "$ROOT/VERSION")
+OUT="$ROOT/build"
+DIST="$ROOT/dist"
+patched=${1:?patched APK from aosp/tools/patch-apk.sh}
+gallery=${2:-}
+[ -d "$OUT/module" ] || { echo "run scripts/build.sh first" >&2; exit 1; }
+
+SDK=${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$HOME/Library/Android/sdk}}
+BT=$(find "$SDK/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)
+if [ -n "${XCAM17_KEYSTORE:-}" ]; then
+    sign=(--ks "$XCAM17_KEYSTORE" --ks-pass env:XCAM17_KEYSTORE_PASS --ks-key-alias "$XCAM17_KEY_ALIAS")
+else
+    sign=(--ks "$HOME/.android/debug.keystore" --ks-pass pass:android --key-pass pass:android)
+fi
+
+echo "== Patched camera APK"
+camera="$OUT/MiuiCamera-kit.apk"
+"$BT/apksigner" sign "${sign[@]}" --v4-signing-enabled false --out "$camera" "$patched" 2> >(grep -v '^WARNING' >&2)
+"$BT/apksigner" verify "$camera"
+
+echo "== KernelSU-only module $VERSION"
+mod="$OUT/kit-module"
+rm -rf "$mod" && cp -R "$OUT/module" "$mod"
+rm -f "$mod/xcam17-lsposed.apk"
+cp "$camera" "$mod/MiuiCamera.apk"
+echo "$(shasum -a 256 "$camera" | cut -d' ' -f1)  patched-by-aosp-kit" >> "$mod/known-apks.sha256"
+touch "$mod/kit"
+sed -i '' -e 's/^name=.*/name=Xiaomi 17 Camera for houji (KernelSU only)/' \
+    -e "s/^description=.*/description=Xiaomi's camera 6.8.002090.2, patched by the AOSP kit, in place of MiuiCamera. No LSPosed needed. Local build: carries Xiaomi's APK./" \
+    "$mod/module.prop"
+zip_ksu="$DIST/xiaomi17_camera-$VERSION-ksu-only.zip"
+rm -f "$zip_ksu"
+(cd "$mod" && zip -q -r -X -0 "$zip_ksu" .)
+echo "   $zip_ksu (contains Xiaomi's APK: do not publish)"
+
+if [ -n "$gallery" ]; then
+    mkdir -p "$mod/gallery"
+    cp "$gallery" "$mod/gallery/MIUIGallery.zip"
+    sed -i '' -e 's/^name=.*/name=Xiaomi 17 Camera for houji (KernelSU only, with MIUI Gallery)/' "$mod/module.prop"
+    zip_gallery="$DIST/xiaomi17_camera-$VERSION-ksu-only-gallery.zip"
+    rm -f "$zip_gallery"
+    (cd "$mod" && zip -q -r -X -0 "$zip_gallery" .)
+    echo "   $zip_gallery (contains Xiaomi's APKs: do not publish)"
+fi

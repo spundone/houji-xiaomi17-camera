@@ -117,6 +117,7 @@ Artifacts land in `dist/`. Options:
 
 - `--release` signs with the key named by `XCAM17_KEYSTORE`, `XCAM17_KEYSTORE_PASS` and `XCAM17_KEY_ALIAS`.
 - `--apk FILE` also writes a `-with-apk.zip` that carries a camera APK, for installing without copying it to the phone first. It contains Xiaomi's binary, so never publish it.
+- `scripts/build-kit-zip.sh PATCHED_APK [GALLERY_ZIP]` (after `build.sh`) writes KernelSU-only zips from a camera APK patched by the AOSP kit (`aosp/tools/patch-apk.sh` on `feature/aosp-kit`): no LSPosed module, the installer turns it off if present. With the MIUI Gallery Global module zip, a second zip also installs that module. Local only.
 
 Releases are built by GitHub Actions when a `v*` tag matching `VERSION` is pushed.
 

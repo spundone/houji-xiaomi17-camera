@@ -39,13 +39,48 @@ set_perm "$MODPATH/action.sh" 0 0 0755
 # Keep the HEIC Ultra HDR choice across updates.
 [ -f /data/adb/modules/xiaomi17_camera/heic_ultrahdr ] && touch "$MODPATH/heic_ultrahdr"
 
+# KernelSU-only zips (scripts/build-kit-zip.sh) carry a camera APK patched by the AOSP kit, so
+# the LSPosed module must not hook it a second time.
+if [ -f "$MODPATH/kit" ]; then
+    ui_print "- KernelSU only: the camera APK is patched, no LSPosed module needed"
+    vector=/data/adb/modules/zygisk_vector/cli
+    if pm path dev.spundone.xcam17 >/dev/null 2>&1; then
+        if [ -x "$vector" ] && "$vector" modules disable dev.spundone.xcam17 >/dev/null 2>&1; then
+            ui_print "- Disabled the LSPosed module in Vector"
+        else
+            ui_print "! Disable or uninstall the 'Xiaomi 17 Camera for houji' LSPosed module"
+        fi
+    fi
+fi
+
+# The MIUI Gallery Global module, when a zip carries it: staged like a KernelSU module update.
+gallery_zip="$MODPATH/gallery/MIUIGallery.zip"
+if [ -f "$gallery_zip" ]; then
+    staged=/data/adb/modules_update/MIUIGallery
+    rm -rf "$staged" && mkdir -p "$staged"
+    if unzip -o -q "$gallery_zip" -d "$staged"; then
+        set_perm_recursive "$staged" 0 0 0755 0644
+        for d in system system_ext; do
+            [ -d "$staged/$d" ] && set_perm_recursive "$staged/$d" 0 0 0755 0644 u:object_r:system_file:s0
+        done
+        [ -d /data/adb/modules/MIUIGallery ] && touch /data/adb/modules/MIUIGallery/update
+        ui_print "- MIUI Gallery Global module installed"
+    else
+        rm -rf "$staged"
+        ui_print "! Could not install the MIUI Gallery module"
+    fi
+    rm -rf "$MODPATH/gallery"
+fi
+
 # Leica Essential looks (optional). A community port of camera 6.8 (com.kobbin.leica) renders
 # them in the app; its code, libraries and models are copied from the user's copy of it to
 # /system/etc/xcam17/leica. Nothing of it is redistributed. Kept across updates.
 kit="$MODPATH/system/etc/xcam17/leica"
 old_kit=/data/adb/modules/xiaomi17_camera/system/etc/xcam17/leica
 leica_apk=""
+[ -f "$MODPATH/kit" ] && old_kit=/nonexistent
 for f in /sdcard/Download/*.apk; do
+    [ -f "$MODPATH/kit" ] && break
     [ -f "$f" ] || continue
     unzip -l "$f" assets/legend18/provenance.json 2>/dev/null | grep -q provenance.json || continue
     unzip -p "$f" classes11.dex 2>/dev/null | grep -q LegendaryPostProcessor && leica_apk="$f" && break
@@ -84,6 +119,9 @@ home=$(cmd package resolve-activity --brief -c android.intent.category.HOME -a a
 case "$home" in
     *.*) echo "$home" > "$MODPATH/launcher" && ui_print "- Launcher: $home" ;;
 esac
+# The launcher caches icons by package and keeps the one it drew before the overlay was
+# mounted; post-fs-data.sh drops that cache once on the next boot.
+touch "$MODPATH/reset_icon_cache"
 
 # All in one: install the LSPosed module carried in the zip, and enable it if Vector is the
 # LSPosed framework. pm reads the APK as system, so it goes through /data/local/tmp.
@@ -107,7 +145,7 @@ fi
 # Android caches parsed packages by path; drop the cached 6.4 so the new APK is read.
 clear_camera_package_cache
 
-if [ -n "$lsposed_enabled" ]; then
+if [ -n "$lsposed_enabled" ] || [ -f "$MODPATH/kit" ]; then
     ui_print "- Done. Reboot"
 else
     ui_print "- Done. Enable 'Xiaomi 17 Camera for houji' in LSPosed (scope: Camera), then reboot"
