@@ -25,7 +25,7 @@ else
             break
         fi
     done
-    [ -n "$apk" ] || abort "! Put the Xiaomi 17 camera APK (6.7.000280.0) in /sdcard/Download and install again"
+    [ -n "$apk" ] || abort "! Put a supported camera APK (6.8.002090.2 or 6.7.000280.0) in /sdcard/Download and install again"
     ui_print "- Using $(basename "$apk")"
     cp "$apk" "$MODPATH/MiuiCamera.apk" || abort "! Could not copy the camera APK"
 fi

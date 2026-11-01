@@ -53,7 +53,7 @@ Other houji ROMs should work if they ship Xiaomi's camera stack (`/system/priv-a
 ## Install
 
 1. Root with **KernelSU** (KernelSU Next works) and install an **LSPosed** framework (Vector or LSPosed).
-2. Copy a supported camera APK (6.8.002090.2 or 6.7.000280.0) to the phone's `Download` folder.
+2. Copy a supported camera APK (6.8.002090.2 or 6.7.000280.0) to the phone's `Download` folder. [docs/houji-camera.md](docs/houji-camera.md#4-getting-the-camera-apks) says where to find them and lists their SHA-256.
 3. In the KernelSU manager, install `xiaomi17_camera-<version>.zip`. It checks the device and the APK's SHA-256 before installing.
 4. Install `xcam17-lsposed-<version>.apk`, then enable **Xiaomi 17 Camera for houji** in LSPosed. Its scope is set to the camera already.
 5. Reboot.
@@ -105,7 +105,9 @@ Releases are built by GitHub Actions when a `v*` tag matching `VERSION` is pushe
 
 ## How it works
 
-[docs/how-it-works.md](docs/how-it-works.md) covers each problem found while porting, and the evidence for each fix.
+- [docs/how-it-works.md](docs/how-it-works.md): each problem found while porting, and the evidence for each fix.
+- [docs/houji-camera.md](docs/houji-camera.md): how the Xiaomi 14's cameras, HAL and the camera app fit together, what each file in this repo does, where to get the camera APKs, and how to investigate.
+- [docs/roadmap.md](docs/roadmap.md): what's still missing, why, and what to try next.
 
 ## Legal
 
