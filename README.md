@@ -113,6 +113,10 @@ Artifacts land in `dist/`. Options:
 
 Releases are built by GitHub Actions when a `v*` tag matching `VERSION` is pushed.
 
+## Building into a ROM (no root)
+
+`aosp/` is a kit for ROM maintainers: it ships camera 6.8.002090.2 inside a houji ROM build with no KernelSU or LSPosed. `aosp/tools/patch-apk.sh` turns your own copy of the APK into a patched one (the LSPosed hooks become smali patches plus a small helper dex), and `aosp/device/` is the device tree that installs it as a platform-signed privileged app. It isn't tested on a phone yet. See [aosp/README.md](aosp/README.md) and [docs/aosp-integration.md](docs/aosp-integration.md#using-the-kit).
+
 ## How it works
 
 - [docs/how-it-works.md](docs/how-it-works.md): each problem found while porting, and the evidence for each fix.

@@ -1,0 +1,21 @@
+# The patched camera is platform-signed, so it runs as platform_app (or platform_app_36 on
+# platforms that split app domains by targetSdk; 6.8.002090.2 targets 36). Grant both.
+#
+# Translated from module/sepolicy.rule, which gives the same access to priv_app_36 for the
+# Xiaomi-signed APK under KernelSU.
+
+# Background save service (Xiaomi's post-processing runs photos to completion after the shutter)
+allow { platform_app platform_app_36 } hal_aidlbgservice_service:service_manager find;
+
+# Camera HAL: binder calls and fds both ways (MIVI hands buffers back to the app)
+binder_call({ platform_app platform_app_36 }, hal_camera_default)
+binder_call(hal_camera_default, { platform_app platform_app_36 })
+allow { platform_app platform_app_36 } hal_camera_default:fd use;
+allow hal_camera_default { platform_app platform_app_36 }:fd use;
+
+# Xiaomi's camera post-processing HAL
+allow { platform_app platform_app_36 } vendor_hal_camerapostproc_xiaomi_hwservice:hwservice_manager find;
+
+# Camera and display feature properties
+get_prop({ platform_app platform_app_36 }, vendor_camera_prop)
+get_prop({ platform_app platform_app_36 }, vendor_displayfeature_prop)
