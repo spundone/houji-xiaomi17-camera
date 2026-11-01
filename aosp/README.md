@@ -52,9 +52,9 @@ Each patch finds its method by class, name and prototype, and checks fingerprint
 | `Entry.hookStreetMode` | return `true` from `StreetModuleEntry.support()` | Low |
 | `Entry.hookVideoLensSwitching` | wrap `data.i.U1` (enter, exit, after) and the HDR10, HDR10 Pro and Dolby checks | Medium |
 | `Entry.hookFrontDolby4k` | wrap `l9.h.g1` | Medium |
-| `NaturalStyle` | wrap `l9.g.J0` | Medium |
+| `NaturalStyle` | wrap `l9.g.J0`; new: `r2.m.u` and `l9.h.E2` so Portrait doesn't offer Original portrait, which houji's HAL lacks | Medium |
 | `OpenGate` | wrap `l9.h.L4` | Medium |
-| `TeleFallback` | wrap `Xh.a.h` (before: default) and `l9.g.S0` | Medium |
+| `TeleFallback` | wrap `Xh.a.h` (before: default) and `l9.g.S0`; new: `l9.h.r5` (fallback control supported on rear cameras), without which the setting never reached the HAL | Medium |
 | `StreetFocus` | wrap `r2.b0.o` | Medium |
 | `VideoCaps` | wrap `r2.g0.C` (enter, exit) and `l9.h.f2` | Medium |
 | `ShortVideo` | wrap `module.t.getOperatingMode` | Medium |
@@ -69,6 +69,6 @@ Each patch finds its method by class, name and prototype, and checks fingerprint
 | `CameraHaptics` | wrap `Rr.d.b` (vibrator strategy) and `HapticCompat.performHapticFeedback` (before: HyperOS ids mapped) | Medium |
 | KernelSU swap, profile, package cache | not needed: the ROM ships the app | None |
 
-All 68 patches apply to 6.8.002090.2, and the rebuilt APK was checked with apktool and dexdump, then run on the phone; see the status in [docs/aosp-integration.md](../docs/aosp-integration.md#status).
+All 71 patches apply to 6.8.002090.2, and the rebuilt APK was checked with apktool and dexdump, then run on the phone; see the status in [docs/aosp-integration.md](../docs/aosp-integration.md#status).
 
 For Ultra HDR on HEIF photos in a ROM build, set `debug.xcam17.heic_ultrahdr=1` (for example in `system.prop`). It's off by default because macOS, ffmpeg and Google Photos backup refuse HEIF files with a gain map.

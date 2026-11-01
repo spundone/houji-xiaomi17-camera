@@ -109,7 +109,7 @@ Upgrading from the KernelSU build: remove the KernelSU and LSPosed modules first
 
 ### What each hook became
 
-[aosp/README.md](../aosp/README.md#ported-hooks) has the table. Every hook in v1.7.0 is ported (68 patches), plus HEIC Ultra HDR from 1b4f7b6. Hooks that re-ran the original method under different conditions (`UltraHdLenses`) call the renamed original (`<name>$xcam`) through reflection, and two of its hooks skip the original through a "guard".
+[aosp/README.md](../aosp/README.md#ported-hooks) has the table. Every hook in v1.7.0 is ported (71 patches, including two fixes found on the phone), plus HEIC Ultra HDR from 1b4f7b6. Hooks that re-ran the original method under different conditions (`UltraHdLenses`) call the renamed original (`<name>$xcam`) through reflection, and two of its hooks skip the original through a "guard".
 
 ### Status
 
@@ -118,6 +118,8 @@ Upgrading from the KernelSU build: remove the KernelSU and LSPosed modules first
 - The dex files were also checked independently with `dexdump -d`. Each patched method has its new body, each wrapper calls its `$xcam` original and its helper, and the helper dex holds the 15 helper and stand-in classes.
 - The output is the original APK with only its dex files replaced (and the helper dex added). The first build repacked everything through apktool. On macOS's case-insensitive disk that merged 131 resource files whose obfuscated names differ only in case (`res/NSC.xml` and `res/nsc.xml`), and the camera crashed loading one.
 - On the phone (Nov 1, Infinity X 4.0) the patched APK ran debug-signed in place of the KernelSU module's APK, with the LSPosed module disabled. The camera opens, the helpers log the profile swap and haptics, and the user's checks passed: 50MP lens switching, haptics, Portrait's 2.6x button and the rest. JPEG photos carry the Ultra HDR gain map.
-- Portrait 2.6x showed the main camera because Settings > Adaptive telephoto was switched on (saved in the camera's settings). The patch, like the LSPosed hook, only makes "off" the default.
+- Portrait 2.6x showed a main-camera crop, for two reasons, both also in the LSPosed build:
+  - Original portrait. Portrait offers it when style-mask bit 3 is set (`l9.h.E2`), and `NaturalStyle` forces that bit to add Original to Photo. Original portrait also needs bit 0, and houji's HAL reports a mask of 6 (bits 1 and 2) on every camera, so it rendered Original portrait from the main camera. The kit hides Original portrait in Portrait's style list and keeps Original in Photo. Tested: Master and Leica portrait use the telephoto at 2.6x.
+  - Adaptive telephoto off was never sent. The camera sends `com.xiaomi.teleFallback.isDisable` only when `com.xiaomi.teleFallback.isSupported` is listed (`l9.h.r5`), and houji's HAL doesn't list it. The LSPosed hook answers the availability of the disable tag, a check 6.8 doesn't use for this. The kit answers `r5` yes on rear cameras, so the setting now reaches the HAL.
 - Not tested as `platform_app`: that needs the ROM's platform key, so in a ROM build.
 - The run needs about 1 GB of free disk: apktool decodes the APK twice (to patch, then to verify).
