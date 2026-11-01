@@ -12,7 +12,6 @@ What's known not to work on the Xiaomi 14 with camera 6.8, why, and the next ste
 | **Fastshot / Street mode** | Flag `c2` didn't add the mode in an earlier test. | The HAL does define `com.xiaomi.streetshoot.enabled` and `com.xiaomi.street.mode`. Look for further gates on mode 225 (another flag, or a top-config list). |
 | **Adaptive macro** | Settings' "near range fallback" (`pref_camera_near_range_fallback_key`) switches to the telephoto at close range. It's gated by a HAL capability, not a profile flag, and the tag wasn't identified. | Resolve the tag behind `l9.h.p5` / `l9.h.r5` (field `ia.v0.j1`) and check whether houji declares it. |
 | **Movie mode audio effects** | Movie uses the regular recorder, because MiCinematicRecorder needs `android.media.AudioParaManger`, a HyperOS-only class. Its zoom and focus audio effects are lost. | Provide a stub `AudioParaManger` (and its listener interfaces) on the camera's class path, then let Movie use its own recorder. The effects themselves would still need HyperOS's audio HAL. |
-
 | **Haptic fine-tuning** | `CameraHaptics` uses Android's predefined click/tick effects, chosen per action; HyperOS uses Xiaomi's own effect ids. | Tune the per-action effects on the device, or use composed primitives (the HAL supports COMPOSE_EFFECTS) for closer matches. |
 
 ## Needs the phone's camera HAL
