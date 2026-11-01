@@ -25,8 +25,9 @@ import de.robv.android.xposed.XposedBridge;
  *
  * The photo itself is not re-encoded. Once the camera reports a final JPEG, a quarter-size
  * gain map is computed and encoded as a small JPEG with the hdrgm XMP, and appended to the
- * photo with the Container XMP and MPF index the Ultra HDR format uses. HEIF photos, motion
- * photos and files that already have a gain map are left alone.
+ * photo with the Container XMP and MPF index the Ultra HDR format uses. HEIF photos get one
+ * too when switched on ({@link HeifGainMap}); motion photos and files that already have a gain
+ * map are left alone.
  */
 final class UltraHdrJpeg {
     /** Highest highlight boost, in stops (log2 of the gain). */
@@ -47,7 +48,8 @@ final class UltraHdrJpeg {
             Method callNewUri = cl.loadClass(build.newImageClass).getDeclaredMethod(build.newImageMethod,
                     Uri.class, boolean.class, String.class, int.class, boolean.class);
             XposedBridge.hookMethod(callNewUri, new FinalImage());
-            Entry.log("ultra hdr: estimated gain map added to JPEG photos");
+            Entry.log("ultra hdr: estimated gain map added to JPEG photos, and to HEIF photos when "
+                    + HeifGainMap.PROPERTY + " is 1 (now " + HeifGainMap.enabled() + ")");
         } catch (Throwable t) {
             Entry.log("ultra hdr: not hooked: " + t);
         }
@@ -76,8 +78,14 @@ final class UltraHdrJpeg {
             if (in == null) return;
             photo = readAll(in);
         }
-        if (!isPlainJpeg(photo)) return;
-        byte[] out = withGainMap(photo);
+        byte[] out;
+        if (isPlainJpeg(photo)) {
+            out = withGainMap(photo);
+        } else if (HeifGainMap.isPlainHeif(photo) && HeifGainMap.enabled()) {
+            out = HeifGainMap.withGainMap(photo);
+        } else {
+            return;
+        }
         if (out == null || !decodesWithGainMap(out)) {
             Entry.log("ultra hdr: " + uri + ": gain map not recognised, photo left as is");
             return;
@@ -122,17 +130,27 @@ final class UltraHdrJpeg {
         return assemble(photo, gainMap);
     }
 
-    /** Grey gain map: 0 leaves a pixel as it is, 255 brightens it by MAX_STOPS. */
-    static byte[] gainMapJpeg(Bitmap src) {
-        int w = src.getWidth(), h = src.getHeight();
+    /** Grey gain map values, one per pixel: 0 leaves a pixel as it is, 255 brightens it by MAX_STOPS. */
+    static byte[] gainValues(Bitmap src, int w, int h) {
         int[] px = new int[w * h];
         src.getPixels(px, 0, w, 0, 0, w, h);
+        byte[] out = new byte[w * h];
         for (int i = 0; i < px.length; i++) {
             int c = px[i];
             float y = (0.2126f * ((c >> 16) & 0xFF) + 0.7152f * ((c >> 8) & 0xFF) + 0.0722f * (c & 0xFF)) / 255f;
             float t = Math.max(0f, Math.min(1f, (y - RAMP_START) / (RAMP_END - RAMP_START)));
-            int g = Math.round(t * t * (3f - 2f * t) * 255f);
-            px[i] = 0xFF000000 | (g << 16) | (g << 8) | g;
+            out[i] = (byte) Math.round(t * t * (3f - 2f * t) * 255f);
+        }
+        return out;
+    }
+
+    static byte[] gainMapJpeg(Bitmap src) {
+        int w = src.getWidth(), h = src.getHeight();
+        byte[] g = gainValues(src, w, h);
+        int[] px = new int[w * h];
+        for (int i = 0; i < px.length; i++) {
+            int v = g[i] & 0xFF;
+            px[i] = 0xFF000000 | (v << 16) | (v << 8) | v;
         }
         Bitmap map = Bitmap.createBitmap(px, w, h, Bitmap.Config.ARGB_8888);
         ByteArrayOutputStream jpeg = new ByteArrayOutputStream();

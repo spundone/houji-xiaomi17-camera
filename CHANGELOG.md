@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- HEIC Ultra HDR (opt-in): HEIF photos can get the same estimated gain map as JPEG, as an ISO 21496-1 gain map (a hidden HEVC gain-map item and a 'tmap' item, the layout Android's camera service writes). Android shows them as Ultra HDR; the photo's own image, Exif and XMP are kept. Off by default because Google Photos can't back them up ("Can't back up") and macOS and ffmpeg can't open HEIF files with a 'tmap' item; turn it on or off with the module's Action button in the KernelSU manager.
+
 ## 1.7.0
 
 - All-in-one zip: the KernelSU zip now carries the LSPosed module, installs it, and with Vector also enables it for the camera. Other LSPosed builds still need it ticked once.

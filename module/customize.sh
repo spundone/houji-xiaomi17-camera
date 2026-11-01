@@ -35,6 +35,9 @@ known_apk "$MODPATH/MiuiCamera.apk" || abort "! Camera APK does not match a test
 set_perm "$MODPATH/MiuiCamera.apk" 0 0 0644 u:object_r:system_file:s0
 set_perm "$MODPATH/post-fs-data.sh" 0 0 0755
 set_perm "$MODPATH/uninstall.sh" 0 0 0755
+set_perm "$MODPATH/action.sh" 0 0 0755
+# Keep the HEIC Ultra HDR choice across updates.
+[ -f /data/adb/modules/xiaomi17_camera/heic_ultrahdr ] && touch "$MODPATH/heic_ultrahdr"
 
 # The camera APK is bind-mounted by post-fs-data.sh; system/ only holds the icon overlay
 # (product/overlay), mounted by the module manager. Older versions set skip_mount.

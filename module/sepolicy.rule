@@ -6,3 +6,4 @@ allow hal_camera_default priv_app_36 fd use
 allow priv_app_36 vendor_hal_camerapostproc_xiaomi_hwservice hwservice_manager find
 allow priv_app_36 vendor_displayfeature_prop file { read open getattr map }
 allow priv_app_36 vendor_camera_prop file { read open getattr map }
+allow priv_app_36 debug_prop file { read open getattr map }

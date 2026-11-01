@@ -12,3 +12,8 @@ fi
 for pkg in $VISIBLE_PACKAGES; do
     set_profile "$pkg" false
 done
+
+# HEIC Ultra HDR is opt-in (action.sh); the camera reads this property.
+if [ -f "$MODDIR/heic_ultrahdr" ]; then
+    setprop debug.xcam17.heic_ultrahdr 1
+fi

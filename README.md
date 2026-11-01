@@ -54,6 +54,7 @@ Other houji ROMs should work if they ship Xiaomi's camera stack (`/system/priv-a
 | Portrait zoom buttons 1x and 2.6x, and 1/8000 s shutter in Pro (Xiaomi 14's own profile values) | Works (6.8) |
 | Short video (swipe up > Short video) | Partly (6.8): records and saves; zoom and multi-clip recording don't work |
 | Ultra HDR JPEG photos, with an estimated gain map (set the photo format to JPEG) | Works (6.8) |
+| Ultra HDR HEIF photos (opt-in with the module's Action button in KernelSU; Google Photos can't back them up, and macOS and ffmpeg can't open them) | Works (6.8) |
 | Movie mode (swipe up on the viewfinder > Movie) | Works (6.8), 1080p 24 fps |
 | Live moments while recording, tracking focus in Pro photo | Works (6.7 and 6.8) |
 | Import LUT for Pro video Log | Works (6.8) |
