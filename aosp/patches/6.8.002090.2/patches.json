@@ -939,6 +939,65 @@
    }
   },
   {
+   "id": "natural-style-list",
+   "hook": "NaturalStyle (new: Portrait's style list, tracked)",
+   "effort": "medium",
+   "find": {
+    "class": "Lr2/m;",
+    "name": "u",
+    "proto": "(Lcom/android/camera/data/data/C;)V",
+    "has": [
+     "Ll9/h;->E2(Ll9/g;)Z"
+    ]
+   },
+   "action": {
+    "type": "wrap",
+    "before": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/CameraCaps;->styleListEnter(Ljava/lang/Object;Ljava/lang/String;)V",
+      "pass": [
+       "arg0",
+       "str:a"
+      ]
+     }
+    ],
+    "exit": "Ldev/spundone/xcam17/aosp/CameraCaps;->styleListExit()V"
+   },
+   "check": [
+    {
+     "class": "Lcom/android/camera/data/data/C;",
+     "has": [
+      ".field public final a:I"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "natural-style-portrait",
+   "hook": "NaturalStyle (new: no Original portrait, which houji's HAL lacks)",
+   "effort": "medium",
+   "find": {
+    "class": "Ll9/h;",
+    "name": "E2",
+    "proto": "(Ll9/g;)Z",
+    "static": true,
+    "has": [
+     "Ll9/g;->f2:Ljava/lang/Boolean;"
+    ]
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/CameraCaps;->originalStyle(Z)Z",
+      "pass": [
+       "result"
+      ]
+     }
+    ]
+   }
+  },
+  {
    "id": "open-gate",
    "hook": "OpenGate",
    "effort": "medium",
@@ -1020,6 +1079,41 @@
      }
     ]
    }
+  },
+  {
+   "id": "tele-fallback-supported",
+   "hook": "TeleFallback (new: fallback control supported on rear cameras)",
+   "effort": "medium",
+   "find": {
+    "class": "Ll9/h;",
+    "name": "r5",
+    "proto": "(Ll9/g;)Z",
+    "static": true,
+    "has": [
+     "Ll9/g;->F2:Ljava/lang/Boolean;"
+    ]
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/CameraCaps;->teleFallbackSupported(ZLjava/lang/Object;Ljava/lang/String;)Z",
+      "pass": [
+       "result",
+       "arg0",
+       "str:d"
+      ]
+     }
+    ]
+   },
+   "check": [
+    {
+     "class": "Ll9/g;",
+     "has": [
+      ".field public final d:Landroid/hardware/camera2/CameraCharacteristics;"
+     ]
+    }
+   ]
   },
   {
    "id": "street-focus",

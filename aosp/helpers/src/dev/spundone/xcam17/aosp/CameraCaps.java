@@ -22,6 +22,35 @@ public final class CameraCaps {
         return supported || bit == 3;
     }
 
+    static final int PORTRAIT_MODE = 171;
+    /** Mode the style list is being built for, or null outside it. */
+    private static final ThreadLocal<Integer> STYLE_LIST_MODE = new ThreadLocal<>();
+
+    /** Before the style list builder (data with the mode in field): remembers the mode. */
+    public static void styleListEnter(Object data, String field) {
+        try {
+            java.lang.reflect.Field f = data.getClass().getDeclaredField(field);
+            f.setAccessible(true);
+            STYLE_LIST_MODE.set(f.getInt(data));
+        } catch (Throwable t) {
+            Log.once("style: list mode unreadable", t);
+        }
+    }
+
+    public static void styleListExit() {
+        STYLE_LIST_MODE.remove();
+    }
+
+    /**
+     * "Original style supported" (mask bit 3) also offers Original portrait, value 2 in Portrait,
+     * which needs mask bit 0; houji's HAL has neither and renders Original portrait from the main
+     * camera, so 2.6x became a crop. Answered no while Portrait's style list is built.
+     */
+    public static boolean originalStyle(boolean supported) {
+        Integer mode = STYLE_LIST_MODE.get();
+        return supported && (mode == null || mode != PORTRAIT_MODE);
+    }
+
     /**
      * Open Gate (4096x3072 in Pro video) on rear cameras: houji's HAL doesn't declare the
      * feature but its rear cameras stream 4096x3072 at 30 fps. field names the capabilities'
@@ -53,6 +82,16 @@ public final class CameraCaps {
 
     public static boolean allScenesDolby(boolean supported) {
         return supported || Boolean.TRUE.equals(IN_QUALITY_CHECK.get());
+    }
+
+    /**
+     * "Does the HAL support telephoto fallback control" (com.xiaomi.teleFallback.isSupported):
+     * the camera sends com.xiaomi.teleFallback.isDisable only when this is true, and houji's HAL
+     * doesn't list it, so Adaptive telephoto off was never sent and Portrait 2.6x fell back to a
+     * main-camera crop. Answered yes for rear cameras; field names the CameraCharacteristics field.
+     */
+    public static boolean teleFallbackSupported(boolean supported, Object caps, String field) {
+        return supported || openGate(false, caps, field);
     }
 
     /** "Is this vendor tag available": yes for the telephoto fallback disable tag. */

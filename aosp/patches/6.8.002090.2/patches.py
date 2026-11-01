@@ -144,6 +144,16 @@ add("natural-style", "NaturalStyle", "medium",
     {"class": "Ll9/g;", "name": "J0", "proto": "(I)Z", "has": ["shr-int/2addr"]},
     {"type": "wrap", "after": [{"helper": H + "CameraCaps;->styleBit(ZI)Z", "pass": ["result", "arg0"]}]})
 
+add("natural-style-list", "NaturalStyle (new: Portrait's style list, tracked)", "medium",
+    {"class": "Lr2/m;", "name": "u", "proto": "(Lcom/android/camera/data/data/C;)V", "has": ["Ll9/h;->E2(Ll9/g;)Z"]},
+    {"type": "wrap", "before": [{"helper": H + "CameraCaps;->styleListEnter(Ljava/lang/Object;Ljava/lang/String;)V",
+                                 "pass": ["arg0", "str:a"]}],
+     "exit": H + "CameraCaps;->styleListExit()V"},
+    [{"class": "Lcom/android/camera/data/data/C;", "has": [".field public final a:I"]}])
+add("natural-style-portrait", "NaturalStyle (new: no Original portrait, which houji's HAL lacks)", "medium",
+    {"class": "Ll9/h;", "name": "E2", "proto": "(Ll9/g;)Z", "static": True, "has": ["Ll9/g;->f2:Ljava/lang/Boolean;"]},
+    {"type": "wrap", "after": [{"helper": H + "CameraCaps;->originalStyle(Z)Z", "pass": ["result"]}]})
+
 add("open-gate", "OpenGate", "medium",
     {"class": "Ll9/h;", "name": "L4", "proto": "(Ll9/g;)Z", "static": True},
     {"type": "wrap", "after": [{"helper": H + "CameraCaps;->openGate(ZLjava/lang/Object;Ljava/lang/String;)Z",
@@ -159,6 +169,12 @@ add("tele-fallback-tag", "TeleFallback (tag check)", "medium",
     {"class": "Ll9/g;", "name": "S0", "proto": "(Ljava/lang/String;)Z", "has": ["Ljava/util/HashMap;->containsKey"]},
     {"type": "wrap", "after": [{"helper": H + "CameraCaps;->tagAvailable(ZLjava/lang/String;)Z",
                                 "pass": ["result", "arg0"]}]})
+
+add("tele-fallback-supported", "TeleFallback (new: fallback control supported on rear cameras)", "medium",
+    {"class": "Ll9/h;", "name": "r5", "proto": "(Ll9/g;)Z", "static": True, "has": ["Ll9/g;->F2:Ljava/lang/Boolean;"]},
+    {"type": "wrap", "after": [{"helper": H + "CameraCaps;->teleFallbackSupported(ZLjava/lang/Object;Ljava/lang/String;)Z",
+                                "pass": ["result", "arg0", "str:d"]}]},
+    [{"class": "Ll9/g;", "has": [".field public final d:Landroid/hardware/camera2/CameraCharacteristics;"]}])
 
 add("street-focus", "StreetFocus", "medium",
     {"class": "Lr2/b0;", "name": "o", "proto": "()V",
