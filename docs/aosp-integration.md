@@ -78,8 +78,9 @@ An `aosp/` folder in this repo:
 
 Estimated at one to two weeks to port and re-test everything in the feature table. Each new camera build needs the patches rebased.
 
+Infinity X 4.0's houji build (read over adb, Nov 1) uses Nissivardhan's houji-miuicamera tree, or a copy of it. Its props are that tree's `system.prop` exactly (`ro.product.mod_device=shennong`, `persist.vendor.camera.privapp.list=com.android.camera,org.lineageos.aperture`, `ro.miui.ui.version.name=V816`). Its files are there too: `privapp-permissions-miuicamera.xml` and `-miuiscanner.xml`, `miuicamera-hiddenapi-package-allowlist.xml`, both public-library lists, and `libgui_shim_miuicamera.so` beside the camera JNI libraries in `/system/lib64`.
+
 Not verified yet:
-- which camera repo Infinity X's houji build uses;
 - whether 6.8 needs newer camera JNI libraries than houji's firmware has (the KernelSU swap working suggests not);
 - whether 6.8 behaves differently when platform-signed.
 
