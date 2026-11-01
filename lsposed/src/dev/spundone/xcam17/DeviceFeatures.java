@@ -67,6 +67,15 @@ final class DeviceFeatures {
             new Flag("f3", Boolean.TRUE, "Import LUT for Pro video Log"),
             new Flag("t1", Boolean.TRUE, "Ultra HD (full-resolution) toggle in Photo mode, not just Pro"),
             new Flag("W0", java.util.Arrays.asList(30, 60), "front fill light (screen) allowed at 60 fps video, as on the 18 Pro"),
+            new Flag("w0", new int[] {0, 20, 21}, "50MP lens roles: main, telephoto, ultra-wide (houji's 6.7 profile)"),
+            new Flag("v0", "4:8192x6144", "main camera 50MP size, as houji's 6.7 profile"),
+            new Flag("y0", "4:8160x6144", "ultra-wide 50MP size, as houji's 6.7 profile"),
+            new Flag("u0", "4:8160x6144", "telephoto 50MP size, as houji's 6.7 profile"),
+            new Flag("i3", Boolean.TRUE, "macro supported (Super macro toggle in Photo)"),
+            new Flag("Z0", "tele", "macro on the telephoto (telemacro), as houji's 6.7 profile has it"),
+            new Flag("e2", Boolean.TRUE, "label the macro toggle Super macro"),
+            new Flag("j3", Boolean.TRUE, "macro in mode 172 as well"),
+            new Flag("K2", Boolean.TRUE, "macro in the fast-mode config list"),
     };
 
     private DeviceFeatures() {}
@@ -87,6 +96,7 @@ final class DeviceFeatures {
         }
         for (Flag flag : flags) {
             Class<?> type = flag.value instanceof Boolean ? boolean.class
+                    : flag.value instanceof String ? String.class
                     : flag.value instanceof int[] ? int[].class
                     : flag.value instanceof java.util.List ? java.util.ArrayList.class : int.class;
             int hooked = 0;

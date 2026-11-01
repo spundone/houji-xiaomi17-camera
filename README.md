@@ -40,7 +40,9 @@ Other houji ROMs should work if they ship Xiaomi's camera stack (`/system/priv-a
 | Front screen fill light at a steady 60 fps | Works (6.8) |
 | Watermark shows "Xiaomi 14" | Works (6.8) |
 | Watermarks with HEIF photos (crashed before) | Works (6.8) |
-| 50MP on the ultra-wide, main and telephoto, in 4:3 or 1:1 | Works (6.8) |
+| 50MP on the ultra-wide, main and telephoto, in Photo (4:3 or 1:1) and Pro | Works (6.8) |
+| Telemacro: Super Macro in Photo's menu uses the telephoto | Works (6.8) |
+| Video filters limited to the ones the phone has colour tables for | Works (6.8) |
 | Ultra HDR JPEG photos, with an estimated gain map (set the photo format to JPEG) | Works (6.8) |
 | Movie mode (swipe up on the viewfinder > Movie) | Works (6.8), with the regular video recorder |
 | Live moments while recording, tracking focus in Pro photo | Works (6.7 and 6.8) |

@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- 50MP on all three lenses in Pro mode as well: the 0.6 / 1 / 3.2 buttons stay at 50M and the ultra-wide and telephoto shoot 6120x8160. The module gives the camera houji's 50MP lens list from the 6.7 profile (main 8192x6144, ultra-wide and telephoto 8160x6144), which 6.8 lacks.
+- Telemacro: Super Macro in Photo's menu (the expanded top bar) switches to the telephoto for close-ups, as on the stock Xiaomi 14 (profile flags from houji's 6.7 profile: macro supported, macro camera "tele").
+- Video filters no longer turn the viewfinder black. The filters are colour tables in the phone's firmware, and the 18 Pro's list includes ones the Xiaomi 14 doesn't have (all of the front camera's, such as Poetry and Nocturne); those are now hidden. The rear Leica styles (VIV, NAT, BW, BW HC, Sepia, Blue) remain. Log LUTs were not affected.
+
 ## 1.4.2
 
 - Ultra HDR for JPEG photos (Settings > Photo format: JPEG). houji's HAL never makes the HDR gain map, so the module estimates one from the photo, brightening highlights by up to 2 stops, and adds it as an Android Ultra HDR gain map. The photo itself is not re-encoded; HDR screens show brighter highlights and other screens show it unchanged. HEIF photos and motion photos are left as they are.

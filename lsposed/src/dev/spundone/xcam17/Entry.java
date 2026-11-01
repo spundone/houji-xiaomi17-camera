@@ -50,6 +50,7 @@ public class Entry implements IXposedHookLoadPackage {
         MovieRecorder.hook(lp.classLoader, build);
         UltraHdLenses.hook(lp.classLoader, build);
         UltraHdrJpeg.hook(lp.classLoader, build);
+        VideoFilterLuts.hook(lp.classLoader, build);
     }
 
     /**
