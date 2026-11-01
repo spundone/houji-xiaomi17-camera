@@ -42,6 +42,10 @@ These came up as worries and checked out:
 - Dual video doesn't affect normal 4K Dolby Vision recording.
 - The telephoto is already part of Photo's auto-switching logical camera ("Adaptive telephoto" in Settings controls it).
 
+## Building it into ROMs
+
+Shipping the camera in a ROM without KernelSU or LSPosed means turning each hook into a patch of the APK, re-signed with the platform key, plus a device-tree folder. [aosp-integration.md](aosp-integration.md) has the research and a proposed `aosp/` kit (about one to two weeks of work).
+
 ## Not yet looked at
 
 - 6.8 features behind HAL sections houji does have:

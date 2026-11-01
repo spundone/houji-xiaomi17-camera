@@ -109,6 +109,7 @@ Releases are built by GitHub Actions when a `v*` tag matching `VERSION` is pushe
 - [docs/how-it-works.md](docs/how-it-works.md): each problem found while porting, and the evidence for each fix.
 - [docs/houji-camera.md](docs/houji-camera.md): how the Xiaomi 14's cameras, HAL and the camera app fit together, what each file in this repo does, where to get the camera APKs, and how to investigate.
 - [docs/roadmap.md](docs/roadmap.md): what's still missing, why, and what to try next.
+- [docs/aosp-integration.md](docs/aosp-integration.md): how this could ship inside an AOSP ROM build without root, based on how existing houji ROM trees ship Xiaomi's camera.
 
 ## Legal
 
