@@ -106,6 +106,13 @@ Features switch each other off through a rule table (`v3.g.b` returns the rules 
 - The watermark task is `q7.f.a`.
 - The final image is reported through `l7.k.w(uri, …, isPreview)`.
 
+### Haptics
+
+- The camera's own haptics go through a vibrator context (`Rr.d`, instance `Rr.d.b()`). Each trigger (`m` shutter, `q` zoom tick, `a` mode switch, `p`/`i` Pro dial ticks, `r` filter strip...) only runs if the context holds a strategy (`Rr.d.e`, interface `Rr.a`, whose methods have the same letters).
+- The strategy is created at startup (`E1.q3`) only if `miui.util.HapticFeedbackUtil.isSupportLinearMotorVibrate()` works. That is a HyperOS framework class, missing on AOSP, so the strategy stays null.
+- `CameraHaptics` fills the slot with a proxy that plays `VibrationEffect` predefined effects with touch usage. It also maps the miuix widgets' HyperOS haptic ids (0x10000000 and up, via `miuix.view.HapticCompat.performHapticFeedback`) to standard `HapticFeedbackConstants`.
+- The vibrator HAL itself is Xiaomi's (`sys.haptic.version=2.0`, linear motor) and supports click, tick and heavy click.
+
 ### Video recording
 
 - `RecorderController` (`com.android.camera.module.video.z`) builds Xiaomi's recorder:
@@ -144,6 +151,7 @@ Features switch each other off through a rule table (`v3.g.b` returns the rules 
 | `UltraHdrJpeg` | Estimated Ultra HDR gain map appended to JPEG photos. |
 | `VideoFilterLuts` | Hides video filters the phone has no colour table for. |
 | `OpenGate` | Answers the HAL's Open Gate capability for rear cameras. |
+| `CameraHaptics` | Plays the camera's haptics with Android's standard effects (see below). |
 
 ### Build and release
 

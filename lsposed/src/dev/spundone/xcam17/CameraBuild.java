@@ -105,6 +105,11 @@ final class CameraBuild {
     final String capsCharacteristicsField;
     final String openGateClass;
     final String openGateMethod;
+    /** Vibrator context, its instance accessor, and its strategy interface and field, for {@link CameraHaptics}. */
+    final String vibratorContextClass;
+    final String vibratorContextInstance;
+    final String hapticStrategyClass;
+    final String hapticStrategyField;
 
     private CameraBuild(String label, String consent, String satCheckClass, boolean satCheckHasHdrArg,
             String hdr10, String hdr10Pro, String dolby, String dolbyConfigClass,
@@ -113,7 +118,7 @@ final class CameraBuild {
             String profileLoaderClass, String profileLoaderMethod, String profileMissingField,
             String profileFallback, String profileFallbackStored, String profileNamesMethod,
             String fpsRangeClass, String[] fpsRangeMethods, String componentsClass, String componentsMethod,
-            String flashComponentClass, String styleMaskMethod, String[] mutex, String[] watermark, String[] movie, String[] lenses, String[] newImage, String filterComponent, String[] openGate) {
+            String flashComponentClass, String styleMaskMethod, String[] mutex, String[] watermark, String[] movie, String[] lenses, String[] newImage, String filterComponent, String[] openGate, String[] haptics) {
         this.label = label;
         this.consent = consent;
         this.satCheckClass = satCheckClass;
@@ -174,13 +179,17 @@ final class CameraBuild {
         this.capsCharacteristicsField = openGate == null ? null : openGate[1];
         this.openGateClass = openGate == null ? null : openGate[2];
         this.openGateMethod = openGate == null ? null : openGate[3];
+        this.vibratorContextClass = haptics == null ? null : haptics[0];
+        this.vibratorContextInstance = haptics == null ? null : haptics[1];
+        this.hapticStrategyClass = haptics == null ? null : haptics[2];
+        this.hapticStrategyField = haptics == null ? null : haptics[3];
     }
 
     static final CameraBuild[] KNOWN = {
             new CameraBuild("6.7.000280.0 (Xiaomi 17)", "ei.c", "com.android.camera.data.data.j", true,
                     "t2.a", "t2.b", "t2.c", "n9.e", "h1", "n9.d",
                     DeviceFeatures.PROFILES_67, DeviceFeatures.FLAGS_67, null, null, null, null, null, null,
-                    null, null, null, null, null, null, null, null, null, null, null, null, null),
+                    null, null, null, null, null, null, null, null, null, null, null, null, null, null),
             new CameraBuild("6.8.002090.2 (Xiaomi 18 Pro)", "Th.c", "com.android.camera.data.data.i", false,
                     "s2.a", "s2.b", "s2.c", "l9.h", "g1", "l9.g",
                     DeviceFeatures.PROFILES_68, DeviceFeatures.FLAGS_68, "Eu.f2", "l", "a",
@@ -196,7 +205,8 @@ final class CameraBuild {
                     new String[] {"H4.p0", "a", "a", "com.android.camera.data.data.p", "l0",
                             "com.android.camera.data.data.i", "S", "r2.T", "r6.f0", "U5", "X0", "m0"},
                     new String[] {"l7.k", "w"}, "r2.a",
-                    new String[] {"l9.g", "d", "l9.h", "L4"}),
+                    new String[] {"l9.g", "d", "l9.h", "L4"},
+                    new String[] {"Rr.d", "b", "Rr.a", "e"}),
     };
 
     static CameraBuild detect(ClassLoader cl) {

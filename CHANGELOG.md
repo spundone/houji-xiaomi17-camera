@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Haptics: the camera vibrates again for the shutter, zoom ring and lens buttons, mode switches, Pro dials, the filter strip and its sliders. Its haptics need a HyperOS framework class (miui.util.HapticFeedbackUtil) this ROM lacks, so they were silent; the module plays Android's standard effects instead, following the touch-feedback setting.
+- The LSPosed module reports its real version in Android's app info (it said 1.0.0).
+
 ## 1.5.0
 
 - 50MP on all three lenses in Pro mode as well: the 0.6 / 1 / 3.2 buttons stay at 50M and the ultra-wide and telephoto shoot 6120x8160. The module gives the camera houji's 50MP lens list from the 6.7 profile (main 8192x6144, ultra-wide and telephoto 8160x6144), which 6.8 lacks.
