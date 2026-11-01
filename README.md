@@ -53,7 +53,8 @@ Other houji ROMs should work if they ship Xiaomi's camera stack (`/system/priv-a
 | Haptics (shutter, zoom, mode switch, dials, sliders) | Works (6.8) |
 | Fastshot (Street) mode, with 28 / 35 / 50 / 75 mm presets | Works (6.8) |
 | Portrait zoom buttons 1x and 2.6x, and 1/8000 s shutter in Pro (Xiaomi 14's own profile values) | Works (6.8) |
-| Short video (swipe up > Short video) | Partly (6.8): records and saves; zoom and multi-clip recording don't work |
+| Short film (More > Short film): template clips (Nostalgia, Party, ...) recorded segment by segment, as on the stock Xiaomi 14 | Works (6.8) |
+| Short video (from Short film's start screen) | Partly (6.8): records and saves; zoom and multi-clip recording don't work |
 | Ultra HDR JPEG photos, with an estimated gain map (set the photo format to JPEG) | Works (6.8) |
 | Ultra HDR HEIF photos (opt-in with the module's Action button in KernelSU; Google Photos can't back them up, and macOS and ffmpeg can't open them) | Works (6.8) |
 | Movie mode (swipe up on the viewfinder > Movie) | Works (6.8), 1080p 24 fps |
@@ -96,7 +97,7 @@ Remove the module in the KernelSU manager and reboot. The uninstaller restores t
 - **Camera 6.8 runs on a shared profile.** It has no Xiaomi 14 profile, so the module gives it Xiaomi's generic flagship profile plus the flags above. Some 18 Pro features stay off: the separate Ultra-pixel mode, and Essential Moment unless the Leica port is installed (its looks are otherwise rendered by HAL support the Xiaomi 14 lacks). There's no 25MP option; this sensor offers 12.5MP and 50MP.
 - **Switching camera builds** resets the camera's saved mode. If the camera closes with "invalid module index" after switching, clear its data (`pm clear com.android.camera`).
 - **The telephoto falls back to the main camera up close** in Photo and Portrait (12.5MP), below the telephoto's focus distance. Settings > Adaptive telephoto (off by default) now reaches the HAL. 50MP opens the telephoto directly.
-- **No Original portrait.** Portrait offers Master and Leica portrait; Original portrait needs HAL support houji lacks and rendered 2.6x from the main camera.
+- **No Original portrait.** Portrait offers Master and Leica portrait. With Original portrait's natural style, houji's HAL falls back to the main camera at 2.6x (it reports `xiaomi.bokeh.triggerFallback`), whatever the app requests; the stock Xiaomi 14 doesn't offer it either.
 - **Not possible on this HAL:** Open Gate in normal Video mode (Pro video has it), Movie at 4K, video HDR at 4K60 or on the front camera. Each crashed the camera service when forced.
 - **Grain and Leica-off need 6.8.** Camera 6.7 has no UI for either.
 - **Essential Moment** renders each look in the app after the shot, which takes about 3 to 5 seconds, and only for JPEG photos (Settings > Photo format). The port's AI style model and person mask need the Snapdragon 8 Elite Gen 5's DSP, so on the Xiaomi 14 its fallback tone is used, without a toast. Watermarks work: the camera draws its own over the finished look.

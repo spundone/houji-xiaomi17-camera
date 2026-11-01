@@ -90,6 +90,15 @@ final class DeviceFeatures {
             new Flag("K2", Boolean.TRUE, "macro in the fast-mode config list"),
             new Flag("R0", new Ints(16), "filter type 16, as houji's 6.7 profile (F1): the 2024 flagship filter sets"),
             new Flag("S0", 6, "filter version 6, as houji's 6.7 profile (G1): front video filters from houji's firmware"),
+            new Flag("k1", 2, "Vlog and Vlog Pro modes (version 2), as houji's 6.7 profile (g2)"),
+            new Flag("m3", Boolean.TRUE, "the newer Vlog Pro / short film modes, as houji's 6.7 profile (z5)"),
+            new Flag("M3", Boolean.TRUE, "120 fps slow-motion sizes, as houji's 6.7 profile (l6)"),
+            new Flag("w3", Boolean.TRUE, "lens switching while zooming, as houji's 6.7 profile (O5)"),
+            new Flag("w5", Boolean.TRUE, "Ambilight exposure handling, as houji's 6.7 profile (z8)"),
+            new Flag("G5", Boolean.TRUE, "Portrait's own capture action, as houji's 6.7 profile (M8)"),
+            new Flag("C", 3, "Portrait lens list version 3 (CvLens), as houji's 6.7 profile (P)"),
+            new Flag("g1", 1, "Dolby Vision preview colour space, as houji's 6.7 profile (Y1)"),
+            new Flag("e1", 4, "viewfinder colour space, as houji's 6.7 profile (W)"),
     };
 
     private DeviceFeatures() {}

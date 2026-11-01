@@ -14,12 +14,16 @@ import de.robv.android.xposed.XposedBridge;
  * "Can't connect to camera". Short video records from the preview through its own encoder,
  * so it gets the standard operating mode (0) instead.
  *
- * Still broken: zoom (the slider moves but the main camera doesn't; applying the zoom
+ * Short film (Vlog Pro, mode 219, offered with houji's Vlog flags) asked for 0x800c and was
+ * refused the same way; it records from the preview too.
+ *
+ * Still broken in Short video: zoom (the slider moves but the main camera doesn't; applying the zoom
  * directly didn't help) and recording several clips in a row (the second shutter press stops
  * and opens the review instead of pausing).
  */
 final class ShortVideo {
-    static final String MODULE = "com.xiaomi.microfilm.milive.mode.MiLiveModule";
+    static final String[] MODULES = {"com.xiaomi.microfilm.milive.mode.MiLiveModule",
+            "com.xiaomi.microfilm.vlogpro.mode.VlogProModule"};
     static final String BASE_MODULE = "com.android.camera.module.t";
     static final String OPERATING_MODE_FIELD = "mOperatingMode";
     static final int STANDARD = 0;
@@ -28,7 +32,14 @@ final class ShortVideo {
 
     static void hook(ClassLoader cl) {
         try {
-            Class<?> live = cl.loadClass(MODULE);
+            java.util.List<Class<?>> modules = new java.util.ArrayList<>();
+            for (String name : MODULES) {
+                try {
+                    modules.add(cl.loadClass(name));
+                } catch (ClassNotFoundException ignored) {
+                    // Not in this camera build.
+                }
+            }
             Class<?> base = cl.loadClass(BASE_MODULE);
             Field field = base.getDeclaredField(OPERATING_MODE_FIELD);
             field.setAccessible(true);
@@ -36,12 +47,14 @@ final class ShortVideo {
             XposedBridge.hookMethod(get, new XC_MethodHook() {
                 @Override
                 protected void afterHookedMethod(MethodHookParam p) throws Throwable {
-                    if (!live.isInstance(p.thisObject)) return;
+                    boolean recorder = false;
+                    for (Class<?> m : modules) recorder |= m.isInstance(p.thisObject);
+                    if (!recorder) return;
                     field.setInt(p.thisObject, STANDARD);
                     p.setResult(STANDARD);
                 }
             });
-            Entry.log("short video: standard session mode");
+            Entry.log("short video: standard session mode for Short video and Short film");
         } catch (Throwable t) {
             Entry.log("short video: not hooked: " + t);
         }
