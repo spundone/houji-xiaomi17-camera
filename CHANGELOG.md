@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.6.0
 
 - Haptics: the camera vibrates again for the shutter, zoom ring and lens buttons, mode switches, Pro dials, the filter strip and its sliders. Its haptics need a HyperOS framework class (miui.util.HapticFeedbackUtil) this ROM lacks, so they were silent; the module plays Android's standard effects instead, following the touch-feedback setting.
 - Fastshot (Street) mode in More: quick shooting with focal-length presets (35mm, 1x, 2x, 3.2x) on the multi-lens camera. The Xiaomi 14's own 6.7 profile has it; 6.8's flagship profile doesn't.
