@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Haptics: the camera vibrates again for the shutter, zoom ring and lens buttons, mode switches, Pro dials, the filter strip and its sliders. Its haptics need a HyperOS framework class (miui.util.HapticFeedbackUtil) this ROM lacks, so they were silent; the module plays Android's standard effects instead, following the touch-feedback setting.
+- Fastshot (Street) mode in More: quick shooting with focal-length presets (35mm, 1x, 2x, 3.2x) on the multi-lens camera. The Xiaomi 14's own 6.7 profile has it; 6.8's flagship profile doesn't.
 - The LSPosed module reports its real version in Android's app info (it said 1.0.0).
 
 ## 1.5.0

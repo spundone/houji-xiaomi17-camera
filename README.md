@@ -47,6 +47,7 @@ Other houji ROMs should work if they ship Xiaomi's camera stack (`/system/priv-a
 | Open Gate video (Pro video, 4096x3072 at 30/60 fps) | Works (6.8) |
 | Dual video (front and rear together) | Works (6.8) |
 | Haptics (shutter, zoom, mode switch, dials, sliders) | Works (6.8) |
+| Fastshot (Street) mode | Works (6.8) |
 | Ultra HDR JPEG photos, with an estimated gain map (set the photo format to JPEG) | Works (6.8) |
 | Movie mode (swipe up on the viewfinder > Movie) | Works (6.8), with the regular video recorder |
 | Live moments while recording, tracking focus in Pro photo | Works (6.7 and 6.8) |

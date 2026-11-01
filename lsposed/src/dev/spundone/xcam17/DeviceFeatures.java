@@ -71,6 +71,7 @@ final class DeviceFeatures {
             new Flag("v0", "4:8192x6144", "main camera 50MP size, as houji's 6.7 profile"),
             new Flag("y0", "4:8160x6144", "ultra-wide 50MP size, as houji's 6.7 profile"),
             new Flag("u0", "4:8160x6144", "telephoto 50MP size, as houji's 6.7 profile"),
+            new Flag("c2", Boolean.TRUE, "Street (Fastshot) mode and its settings switch; houji's 6.7 profile has it (M3)"),
             new Flag("G2", Boolean.TRUE, "Dual video: front and rear recorded together (More > Dual video)"),
             new Flag("i3", Boolean.TRUE, "macro supported (Super macro toggle in Photo)"),
             new Flag("Z0", "tele", "macro on the telephoto (telemacro), as houji's 6.7 profile has it"),

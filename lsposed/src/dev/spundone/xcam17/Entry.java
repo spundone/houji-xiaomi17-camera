@@ -53,6 +53,22 @@ public class Entry implements IXposedHookLoadPackage {
         VideoFilterLuts.hook(lp.classLoader, build);
         OpenGate.hook(lp.classLoader, build);
         CameraHaptics.hook(lp.classLoader, build);
+        hookStreetMode(lp.classLoader);
+    }
+
+    /**
+     * Street (Fastshot, mode 225) is listed when its entry's support() is true, which reads the
+     * profile flag c2. That flag is a one-instruction method ART may inline into the caller, so
+     * the entry, whose name isn't obfuscated, is answered directly as well.
+     */
+    static void hookStreetMode(ClassLoader cl) {
+        try {
+            XposedBridge.hookMethod(cl.loadClass("com.android.camera.features.mode.street.StreetModuleEntry")
+                    .getDeclaredMethod("support"), new ConstantResult(Boolean.TRUE));
+            log("street: Fastshot mode offered");
+        } catch (Throwable t) {
+            log("street: not hooked: " + t);
+        }
     }
 
     /**

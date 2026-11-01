@@ -59,6 +59,7 @@ The app decides most per-phone features from a **device profile**: `com.mi.devic
 | `i3` | `s5` | true | Macro supported |
 | `Z0` | `N1` | "tele" | Macro camera type, which makes it telemacro |
 | `e2`, `j3`, `K2` | `O3`, `t5`, `I4` | true | Super Macro label, macro in mode 172, macro in the fast list |
+| `c2` | `M3` | true | Fastshot (Street) mode; also answered on `StreetModuleEntry.support()` because the flag method can be inlined |
 
 ### Modes
 
