@@ -16,6 +16,7 @@ Xiaomi's camera APK is not included. You supply it.
 - Xiaomi 14 (houji), Infinity X 4.0, Android 17, kernel 6.1
 - KernelSU Next 3.4.2 with the Hybrid Mount metamodule
 - Vector (LSPosed fork) 2.2
+- MIUI Gallery 4.3.1.15-global from the "Miui Gallery Global" KernelSU module ([docs/miui-gallery.md](docs/miui-gallery.md)), optional
 - MiuiCamera 6.8.002090.2 (Xiaomi 18 Pro), SHA-256 `729b0b193d1684e7c14ed0ca56ba15247d58016c70164329de233b49727a2c48`
 - MiuiCamera 6.7.000280.0 (Xiaomi 17), SHA-256 `1cec1ff2203d9d1c358b7ea24f6db5b62adeb5d3f6ceca48b0fa1df932d685d9`
 
@@ -109,6 +110,7 @@ Releases are built by GitHub Actions when a `v*` tag matching `VERSION` is pushe
 - [docs/how-it-works.md](docs/how-it-works.md): each problem found while porting, and the evidence for each fix.
 - [docs/houji-camera.md](docs/houji-camera.md): how the Xiaomi 14's cameras, HAL and the camera app fit together, what each file in this repo does, where to get the camera APKs, and how to investigate.
 - [docs/roadmap.md](docs/roadmap.md): what's still missing, why, and what to try next.
+- [docs/miui-gallery.md](docs/miui-gallery.md): the MIUI Gallery module used alongside, and how the camera works with it.
 - [docs/aosp-integration.md](docs/aosp-integration.md): how this could ship inside an AOSP ROM build without root, based on how existing houji ROM trees ship Xiaomi's camera.
 
 ## Legal
