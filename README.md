@@ -33,12 +33,17 @@ Other houji ROMs should work if they ship Xiaomi's camera stack (`/system/priv-a
 | Dolby Vision toggle in the viewfinder's quick menu (17 Ultra layout), instead of in Settings | Works |
 | Dolby Vision on the front camera at 1080p30 and 4K30 | Works |
 | Live moments (motion photos with a 3 s clip) from the snapshot button while recording | Works |
-| Subject tracking focus in Pro photo and Pro video, not just Photo and Video | Works (6.7) |
+| Subject tracking focus in Pro photo and Pro video, not just Photo and Video | Works |
 | Film grain (Noise), with the 18 Pro's filter parameters, palette and presets | Works (6.8) |
 | Style ORIG (no Leica look) beside Leica Vibrant and Authentic | Works (6.8) |
-| 50MP Photo Resolution toggle in Photo mode | Works (6.8) |
+| 50MP Photo Resolution toggle in Photo mode, keeping Leica Authentic or Style ORIG | Works (6.8) |
 | Front screen fill light at a steady 60 fps | Works (6.8) |
 | Watermark shows "Xiaomi 14" | Works (6.8) |
+| Watermarks with HEIF photos (crashed before) | Works (6.8) |
+| 50MP on the ultra-wide, main and telephoto, in 4:3 or 1:1 | Works (6.8) |
+| Movie mode (swipe up on the viewfinder > Movie) | Works (6.8), with the regular video recorder |
+| Live moments while recording, tracking focus in Pro photo | Works (6.7 and 6.8) |
+| Import LUT for Pro video Log | Works (6.8) |
 
 ## Install
 

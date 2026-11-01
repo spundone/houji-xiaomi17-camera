@@ -62,6 +62,9 @@ final class DeviceFeatures {
             new Flag("q0", 2, "style version 2: Filter parameters panel with Noise (grain), as on the 18 Pro"),
             new Flag("W3", Boolean.TRUE, "front/rear camera switch while recording"),
             new Flag("P1", Boolean.TRUE, "Dolby Vision toggle in the viewfinder instead of settings"),
+            new Flag("d4", Boolean.TRUE, "Take photos while recording: Live moments (motion photo) or regular photo"),
+            new Flag("C3", Boolean.TRUE, "Motion tracking focus in Pro photo as well as Photo"),
+            new Flag("f3", Boolean.TRUE, "Import LUT for Pro video Log"),
             new Flag("t1", Boolean.TRUE, "Ultra HD (full-resolution) toggle in Photo mode, not just Pro"),
             new Flag("W0", java.util.Arrays.asList(30, 60), "front fill light (screen) allowed at 60 fps video, as on the 18 Pro"),
     };

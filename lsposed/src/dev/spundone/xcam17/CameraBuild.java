@@ -50,6 +50,49 @@ final class CameraBuild {
     final String flashComponentClass;
     /** Capabilities method reading one bit of the HAL style mask, for {@link NaturalStyle}, or null. */
     final String styleMaskMethod;
+    /** Feature mutex manager, its find method, event class/id field and rule class/target field, for {@link MutexDrop}. */
+    final String mutexManagerClass;
+    final String mutexFindMethod;
+    final String mutexEventClass;
+    final String mutexEventIdField;
+    final String mutexRuleClass;
+    final String mutexRuleTargetField;
+    /** Style component and its (mode, disabled) setter, kept enabled by {@link MutexDrop}. */
+    final String styleDisableClass;
+    final String styleDisableMethod;
+    /**
+     * Watermark drawing helper and its method returning the drawn image, and the watermark job
+     * class with its remover-info and covered sub-image fields, for {@link WatermarkSubimage}.
+     */
+    final String wmDrawClass;
+    final String wmDrawMethod;
+    final String wmJobClass;
+    final String wmRemoverField;
+    final String wmSubimageField;
+    /**
+     * Recorder controller and its create-recorder method, and the static mode check that
+     * answers "is Movie mode" there, for {@link MovieRecorder}.
+     */
+    final String recorderControllerClass;
+    final String recorderCreateMethod;
+    final String modeCheckClass;
+    final String movieModeMethod;
+    /**
+     * Zoom toggle state builder (mode, ...) and its state field, the static "Ultra HD is on"
+     * check, and the per-mode zoom ratio list, for {@link UltraHdLenses}.
+     */
+    final String zoomStateClass;
+    final String zoomStateMethod;
+    final String zoomStateField;
+    final String ultraOnClass;
+    final String ultraOnMethod;
+    final String zoomListClass;
+    final String zoomListMethod;
+    /** Ratio component, the ratio-change handler and the static "turn Ultra HD off", for {@link UltraHdLenses}. */
+    final String ratioClass;
+    final String ratioChangeClass;
+    final String ratioChangeMethod;
+    final String ultraOffMethod;
 
     private CameraBuild(String label, String consent, String satCheckClass, boolean satCheckHasHdrArg,
             String hdr10, String hdr10Pro, String dolby, String dolbyConfigClass,
@@ -58,7 +101,7 @@ final class CameraBuild {
             String profileLoaderClass, String profileLoaderMethod, String profileMissingField,
             String profileFallback, String profileFallbackStored, String profileNamesMethod,
             String fpsRangeClass, String[] fpsRangeMethods, String componentsClass, String componentsMethod,
-            String flashComponentClass, String styleMaskMethod) {
+            String flashComponentClass, String styleMaskMethod, String[] mutex, String[] watermark, String[] movie, String[] lenses) {
         this.label = label;
         this.consent = consent;
         this.satCheckClass = satCheckClass;
@@ -83,13 +126,41 @@ final class CameraBuild {
         this.componentsMethod = componentsMethod;
         this.flashComponentClass = flashComponentClass;
         this.styleMaskMethod = styleMaskMethod;
+        this.mutexManagerClass = mutex == null ? null : mutex[0];
+        this.mutexFindMethod = mutex == null ? null : mutex[1];
+        this.mutexEventClass = mutex == null ? null : mutex[2];
+        this.mutexEventIdField = mutex == null ? null : mutex[3];
+        this.mutexRuleClass = mutex == null ? null : mutex[4];
+        this.mutexRuleTargetField = mutex == null ? null : mutex[5];
+        this.styleDisableClass = mutex == null ? null : mutex[6];
+        this.styleDisableMethod = mutex == null ? null : mutex[7];
+        this.wmDrawClass = watermark == null ? null : watermark[0];
+        this.wmDrawMethod = watermark == null ? null : watermark[1];
+        this.wmJobClass = watermark == null ? null : watermark[2];
+        this.wmRemoverField = watermark == null ? null : watermark[3];
+        this.wmSubimageField = watermark == null ? null : watermark[4];
+        this.recorderControllerClass = movie == null ? null : movie[0];
+        this.recorderCreateMethod = movie == null ? null : movie[1];
+        this.modeCheckClass = movie == null ? null : movie[2];
+        this.movieModeMethod = movie == null ? null : movie[3];
+        this.zoomStateClass = lenses == null ? null : lenses[0];
+        this.zoomStateMethod = lenses == null ? null : lenses[1];
+        this.zoomStateField = lenses == null ? null : lenses[2];
+        this.ultraOnClass = lenses == null ? null : lenses[3];
+        this.ultraOnMethod = lenses == null ? null : lenses[4];
+        this.zoomListClass = lenses == null ? null : lenses[5];
+        this.zoomListMethod = lenses == null ? null : lenses[6];
+        this.ratioClass = lenses == null ? null : lenses[7];
+        this.ratioChangeClass = lenses == null ? null : lenses[8];
+        this.ratioChangeMethod = lenses == null ? null : lenses[9];
+        this.ultraOffMethod = lenses == null ? null : lenses[10];
     }
 
     static final CameraBuild[] KNOWN = {
             new CameraBuild("6.7.000280.0 (Xiaomi 17)", "ei.c", "com.android.camera.data.data.j", true,
                     "t2.a", "t2.b", "t2.c", "n9.e", "h1", "n9.d",
                     DeviceFeatures.PROFILES_67, DeviceFeatures.FLAGS_67, null, null, null, null, null, null,
-                    null, null, null, null, null, null),
+                    null, null, null, null, null, null, null, null, null, null),
             new CameraBuild("6.8.002090.2 (Xiaomi 18 Pro)", "Th.c", "com.android.camera.data.data.i", false,
                     "s2.a", "s2.b", "s2.c", "l9.h", "g1", "l9.g",
                     DeviceFeatures.PROFILES_68, DeviceFeatures.FLAGS_68, "Eu.f2", "l", "a",
@@ -98,7 +169,12 @@ final class CameraBuild {
                             + "\u666a\u667b\u6673\u667d\u667f\u667b\u663c\u6651\u667d\u667f\u667f\u667d\u667c"
                             + "\u6654\u667e\u6673\u6675\u6661\u667a\u667b\u6662",
                     "d",
-                    "l9.i0", new String[] {"L", "f0"}, "g2.a", "a", "r2.w", "J0"),
+                    "l9.i0", new String[] {"L", "f0"}, "g2.a", "a", "r2.w", "J0",
+                    new String[] {"v3.g", "b", "v3.c", "a", "v3.h", "b", "r2.m", "v"},
+                    new String[] {"U8.d", "f", "zi.a", "s", "t"},
+                    new String[] {"com.android.camera.module.video.z", "j", "com.android.camera.module.a0", "d"},
+                    new String[] {"H4.p0", "a", "a", "com.android.camera.data.data.p", "l0",
+                            "com.android.camera.data.data.i", "S", "r2.T", "r6.f0", "U5", "X0"}),
     };
 
     static CameraBuild detect(ClassLoader cl) {

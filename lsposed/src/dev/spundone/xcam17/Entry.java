@@ -45,6 +45,10 @@ public class Entry implements IXposedHookLoadPackage {
         DeviceFeatures.enable(lp.classLoader, build.profiles, build.features);
         FillLight60.hook(lp.classLoader, build);
         NaturalStyle.hook(lp.classLoader, build);
+        MutexDrop.hook(lp.classLoader, build);
+        WatermarkSubimage.hook(lp.classLoader, build);
+        MovieRecorder.hook(lp.classLoader, build);
+        UltraHdLenses.hook(lp.classLoader, build);
     }
 
     /**

@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+- Camera 6.8: Take photos while recording offers Live moments (motion photo) or Regular photos (flag `d4`, the 6.7 feature carried over).
+- Camera 6.8: Motion tracking focus also works in Pro photo (flag `C3`).
+- Camera 6.8: Import LUT in Pro video Log, next to the built-in LUTs (flag `f3`).
+- Camera 6.8: 50MP keeps the chosen style. Turning on 50M used to switch the photo to Leica Vibrant, because the camera treats Ultra HD and Style as mutually exclusive; the module drops that one rule, so Leica Authentic and Style ORIG work at 50M.
+- Camera 6.8: fix a crash with a watermark on and the format set to HEIF. Frame watermarks (the Leica band below the photo) cover none of the photo, yet the HEIF path still built "watermark remover" data for the covered area and crashed on its absence, losing the photo. The remover data is now dropped when there is nothing to restore, as the JPEG path already does. Works at 12.5M and 50M.
+- Camera 6.8: 50MP on all three lenses. At 50M the 0.6 / 1 / 2 / 3.2 buttons now show and switch between the ultra-wide, main and telephoto, each shooting its full sensor (6120x8160 on the ultra-wide and telephoto, 6144x8192 on the main).
+- Camera 6.8: 50MP in 1:1 as well as 4:3 (6144x6144 on the main). 16:9, full screen and widescreen still switch back to 12.5M: the 50M sensor stream is 4:3 and the camera only crops squares from it.
+- Camera 6.8: Movie mode works. It opened to a frozen, blurred frame because its recorder (MiCinematicRecorder) needs a HyperOS audio class this ROM doesn't have; it now records with the regular video recorder (tested: 1080p 24 fps HEVC with stereo sound). Open it by swiping up on the viewfinder.
+- Checked and left out: Clone mode (it appears and downloads, but the camera HAL aborts when it starts), and Ultra HDR photos (this phone's HAL never adds the gain map; no photo on it has one, from before the port either).
+- Checked and left out: 35 more 18 Pro flags. Most changed nothing visible; one batch removed Anti banding and Pocket mode from Settings.
+
 ## 1.4.0
 
 Adds support for MiuiCamera **6.8.002090.2** from the Xiaomi 18 Pro, alongside 6.7. The module detects which camera build is installed and applies only the hooks written for it.
