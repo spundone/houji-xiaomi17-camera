@@ -6,15 +6,12 @@ What's known not to work on the Xiaomi 14 with camera 6.8, why, and the next ste
 
 | Item | Why it's missing | Next step |
 | --- | --- | --- |
-| **16:9, full screen and widescreen at 50MP** | At 50M the stream setup always takes the best raw size, 8192x6144 (4:3). The camera crops 1:1 from it but nothing wider, so wider ratios switch 50M off. | The main camera lists an 8192x4608 (16:9) full-resolution stream. Make the Ultra HD size choice (`m6.o.p` / "best sensor raw image size") take the ratio into account, then let `r2.T` return the saved ratio at 50M as it does for 1:1. Check the ultra-wide and telephoto for 16:9 full-res sizes first. |
 | **Front-camera video filters** | The 18 Pro's front filters (Poetry, Nocturne, Amber and others) need colour tables the Xiaomi 14's firmware doesn't have. They're hidden for now. | Get the tables from an 18 Pro (`/odm/etc/camera/videofilter/<id>_<Name>.png`, ids such as 136 and 138) and ship them in the KernelSU module as an overlay of that folder. Then `VideoFilterLuts` shows them again on its own. |
 | **Ultra HDR for HEIF photos** | `UltraHdrJpeg` only handles JPEG, because Android's bitmap encoder can't write a HEIF gain map. | Android 15+ can write HEIC with a gain map through its HEIF Ultra HDR support. Try re-wrapping the HEIF with a gain map item, keeping Xiaomi's metadata. |
 | **Remove-watermark data for frame watermarks in HEIF** | `WatermarkSubimage` drops the remover data when the watermark covers nothing (the HEIF path crashed without it), so the Gallery can't strip frame watermarks later. JPEG behaves the same. | Low value. Fill the missing source of the XMP helper (`Qg.r`) instead of dropping the data. |
 | **Fastshot / Street mode** | Flag `c2` didn't add the mode in an earlier test. | The HAL does define `com.xiaomi.streetshoot.enabled` and `com.xiaomi.street.mode`. Look for further gates on mode 225 (another flag, or a top-config list). |
 | **Adaptive macro** | Settings' "near range fallback" (`pref_camera_near_range_fallback_key`) switches to the telephoto at close range. It's gated by a HAL capability, not a profile flag, and the tag wasn't identified. | Resolve the tag behind `l9.h.p5` / `l9.h.r5` (field `ia.v0.j1`) and check whether houji declares it. |
 | **Movie mode audio effects** | Movie uses the regular recorder, because MiCinematicRecorder needs `android.media.AudioParaManger`, a HyperOS-only class. Its zoom and focus audio effects are lost. | Provide a stub `AudioParaManger` (and its listener interfaces) on the camera's class path, then let Movie use its own recorder. The effects themselves would still need HyperOS's audio HAL. |
-| **Settings version label** | Android's app info shows the LSPosed module as version 1.0.0, because the manifest's `versionName` is fixed. | Have `scripts/build.sh` set `versionName` from `VERSION`. |
-| **50MP button on the telephoto in Pro** | In Pro the resolution button is greyed out while on the telephoto; you have to turn 50M on at 1x first, then switch lens. | Look at what disables the Ultra HD item on camera 4 in Pro (`r2.e0` item list on that camera). |
 
 ## Needs the phone's camera HAL
 
@@ -27,6 +24,7 @@ These depend on support the Xiaomi 14's 2024 camera HAL doesn't have. A module c
 | **Clone mode** | The QTI camera provider aborts (`Usecase::DumpSystemEvent`), then `configureStreams` fails with -38. |
 | **LOFIC Ultra HDR video** | Needs the 17 Ultra's LOFIC sensor. |
 | **200MP telephoto Ultra HD** (`REARx7`, flags `n3` / `o3`) | The 18 Pro's 200MP periscope; houji's telephoto is 50MP. |
+| **16:9, full screen and widescreen at 50MP** | In the Ultra HD session the HAL offers only 4:3 sizes (8192x6144, 8160x6144, 8160x6120); the 8192x4608 it lists elsewhere isn't available there. The camera crops 1:1 from the 4:3 frame after capture, but has no wider crop. Cropping and re-encoding after capture would work but lose quality, so wider ratios still switch 50M off. |
 
 ## Needs Xiaomi's data or services
 
