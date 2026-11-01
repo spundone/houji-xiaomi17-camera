@@ -4,6 +4,8 @@
 
 - Movie mode records with its own recorder again (MiCinematicRecorder) instead of the regular video one. Its recorder refers to a HyperOS audio class (android.media.AudioParaManger) this ROM lacks; the module now supplies a stand-in that reports "no AI audio", which the camera already handles. Tested: 1080p 24 fps with stereo sound.
 - Fastshot: opening AF/MF no longer crashes. Its depth-of-field maths reads a sensor table houji's HAL doesn't have; the camera's built-in values are used instead. Manual focus and the distance scale work.
+- 50MP Photo: sliding the zoom down from the telephoto no longer crashes the camera. At 50MP the main camera only takes its full sensor, and any digital zoom made the HAL abort. Zoom now works as in Pro mode: each lens keeps its own view while you slide, the lens changes at the next stop (0.6x, 1x, 3.2x), and the zoom settles on the stop of the lens in use. The 2x stop is hidden at 50MP. The telephoto still zooms in past 3.2x.
+- Values from houji's own 6.7 profile: Fastshot presets 28, 35, 50 and 75 mm, Portrait zoom buttons 1x and 2.6x, and a 1/8000 s shortest shutter in Pro.
 
 ## 1.6.0
 

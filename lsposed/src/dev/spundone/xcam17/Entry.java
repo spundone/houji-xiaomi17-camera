@@ -55,6 +55,7 @@ public class Entry implements IXposedHookLoadPackage {
         CameraHaptics.hook(lp.classLoader, build);
         hookStreetMode(lp.classLoader);
         StreetFocus.hook(lp.classLoader, build);
+        ProfileTables.hook(lp.classLoader, build);
     }
 
     /**

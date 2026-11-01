@@ -21,6 +21,16 @@ import de.robv.android.xposed.XposedBridge;
  * picking another ratio turns Ultra HD off. The sensor stream stays 8192x6144 either way and
  * the camera crops 1:1 from it, but has no crop for 16:9 or wider, so 1:1 is let through at
  * 50M and the wider ratios keep turning Ultra HD off.
+ *
+ * At 50M the main camera only takes its full sensor: any digital zoom on it makes the HAL
+ * reject the crop ("Off-centered zoom is not supported in DualIFE mode"), retry 11 times and
+ * abort. Sliding the zoom down from the telephoto opened the main camera at 3.2x and crashed.
+ * At 50M the lens now only changes when the slide passes the next lens's stop: from the
+ * telephoto down to 1x, or from the main camera up to the telephoto. In between, the lens it
+ * is on stays at its own field of view (the main camera at 1x, the telephoto at its native
+ * framing), so the slider itself moves as usual. When the slide ends, and when a lens opens,
+ * the zoom snaps to the stop of the lens in use (0.6x, 1x, or the telephoto's 3.2x and up), as
+ * in Pro mode; the camera's own snap picked the nearest stop and left the ultra-wide labelled 1x.
  */
 final class UltraHdLenses {
     static final int PHOTO_MODE = 163;
@@ -38,6 +48,12 @@ final class UltraHdLenses {
      * Photo mode otherwise uses the logical multi-camera, so these ids mean 50M is on, even
      * though the Ultra HD setting reads as off for a lens that has no entry of its own.
      */
+    static final int MAIN_CAMERA = 2;
+    static final int TELE_CAMERA = 4;
+    static final int UW_CAMERA = 3;
+    static final float UW_STOP = 0.6f;
+    /** The telephoto's stop on the zoom bar (LensSwitchZoomBounds). */
+    static final float TELE_STOP = 3.2f;
     static final java.util.Set<Integer> AUX_CAMERAS = new java.util.HashSet<>(java.util.Arrays.asList(3, 4));
 
     private UltraHdLenses() {}
@@ -72,6 +88,7 @@ final class UltraHdLenses {
             }
             if (filters != 1) Entry.log("ultra hd: " + filters + " lens filters found in " + ZOOM_TOGGLE);
             hookRatio(cl, build, ultraOn);
+            hookZoom(cl, build, ultraOn);
             Entry.log("ultra hd: 50MP on the ultra-wide and telephoto as well (Photo and Pro), and in 1:1");
         } catch (Throwable t) {
             Entry.log("ultra hd: not hooked: " + t);
@@ -107,6 +124,146 @@ final class UltraHdLenses {
                 if (Boolean.TRUE.equals(KEEP_ULTRA.get())) p.setResult(null);
             }
         });
+    }
+
+    static void hookZoom(ClassLoader cl, CameraBuild build, Method ultraOn) throws Exception {
+        if (build.zoomManagerClass == null) return;
+        for (Method m : cl.loadClass(build.zoomManagerClass).getDeclaredMethods()) {
+            Class<?>[] args = m.getParameterTypes();
+            if (m.getName().equals(build.lensSwitchMethod) && args.length == 3 && args[0] == float.class
+                    && args[1] == float.class && m.getReturnType() == boolean.class) {
+                XposedBridge.hookMethod(m, new HoldLens(ultraOn));
+            }
+        }
+        if (build.snapClass != null) {
+            Class<?> manager = cl.loadClass(build.zoomManagerClass);
+            Field module = manager.getDeclaredField(build.zoomModuleField);
+            Field value = manager.getDeclaredField(build.zoomValueField);
+            module.setAccessible(true);
+            value.setAccessible(true);
+            Method setZoom = manager.getDeclaredMethod(build.zoomSetMethod, float.class);
+            SnapToLens snap = new SnapToLens(ultraOn, module, value, setZoom);
+            XposedBridge.hookMethod(cl.loadClass(build.snapClass).getDeclaredMethod(build.snapMethod), snap);
+            XposedBridge.hookMethod(cl.loadClass(build.slideEndClass).getDeclaredMethod(build.slideEndMethod, int.class), snap);
+        }
+        Method cameraId = null;
+        for (Method m : cl.loadClass(build.cameraIdClass).getDeclaredMethods()) {
+            if (m.getName().equals(build.cameraIdMethod) && m.getReturnType() == int.class
+                    && m.getParameterTypes().length == 1 && m.getParameterTypes()[0].getName().equals(build.capsClass)) {
+                cameraId = m;
+            }
+        }
+        if (cameraId == null) throw new NoSuchMethodException(build.cameraIdClass + "." + build.cameraIdMethod);
+        int hooked = 0;
+        for (Method m : cl.loadClass(build.zoomApplyClass).getDeclaredMethods()) {
+            Class<?>[] args = m.getParameterTypes();
+            if (m.getName().equals(build.zoomApplyMethod) && args.length == 3
+                    && args[1].getName().equals(build.capsClass)) {
+                Field zoom = args[2].getDeclaredField(build.zoomField);
+                zoom.setAccessible(true);
+                XposedBridge.hookMethod(m, new MainAtOneX(ultraOn, cameraId, zoom));
+                hooked++;
+            }
+        }
+        if (hooked == 0) throw new NoSuchMethodException(build.zoomApplyClass + "." + build.zoomApplyMethod);
+    }
+
+    static boolean ultraHdNow(Method ultraOn) throws Exception {
+        return ultraHd(ultraOn, PHOTO_MODE) || ultraHd(ultraOn, PRO_MODE);
+    }
+
+    /**
+     * At 50M, switches lens only when the zoom passes the next lens's stop. The camera's own
+     * checks switch on crossing 1x (to the ultra-wide) or the telephoto stop (telephoto to main),
+     * so a slide held on a lens is handed the crossed stop as its old zoom once it gets there.
+     */
+    static final class HoldLens extends XC_MethodHook {
+        private final Method ultraOn;
+
+        HoldLens(Method ultraOn) {
+            this.ultraOn = ultraOn;
+        }
+
+        @Override
+        protected void beforeHookedMethod(MethodHookParam p) throws Throwable {
+            float to = (Float) p.args[1];
+            if (to >= TELE_STOP || !ultraHdNow(ultraOn)) return;
+            Object camera = actualCamera(p.args[2]);
+            if (to <= UW_STOP + 0.01f) {
+                if (!Integer.valueOf(UW_CAMERA).equals(camera)) p.args[0] = TELE_STOP;
+            } else if (Integer.valueOf(TELE_CAMERA).equals(camera) && to <= 1.0f) {
+                p.args[0] = TELE_STOP;
+            } else if (!(Integer.valueOf(UW_CAMERA).equals(camera) && to >= 1.0f)) {
+                p.setResult(Boolean.FALSE);
+            }
+        }
+    }
+
+    static Object actualCamera(Object module) throws Exception {
+        return module == null ? null : module.getClass().getMethod("getActualCameraId").invoke(module);
+    }
+
+    /** At 50M, moves the zoom to the stop of the lens in use; on the telephoto, only up to its stop. */
+    static final class SnapToLens extends XC_MethodHook {
+        private final Method ultraOn;
+        private final Field module;
+        private final Field zoom;
+        private final Method setZoom;
+
+        SnapToLens(Method ultraOn, Field module, Field zoom, Method setZoom) {
+            this.ultraOn = ultraOn;
+            this.module = module;
+            this.zoom = zoom;
+            this.setZoom = setZoom;
+        }
+
+        @Override
+        protected void afterHookedMethod(MethodHookParam p) throws Throwable {
+            if (!ultraHd(ultraOn, PHOTO_MODE)) return;
+            Object ref = module.get(p.thisObject);
+            Object camera = actualCamera(ref == null ? null : ((java.lang.ref.Reference<?>) ref).get());
+            if (camera == null) return;
+            float now = zoom.getFloat(p.thisObject);
+            float stop = Integer.valueOf(UW_CAMERA).equals(camera) ? UW_STOP
+                    : Integer.valueOf(TELE_CAMERA).equals(camera) ? Math.max(now, TELE_STOP) : 1.0f;
+            if (Math.abs(now - stop) > 0.001f) setZoom.invoke(p.thisObject, stop);
+        }
+    }
+
+    /**
+     * At 50M, sends the main camera's and ultra-wide's requests at 1x whatever the zoom bar says
+     * (each held at its own field of view between stops), and the telephoto's at no less than 1x.
+     */
+    static final class MainAtOneX extends XC_MethodHook {
+        private final Method ultraOn;
+        private final Method cameraId;
+        private final Field zoom;
+        private final ThreadLocal<Float> saved = new ThreadLocal<>();
+
+        MainAtOneX(Method ultraOn, Method cameraId, Field zoom) {
+            this.ultraOn = ultraOn;
+            this.cameraId = cameraId;
+            this.zoom = zoom;
+        }
+
+        @Override
+        protected void beforeHookedMethod(MethodHookParam p) throws Throwable {
+            Object config = p.args[2];
+            if (config == null || p.args[1] == null) return;
+            float value = zoom.getFloat(config);
+            if (value == 1.0f || (value > 1.0f && Integer.valueOf(TELE_CAMERA).equals(cameraId.invoke(null, p.args[1])))
+                    || !ultraHdNow(ultraOn)) return;
+            saved.set(zoom.getFloat(config));
+            zoom.setFloat(config, 1.0f);
+        }
+
+        @Override
+        protected void afterHookedMethod(MethodHookParam p) throws Throwable {
+            Float value = saved.get();
+            if (value == null) return;
+            saved.remove();
+            zoom.setFloat(p.args[2], value);
+        }
     }
 
     /** At 50M in Photo mode, answers the saved ratio when it is 1:1 instead of the forced 4:3. */
@@ -157,7 +314,7 @@ final class UltraHdLenses {
         return Integer.valueOf(PRO_MODE).equals(mode) && Boolean.TRUE.equals(ultraOnInMode.invoke(null, mode));
     }
 
-    /** Keeps every lens when the bar filters its ratios at 50M. */
+    /** Keeps every lens when the bar filters its ratios at 50M, without the 2x stop. */
     static final class KeepLenses extends XC_MethodHook {
         private final Method ultraOn;
 
@@ -169,10 +326,8 @@ final class UltraHdLenses {
         protected void afterHookedMethod(MethodHookParam p) throws Throwable {
             float[] in = (float[]) p.args[0];
             float[] out = (float[]) p.getResult();
-            if (in != null && out != null && out.length < in.length
-                    && (ultraHd(ultraOn, PHOTO_MODE) || ultraHd(ultraOn, PRO_MODE))) {
-                p.setResult(in);
-            }
+            if (in == null || out == null || !ultraHdNow(ultraOn)) return;
+            p.setResult(lensStops(out.length < in.length ? in : out));
         }
     }
 
@@ -219,7 +374,18 @@ final class UltraHdLenses {
         }
     }
 
-    /** At 50M, the lens list the mode has at 12.5M (the 50M one drops lenses). */
+    /** The lens stops of a zoom list: drops the main camera's digital zoom stops (2x), which 50M can't take. */
+    static float[] lensStops(float[] zooms) {
+        int n = 0;
+        for (float z : zooms) if (z <= 1.0f || z >= TELE_STOP) n++;
+        if (n == zooms.length) return zooms;
+        float[] out = new float[n];
+        n = 0;
+        for (float z : zooms) if (z <= 1.0f || z >= TELE_STOP) out[n++] = z;
+        return out;
+    }
+
+    /** At 50M, the lens list the mode has at 12.5M (the 50M one drops lenses), without the 2x stop. */
     static final class FullLensList extends XC_MethodHook {
         private final Method ultraOn;
 
@@ -233,7 +399,7 @@ final class UltraHdLenses {
             READING_RATIO.set(Boolean.TRUE);
             try {
                 Object full = ((Method) p.method).invoke(p.thisObject, p.args[0]);
-                if (full instanceof float[] && ((float[]) full).length > 0) p.setResult(full);
+                if (full instanceof float[] && ((float[]) full).length > 0) p.setResult(lensStops((float[]) full));
             } finally {
                 READING_RATIO.remove();
             }

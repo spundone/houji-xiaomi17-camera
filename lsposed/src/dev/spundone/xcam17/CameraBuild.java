@@ -87,6 +87,28 @@ final class CameraBuild {
     final String ratioChangeClass;
     final String ratioChangeMethod;
     final String ultraOffMethod;
+    /**
+     * Zoom manager and its lens switch (old zoom, new zoom, module); the request builder's zoom step (builder, caps, config),
+     * the caps' static camera id getter and the config's zoom field, for {@link UltraHdLenses}.
+     */
+    final String zoomManagerClass;
+    final String lensSwitchMethod;
+    final String zoomApplyClass;
+    final String zoomApplyMethod;
+    final String cameraIdClass;
+    final String cameraIdMethod;
+    final String zoomField;
+    /**
+     * In the zoom manager: its module reference, current zoom field and zoom setter; Photo's
+     * zoom manager and its snap to the nearest stop, and its parent's end-of-slide handler.
+     */
+    final String zoomModuleField;
+    final String zoomValueField;
+    final String zoomSetMethod;
+    final String snapClass;
+    final String snapMethod;
+    final String slideEndClass;
+    final String slideEndMethod;
     /** Image saver and its new-image callback (uri, ?, title, mime type, is preview), for {@link UltraHdrJpeg}. */
     final String newImageClass;
     final String newImageMethod;
@@ -106,6 +128,11 @@ final class CameraBuild {
     final String streetFocusClass;
     final String streetDofLoadMethod;
     final String streetDofField;
+    /** Profile table methods (Pro exposure ranges, zoom toggles, Fastshot presets) and the preset class, for {@link ProfileTables}. */
+    final String exposureRangeMethod;
+    final String zoomTogglesMethod;
+    final String streetPresetsMethod;
+    final String focalPresetClass;
 
     private CameraBuild(String label, String consent, String satCheckClass, boolean satCheckHasHdrArg,
             String hdr10, String hdr10Pro, String dolby, String dolbyConfigClass,
@@ -114,7 +141,7 @@ final class CameraBuild {
             String profileLoaderClass, String profileLoaderMethod, String profileMissingField,
             String profileFallback, String profileFallbackStored, String profileNamesMethod,
             String fpsRangeClass, String[] fpsRangeMethods, String componentsClass, String componentsMethod,
-            String flashComponentClass, String styleMaskMethod, String[] mutex, String[] watermark, String[] lenses, String[] newImage, String filterComponent, String[] openGate, String[] haptics, String[] streetFocus) {
+            String flashComponentClass, String styleMaskMethod, String[] mutex, String[] watermark, String[] lenses, String[] newImage, String filterComponent, String[] openGate, String[] haptics, String[] streetFocus, String[] tables) {
         this.label = label;
         this.consent = consent;
         this.satCheckClass = satCheckClass;
@@ -164,6 +191,22 @@ final class CameraBuild {
         this.ratioChangeClass = lenses == null ? null : lenses[8];
         this.ratioChangeMethod = lenses == null ? null : lenses[9];
         this.ultraOffMethod = lenses == null ? null : lenses[10];
+        boolean zoom = lenses != null && lenses.length > 12;
+        this.zoomManagerClass = zoom ? lenses[12] : null;
+        this.lensSwitchMethod = zoom ? lenses[13] : null;
+        this.zoomApplyClass = zoom ? lenses[14] : null;
+        this.zoomApplyMethod = zoom ? lenses[15] : null;
+        this.cameraIdClass = zoom ? lenses[16] : null;
+        this.cameraIdMethod = zoom ? lenses[17] : null;
+        this.zoomField = zoom ? lenses[18] : null;
+        boolean snap = lenses != null && lenses.length > 19;
+        this.zoomModuleField = snap ? lenses[19] : null;
+        this.zoomValueField = snap ? lenses[20] : null;
+        this.zoomSetMethod = snap ? lenses[21] : null;
+        this.snapClass = snap ? lenses[22] : null;
+        this.snapMethod = snap ? lenses[23] : null;
+        this.slideEndClass = snap ? lenses[24] : null;
+        this.slideEndMethod = snap ? lenses[25] : null;
         this.newImageClass = newImage == null ? null : newImage[0];
         this.newImageMethod = newImage == null ? null : newImage[1];
         this.filterComponentClass = filterComponent;
@@ -178,13 +221,17 @@ final class CameraBuild {
         this.streetFocusClass = streetFocus == null ? null : streetFocus[0];
         this.streetDofLoadMethod = streetFocus == null ? null : streetFocus[1];
         this.streetDofField = streetFocus == null ? null : streetFocus[2];
+        this.exposureRangeMethod = tables == null ? null : tables[0];
+        this.zoomTogglesMethod = tables == null ? null : tables[1];
+        this.streetPresetsMethod = tables == null ? null : tables[2];
+        this.focalPresetClass = tables == null ? null : tables[3];
     }
 
     static final CameraBuild[] KNOWN = {
             new CameraBuild("6.7.000280.0 (Xiaomi 17)", "ei.c", "com.android.camera.data.data.j", true,
                     "t2.a", "t2.b", "t2.c", "n9.e", "h1", "n9.d",
                     DeviceFeatures.PROFILES_67, DeviceFeatures.FLAGS_67, null, null, null, null, null, null,
-                    null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+                    null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
             new CameraBuild("6.8.002090.2 (Xiaomi 18 Pro)", "Th.c", "com.android.camera.data.data.i", false,
                     "s2.a", "s2.b", "s2.c", "l9.h", "g1", "l9.g",
                     DeviceFeatures.PROFILES_68, DeviceFeatures.FLAGS_68, "Eu.f2", "l", "a",
@@ -197,11 +244,14 @@ final class CameraBuild {
                     new String[] {"v3.g", "b", "v3.c", "a", "v3.h", "b", "r2.m", "v"},
                     new String[] {"U8.d", "f", "zi.a", "s", "t"},
                     new String[] {"H4.p0", "a", "a", "com.android.camera.data.data.p", "l0",
-                            "com.android.camera.data.data.i", "S", "r2.T", "r6.f0", "U5", "X0", "m0"},
+                            "com.android.camera.data.data.i", "S", "r2.T", "r6.f0", "U5", "X0", "m0",
+                            "i9.g", "M7", "l9.n0", "l1", "l9.h", "j", "d0",
+                            "b", "l", "setZoomRatio", "j9.e", "B7", "j9.t", "n0"},
                     new String[] {"l7.k", "w"}, "r2.a",
                     new String[] {"l9.g", "d", "l9.h", "L4"},
                     new String[] {"Rr.d", "b", "Rr.a", "e"},
-                    new String[] {"r2.b0", "o", "c"}),
+                    new String[] {"r2.b0", "o", "c"},
+                    new String[] {"Q0", "X0", "J0", "Re.b"}),
     };
 
     static CameraBuild detect(ClassLoader cl) {
