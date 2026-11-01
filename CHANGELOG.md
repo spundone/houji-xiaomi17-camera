@@ -6,6 +6,11 @@
 - Fastshot: opening AF/MF no longer crashes. Its depth-of-field maths reads a sensor table houji's HAL doesn't have; the camera's built-in values are used instead. Manual focus and the distance scale work.
 - 50MP Photo: sliding the zoom down from the telephoto no longer crashes the camera. At 50MP the main camera only takes its full sensor, and any digital zoom made the HAL abort. Zoom now works as in Pro mode: each lens keeps its own view while you slide, the lens changes at the next stop (0.6x, 1x, 3.2x), and the zoom settles on the stop of the lens in use. The 2x stop is hidden at 50MP. The telephoto still zooms in past 3.2x.
 - Values from houji's own 6.7 profile: Fastshot presets 28, 35, 50 and 75 mm, Portrait zoom buttons 1x and 2.6x, and a 1/8000 s shortest shutter in Pro.
+- Lens switching at 12.5MP works again with 50MP left on in Pro: the 50MP zoom handling now applies only to the cameras 50MP opens on their own.
+- Video filters up to 4K (default 1080p 30 fps; they were limited to 1080p).
+- Front video filters: the camera uses houji's own filter set (Mild, LilyWhite, Bright, Fresh, Limpid, KC64, V250, H400, ColdWhite, Native, BWClassical, Natural); before, the front list was empty because 6.8's flagship set names tables houji's firmware doesn't have.
+- Adaptive telephoto (Settings) is off by default. Not yet seen to change the HAL's lens choice: the HAL still falls back to the main camera in dim light.
+- Tried and left out because the HAL crashes: Open Gate in Video mode, Movie at 4K, Video HDR at 4K 60 fps and on the front camera.
 
 ## 1.6.0
 

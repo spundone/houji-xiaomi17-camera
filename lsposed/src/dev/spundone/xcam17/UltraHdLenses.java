@@ -173,6 +173,15 @@ final class UltraHdLenses {
     }
 
     /**
+     * The cameras 50M opens on its own: main, ultra-wide, telephoto. The checks above can't tell
+     * the current mode (Pro's 50M setting reads on from Photo too), so the zoom hooks act only
+     * on these; 12.5M Photo runs on the multi-lens camera (5) and is left alone.
+     */
+    static boolean lensCamera(Object camera) {
+        return Integer.valueOf(MAIN_CAMERA).equals(camera) || AUX_CAMERAS.contains(camera);
+    }
+
+    /**
      * At 50M, switches lens only when the zoom passes the next lens's stop. The camera's own
      * checks switch on crossing 1x (to the ultra-wide) or the telephoto stop (telephoto to main),
      * so a slide held on a lens is handed the crossed stop as its old zoom once it gets there.
@@ -187,8 +196,9 @@ final class UltraHdLenses {
         @Override
         protected void beforeHookedMethod(MethodHookParam p) throws Throwable {
             float to = (Float) p.args[1];
-            if (to >= TELE_STOP || !ultraHdNow(ultraOn)) return;
+            if (to >= TELE_STOP) return;
             Object camera = actualCamera(p.args[2]);
+            if (!lensCamera(camera) || !ultraHdNow(ultraOn)) return;
             if (to <= UW_STOP + 0.01f) {
                 if (!Integer.valueOf(UW_CAMERA).equals(camera)) p.args[0] = TELE_STOP;
             } else if (Integer.valueOf(TELE_CAMERA).equals(camera) && to <= 1.0f) {
@@ -222,7 +232,7 @@ final class UltraHdLenses {
             if (!ultraHd(ultraOn, PHOTO_MODE)) return;
             Object ref = module.get(p.thisObject);
             Object camera = actualCamera(ref == null ? null : ((java.lang.ref.Reference<?>) ref).get());
-            if (camera == null) return;
+            if (!lensCamera(camera)) return;
             float now = zoom.getFloat(p.thisObject);
             float stop = Integer.valueOf(UW_CAMERA).equals(camera) ? UW_STOP
                     : Integer.valueOf(TELE_CAMERA).equals(camera) ? Math.max(now, TELE_STOP) : 1.0f;
@@ -251,7 +261,9 @@ final class UltraHdLenses {
             Object config = p.args[2];
             if (config == null || p.args[1] == null) return;
             float value = zoom.getFloat(config);
-            if (value == 1.0f || (value > 1.0f && Integer.valueOf(TELE_CAMERA).equals(cameraId.invoke(null, p.args[1])))
+            if (value == 1.0f) return;
+            Object camera = cameraId.invoke(null, p.args[1]);
+            if (!lensCamera(camera) || (value > 1.0f && Integer.valueOf(TELE_CAMERA).equals(camera))
                     || !ultraHdNow(ultraOn)) return;
             saved.set(zoom.getFloat(config));
             zoom.setFloat(config, 1.0f);
@@ -326,8 +338,12 @@ final class UltraHdLenses {
         protected void afterHookedMethod(MethodHookParam p) throws Throwable {
             float[] in = (float[]) p.args[0];
             float[] out = (float[]) p.getResult();
-            if (in == null || out == null || !ultraHdNow(ultraOn)) return;
-            p.setResult(lensStops(out.length < in.length ? in : out));
+            if (in == null || out == null) return;
+            if (out.length < in.length && ultraHdNow(ultraOn)) {
+                p.setResult(lensStops(in));
+            } else if (ultraHd(ultraOn, PHOTO_MODE)) {
+                p.setResult(lensStops(out));
+            }
         }
     }
 

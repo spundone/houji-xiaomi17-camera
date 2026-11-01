@@ -56,6 +56,8 @@ public class Entry implements IXposedHookLoadPackage {
         hookStreetMode(lp.classLoader);
         StreetFocus.hook(lp.classLoader, build);
         ProfileTables.hook(lp.classLoader, build);
+        VideoCaps.hook(lp.classLoader, build);
+        TeleFallback.hook(lp.classLoader, build);
     }
 
     /**

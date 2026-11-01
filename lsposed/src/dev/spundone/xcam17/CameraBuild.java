@@ -133,6 +133,19 @@ final class CameraBuild {
     final String zoomTogglesMethod;
     final String streetPresetsMethod;
     final String focalPresetClass;
+    /**
+     * The video quality component's quality check (limits, list, mode, caps, ?), and the static
+     * capability checks class with its all-scenes Dolby check. For {@link VideoCaps}.
+     */
+    final String qualityCheckClass;
+    /** The camera's settings store and its boolean getter (key, default), for {@link TeleFallback}. */
+    final String settingsClass;
+    final String settingsBooleanMethod;
+    /** In the camera capabilities class: the "is this vendor tag available" check (tag name). */
+    final String capsTagCheckMethod;
+    final String qualityCheckMethod;
+    final String capsChecksClass;
+    final String allScenesDolbyMethod;
 
     private CameraBuild(String label, String consent, String satCheckClass, boolean satCheckHasHdrArg,
             String hdr10, String hdr10Pro, String dolby, String dolbyConfigClass,
@@ -141,7 +154,7 @@ final class CameraBuild {
             String profileLoaderClass, String profileLoaderMethod, String profileMissingField,
             String profileFallback, String profileFallbackStored, String profileNamesMethod,
             String fpsRangeClass, String[] fpsRangeMethods, String componentsClass, String componentsMethod,
-            String flashComponentClass, String styleMaskMethod, String[] mutex, String[] watermark, String[] lenses, String[] newImage, String filterComponent, String[] openGate, String[] haptics, String[] streetFocus, String[] tables) {
+            String flashComponentClass, String styleMaskMethod, String[] mutex, String[] watermark, String[] lenses, String[] newImage, String filterComponent, String[] openGate, String[] haptics, String[] streetFocus, String[] tables, String[] videoCaps, String[] settings) {
         this.label = label;
         this.consent = consent;
         this.satCheckClass = satCheckClass;
@@ -225,13 +238,20 @@ final class CameraBuild {
         this.zoomTogglesMethod = tables == null ? null : tables[1];
         this.streetPresetsMethod = tables == null ? null : tables[2];
         this.focalPresetClass = tables == null ? null : tables[3];
+        this.settingsClass = settings == null ? null : settings[0];
+        this.settingsBooleanMethod = settings == null ? null : settings[1];
+        this.capsTagCheckMethod = settings == null ? null : settings[2];
+        this.qualityCheckClass = videoCaps == null ? null : videoCaps[0];
+        this.qualityCheckMethod = videoCaps == null ? null : videoCaps[1];
+        this.capsChecksClass = videoCaps == null ? null : videoCaps[2];
+        this.allScenesDolbyMethod = videoCaps == null ? null : videoCaps[3];
     }
 
     static final CameraBuild[] KNOWN = {
             new CameraBuild("6.7.000280.0 (Xiaomi 17)", "ei.c", "com.android.camera.data.data.j", true,
                     "t2.a", "t2.b", "t2.c", "n9.e", "h1", "n9.d",
                     DeviceFeatures.PROFILES_67, DeviceFeatures.FLAGS_67, null, null, null, null, null, null,
-                    null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+                    null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
             new CameraBuild("6.8.002090.2 (Xiaomi 18 Pro)", "Th.c", "com.android.camera.data.data.i", false,
                     "s2.a", "s2.b", "s2.c", "l9.h", "g1", "l9.g",
                     DeviceFeatures.PROFILES_68, DeviceFeatures.FLAGS_68, "Eu.f2", "l", "a",
@@ -251,7 +271,9 @@ final class CameraBuild {
                     new String[] {"l9.g", "d", "l9.h", "L4"},
                     new String[] {"Rr.d", "b", "Rr.a", "e"},
                     new String[] {"r2.b0", "o", "c"},
-                    new String[] {"Q0", "X0", "J0", "Re.b"}),
+                    new String[] {"Q0", "X0", "J0", "Re.b"},
+                    new String[] {"r2.g0", "C", "l9.h", "f2"},
+                    new String[] {"Xh.a", "h", "S0"}),
     };
 
     static CameraBuild detect(ClassLoader cl) {

@@ -18,8 +18,8 @@ import de.robv.android.xposed.XposedBridge;
 final class DeviceFeatures {
     /**
      * Flag method, the value it should answer, and what that does. An int[] value is appended
-     * to the int[] the method already returns (mode lists), rather than replacing it; a List
-     * value is answered as a fresh ArrayList on every call.
+     * to the int[] the method already returns (mode lists), rather than replacing it; an Ints
+     * value replaces it; a List value is answered as a fresh ArrayList on every call.
      */
     static final class Flag {
         final String method;
@@ -30,6 +30,15 @@ final class DeviceFeatures {
             this.method = method;
             this.value = value;
             this.what = what;
+        }
+    }
+
+    /** An int[] answer that replaces the method's own, as a fresh copy on every call. */
+    static final class Ints {
+        final int[] values;
+
+        Ints(int... values) {
+            this.values = values;
         }
     }
 
@@ -79,6 +88,8 @@ final class DeviceFeatures {
             new Flag("e2", Boolean.TRUE, "label the macro toggle Super macro"),
             new Flag("j3", Boolean.TRUE, "macro in mode 172 as well"),
             new Flag("K2", Boolean.TRUE, "macro in the fast-mode config list"),
+            new Flag("R0", new Ints(16), "filter type 16, as houji's 6.7 profile (F1): the 2024 flagship filter sets"),
+            new Flag("S0", 6, "filter version 6, as houji's 6.7 profile (G1): front video filters from houji's firmware"),
     };
 
     private DeviceFeatures() {}
@@ -100,13 +111,14 @@ final class DeviceFeatures {
         for (Flag flag : flags) {
             Class<?> type = flag.value instanceof Boolean ? boolean.class
                     : flag.value instanceof String ? String.class
-                    : flag.value instanceof int[] ? int[].class
+                    : flag.value instanceof int[] || flag.value instanceof Ints ? int[].class
                     : flag.value instanceof java.util.List ? java.util.ArrayList.class : int.class;
             int hooked = 0;
             for (Class<?> c : classes) {
                 Method m = flagMethod(c, flag.method, type);
                 if (m != null) {
                     XposedBridge.hookMethod(m, flag.value instanceof int[] ? new AppendInts((int[]) flag.value)
+                            : flag.value instanceof Ints ? new IntsResult(((Ints) flag.value).values)
                             : flag.value instanceof java.util.List ? new ListResult((java.util.List<?>) flag.value)
                             : new Entry.ConstantResult(flag.value));
                     hooked++;
@@ -126,6 +138,19 @@ final class DeviceFeatures {
         @Override
         protected void afterHookedMethod(MethodHookParam p) {
             p.setResult(new java.util.ArrayList<>(value));
+        }
+    }
+
+    static final class IntsResult extends de.robv.android.xposed.XC_MethodHook {
+        private final int[] value;
+
+        IntsResult(int[] value) {
+            this.value = value;
+        }
+
+        @Override
+        protected void afterHookedMethod(MethodHookParam p) {
+            p.setResult(value.clone());
         }
     }
 
