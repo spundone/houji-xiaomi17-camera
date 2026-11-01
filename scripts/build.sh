@@ -5,6 +5,9 @@
 #   scripts/build.sh --release       requires XCAM17_KEYSTORE / XCAM17_KEYSTORE_PASS / XCAM17_KEY_ALIAS
 #   scripts/build.sh --apk FILE      also bundle a camera APK into a local-only zip
 #
+# The module zip is all in one: it carries the LSPosed module APK (installed and, with Vector,
+# enabled by customize.sh) and the adaptive icon overlay (icon/, mounted at /product/overlay).
+#
 # Needs JDK 11+ and an Android SDK (ANDROID_HOME) with platforms;android-34 and build-tools.
 set -euo pipefail
 
@@ -65,16 +68,30 @@ lsposed_apk="$DIST/xcam17-lsposed-$VERSION$suffix.apk"
 "$BT/apksigner" verify "$lsposed_apk"
 echo "   $lsposed_apk"
 
+echo "== Icon overlay $VERSION"
+icon="$ROOT/icon"
+"$BT/aapt2" compile --dir "$icon/res" -o "$OUT/icon-res.zip"
+"$BT/aapt2" link -o "$OUT/icon-unsigned.apk" -I "$ANDROID_JAR" --manifest "$icon/AndroidManifest.xml" \
+    --version-name "$VERSION" --version-code "$VERSION_CODE" --replace-version "$OUT/icon-res.zip"
+"$BT/zipalign" -f -p 4 "$OUT/icon-unsigned.apk" "$OUT/icon-aligned.apk"
+icon_apk="$OUT/XCam17Icon.apk"
+"$BT/apksigner" sign "${sign[@]}" --v4-signing-enabled false --out "$icon_apk" "$OUT/icon-aligned.apk" \
+    2> >(grep -v '^WARNING' >&2)
+
 echo "== KernelSU module $VERSION"
 mod="$OUT/module"
 cp -R "$ROOT/module" "$mod"
+# The icon overlay is mounted by the module manager; the LSPosed module is installed by customize.sh.
+mkdir -p "$mod/system/product/overlay/XCam17Icon"
+cp "$icon_apk" "$mod/system/product/overlay/XCam17Icon/XCam17Icon.apk"
+cp "$lsposed_apk" "$mod/xcam17-lsposed.apk"
 cat > "$mod/module.prop" <<EOF
 id=xiaomi17_camera
 name=Xiaomi 17 Camera for houji
 version=$VERSION
 versionCode=$VERSION_CODE
 author=spundone
-description=Runs Xiaomi's newer camera (6.8.002090.2 from the 18 Pro, or 6.7.000280.0 from the 17) in place of MiuiCamera on AOSP ROMs for the Xiaomi 14. Pair with the LSPosed module.
+description=Runs Xiaomi's newer camera (6.8.002090.2 from the 18 Pro, or 6.7.000280.0 from the 17) in place of MiuiCamera on AOSP ROMs for the Xiaomi 14. All in one: installs the LSPosed module and an adaptive launcher icon.
 EOF
 module_zip="$DIST/xiaomi17_camera-$VERSION.zip"
 rm -f "$module_zip"

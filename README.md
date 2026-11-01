@@ -42,14 +42,19 @@ Other houji ROMs should work if they ship Xiaomi's camera stack (`/system/priv-a
 | Watermark shows "Xiaomi 14" | Works (6.8) |
 | Watermarks with HEIF photos (crashed before) | Works (6.8) |
 | 50MP on the ultra-wide, main and telephoto, in Photo (4:3 or 1:1) and Pro | Works (6.8) |
+| 50MP zoom works as in Pro: the lens changes at each stop (0.6x, 1x, 3.2x), no 2x | Works (6.8) |
 | Telemacro: Super Macro in Photo's menu uses the telephoto | Works (6.8) |
 | Video filters limited to the ones the phone has colour tables for | Works (6.8) |
+| Video filters up to 4K (default 1080p30) | Works (6.8) |
+| Front camera video filters (Xiaomi 14's own set: Mild, Fresh, KC64, H400 and others) | Works (6.8) |
 | Open Gate video (Pro video, 4096x3072 at 30/60 fps) | Works (6.8) |
 | Dual video (front and rear together) | Works (6.8) |
 | Haptics (shutter, zoom, mode switch, dials, sliders) | Works (6.8) |
-| Fastshot (Street) mode | Works (6.8) |
+| Fastshot (Street) mode, with 28 / 35 / 50 / 75 mm presets | Works (6.8) |
+| Portrait zoom buttons 1x and 2.6x, and 1/8000 s shutter in Pro (Xiaomi 14's own profile values) | Works (6.8) |
+| Short video (swipe up > Short video) | Partly (6.8): records and saves; zoom and multi-clip recording don't work |
 | Ultra HDR JPEG photos, with an estimated gain map (set the photo format to JPEG) | Works (6.8) |
-| Movie mode (swipe up on the viewfinder > Movie) | Works (6.8), with the regular video recorder |
+| Movie mode (swipe up on the viewfinder > Movie) | Works (6.8), 1080p 24 fps |
 | Live moments while recording, tracking focus in Pro photo | Works (6.7 and 6.8) |
 | Import LUT for Pro video Log | Works (6.8) |
 
@@ -57,14 +62,14 @@ Other houji ROMs should work if they ship Xiaomi's camera stack (`/system/priv-a
 
 1. Root with **KernelSU** (KernelSU Next works) and install an **LSPosed** framework (Vector or LSPosed).
 2. Copy a supported camera APK (6.8.002090.2 or 6.7.000280.0) to the phone's `Download` folder. [docs/houji-camera.md](docs/houji-camera.md#4-getting-the-camera-apks) says where to find them and lists their SHA-256.
-3. In the KernelSU manager, install `xiaomi17_camera-<version>.zip`. It checks the device and the APK's SHA-256 before installing.
-4. Install `xcam17-lsposed-<version>.apk`, then enable **Xiaomi 17 Camera for houji** in LSPosed. Its scope is set to the camera already.
-5. Reboot.
+3. In the KernelSU manager, install `xiaomi17_camera-<version>.zip`. It checks the device and the APK's SHA-256, then installs the LSPosed module it carries (and, with Vector, enables it for the camera).
+4. With an LSPosed build other than Vector, enable **Xiaomi 17 Camera for houji** in LSPosed. Its scope is set to the camera already.
+5. Reboot. The camera gets an adaptive icon on AOSP launchers; this needs a KernelSU mount module (such as hybrid_mount) to mount the module's system/ folder.
 
 From a computer with Vector, steps 4 and 5 can be scripted:
 
 ```bash
-adb install xcam17-lsposed-1.6.0.apk
+adb install xcam17-lsposed-1.7.0.apk
 ```
 
 ```bash
@@ -86,6 +91,8 @@ Remove the module in the KernelSU manager and reboot. The uninstaller restores t
 - **4K60 lens switching isn't advertised by the hardware.** The Xiaomi 14's camera HAL lists multi-lens video for 720p, 1080p30, 1080p60, 4K24 and 4K30, not 4K60. The LSPosed module overrides that. In testing the lens changed cleanly and files stayed 3840x2160 at about 58 fps, but long 4K60 clips may run hot.
 - **Camera 6.8 runs on a shared profile.** It has no Xiaomi 14 profile, so the module gives it Xiaomi's generic flagship profile plus the flags above. Some 18 Pro features stay off: Leica Legendary mode (its looks are rendered by HAL support the Xiaomi 14 lacks), Street mode and the separate Ultra-pixel mode. There's no 25MP option; this sensor offers 12.5MP and 50MP.
 - **Switching camera builds** resets the camera's saved mode. If the camera closes with "invalid module index" after switching, clear its data (`pm clear com.android.camera`).
+- **The telephoto falls back to the main camera in dim light** in Photo and Portrait (12.5MP). That's the HAL's own choice ("Adaptive telephoto"); the setting defaults to off but the HAL doesn't seem to take the request. 50MP opens the telephoto directly.
+- **Not possible on this HAL:** Open Gate in normal Video mode (Pro video has it), Movie at 4K, video HDR at 4K60 or on the front camera. Each crashed the camera service when forced.
 - **Grain and Leica-off need 6.8.** Camera 6.7 has no UI for either.
 - **HDR vs Dolby Vision.** They're separate. Dolby Vision records 10-bit HLG video with Dolby Vision profile 8.4 metadata. The HDR tile is multi-frame video HDR: it merges exposures for a wider dynamic range but, with Dolby Vision off, still records standard 8-bit SDR (BT.709). They can be on together.
 - **Region.** The CN build's China-only extras stay on. Only the consent check is redirected.

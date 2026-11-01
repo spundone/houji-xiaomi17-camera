@@ -58,6 +58,7 @@ public class Entry implements IXposedHookLoadPackage {
         ProfileTables.hook(lp.classLoader, build);
         VideoCaps.hook(lp.classLoader, build);
         TeleFallback.hook(lp.classLoader, build);
+        if (build.qualityCheckClass != null) ShortVideo.hook(lp.classLoader);
     }
 
     /**

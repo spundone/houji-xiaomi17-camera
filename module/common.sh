@@ -5,8 +5,10 @@ MODDIR_COMMON=/data/adb/modules/xiaomi17_camera
 KSUD=/data/adb/ksud
 
 # Apps that must see the module's files. KernelSU's default profile unmounts module
-# changes for every non-root app, which made the camera load the stock 6.4 APK.
+# changes for every non-root app, which made the camera load the stock 6.4 APK. The launcher
+# loads the camera's label and icon (and the icon overlay) from those files as well.
 VISIBLE_PACKAGES="com.android.camera"
+[ -f "$MODDIR_COMMON/launcher" ] && VISIBLE_PACKAGES="$VISIBLE_PACKAGES $(cat "$MODDIR_COMMON/launcher")"
 
 known_apk() {
     # $1: APK path. Matches against the hashes shipped next to this script.
