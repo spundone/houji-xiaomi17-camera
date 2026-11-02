@@ -7,11 +7,11 @@ Nothing has been submitted. This is a draft PR description, plus where it could 
 | Repo | Fit | What it would need |
 | --- | --- | --- |
 | [Nissivardhan/android_device_xiaomi_houji-miuicamera](https://github.com/Nissivardhan/android_device_xiaomi_houji-miuicamera) (lineage-24.0) | Best. It already ships MiuiCamera on houji for Android 17, extracts and shims the JNI libraries 6.8 loads, and carries 4 of the same fixes (consent, NAL length, client name ×2) | A 6.8 APK source: they extract from houji's own HyperOS firmware, which has 6.4. 6.8 comes from the Xiaomi 18 Pro, which isn't a public houji dump, so it may not meet LineageOS's "blobs from a public stock image" rule. Either a separate branch/flavour or a `MiuiCamera68` option. Their patches are `git am` smali diffs applied by `apktool_patch`; ours are `patches.json`, so they'd need `xcampatch.py` called from `extract-files.py` (`blob_fixup().call(...)`), or the patches re-expressed as smali diffs (which puts decompiled code in the repo) |
-| [Nissivardhan/android_vendor_xiaomi_houji-miuicamera](https://github.com/Nissivardhan/android_vendor_xiaomi_houji-miuicamera) | Goes with the device repo | The patched 6.8 APK as a blob. That's Xiaomi's binary; publishing it is their call, not this project's |
+| [Nissivardhan/android_vendor_xiaomi_houji-miuicamera](https://github.com/Nissivardhan/android_vendor_xiaomi_houji-miuicamera) | Goes with the device repo | The patched 6.8 APK as a blob, as the device tree here already carries it |
 | Infinity X's houji device tree | Through the repo above | Infinity X 4.0 on the test phone ships Nissivardhan's houji-miuicamera tree: identical props and files, read over adb. A change there reaches Infinity X when its maintainer syncs; Infinity X itself would only need the `-include`/`inherit-product` lines if the 6.8 option is a separate tree |
 | [Evolution-X-Devices/device_xiaomi_miuicamera](https://github.com/Evolution-X-Devices/device_xiaomi_miuicamera), [vherawidatama/vendor_xiaomi_camera](https://gitea.com/vherawidatama/vendor_xiaomi_camera) | Weaker | Shared trees for several Xiaomi phones, older camera builds (lineage-22.2). 6.8's houji fallbacks (CommonFlagship profile, houji's 6.7 flag values) are houji-specific |
 
-The kit is self-contained, so it can also stay here: a ROM maintainer copies `aosp/device/` and runs `patch-apk.sh` themselves.
+Meanwhile the published [device tree](https://github.com/spundone/android_device_xiaomi_houji-miuicamera-port) works as a standalone addition to a houji ROM.
 
 ## Draft PR description (for the houji-miuicamera device repo)
 
@@ -28,9 +28,8 @@ Adds an option to ship Xiaomi's camera 6.8.002090.2 instead of houji's 6.4. It k
 
 Patches are listed in `patches.json` and applied by `xcampatch.py`, which finds methods by class, name, prototype and fingerprint strings and refuses to patch anything that doesn't match exactly. The hook logic lives in a small helper dex added to the APK. No decompiled code is committed.
 
-Each fix was tested on houji (Infinity X 4.0, Android 17) as an LSPosed hook on the same camera build, as part of [houji-xiaomi17-camera](https://github.com/spundone/houji-xiaomi17-camera) v1.7.0. The patched APK hasn't been tested platform-signed in a ROM build yet.
+Each fix was tested on houji (Infinity X 4.0, Android 17) as an LSPosed hook on the same camera build, as part of [houji-miuicamera-port](https://github.com/spundone/houji-miuicamera-port). The patched APK hasn't been tested platform-signed in a ROM build yet.
 
-Not included: 50MP lens switching at the zoom stops, Ultra HDR JPEG, haptics.
 
 ## Open questions before submitting
 

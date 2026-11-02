@@ -1,7 +1,7 @@
 {
  "build": "6.8.002090.2",
  "sha256": "729b0b193d1684e7c14ed0ca56ba15247d58016c70164329de233b49727a2c48",
- "ported_from": "spundone/houji-xiaomi17-camera v1.7.0 (2f8c709), lsposed/src/dev/spundone/xcam17; UltraHdrJpeg and HeifGainMap from 1b4f7b6 (HEIC Ultra HDR); UltraHdRaw, Dng50 and LeicaLegendary from v1.8.0 and after",
+ "ported_from": "spundone/houji-miuicamera-port (then houji-xiaomi17-camera) v1.7.0 (2f8c709), lsposed/src/dev/spundone/xcam17; UltraHdrJpeg and HeifGainMap from 1b4f7b6 (HEIC Ultra HDR); UltraHdRaw, Dng50 and LeicaLegendary from v1.8.0 and after",
  "patches": [
   {
    "id": "client-name",

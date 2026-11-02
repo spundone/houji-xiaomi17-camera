@@ -7,7 +7,7 @@ What's known not to work on the Xiaomi 14 with camera 6.8, why, and the next ste
 | Item | Why it's missing | Next step |
 | --- | --- | --- |
 | **Short video zoom and multiple clips** | Short film (Vlog Pro) now covers template clips recorded segment by segment. Short video (MiLive, mode 183) opens and records, on the main camera in a standard session (the HAL refused its 0x8004 video session). Its zoom slider moves but the camera doesn't follow, and the second shutter press stops and opens the review instead of pausing for another clip. | Compare with 6.7's MiLive on houji (which camera and session it opened, how zoom reached the request), and check whether the module expects the multi-lens camera (5) for both. |
-| **Leica styles and photo filters on the front camera** | `r2.m.u` builds the Style list only for camera index 0, and `y3.a.r` sends `stylizationType` only for back-facing cameras. The front HAL reports the same style mask (6). | Answer camera index 0 inside `r2.m.u` and the facing check inside `y3.a.r` for the front, then check whether the front pipeline applies the look. |
+| **Leica styles and photo filters on the front camera** | `r2.m.u` builds the Style list only for camera index 0, and `y3.a.r` sends `stylizationType` only for back-facing cameras. The front HAL reports the same style mask (6). Answering both for the front builds the list (branch `wip/front-style`), but Photo's front top bar has no slot for the Style button, and the effect is unconfirmed. | Add the Style item to the front top bar config, then check whether the front pipeline applies the look. |
 | **Front pinch zoom** | The front zoom comes from Smart FOV (`v2.o0`, profile `j5`), which gives Photo a fixed toggle and Video nothing. The HAL allows up to 10x digital zoom on the front. | Answer `j5` with plain zoom for 162/163 on the front and test. |
 | **Lens switching while recording in Pro video** | Not looked at yet. | |
 | **Remove-watermark data for frame watermarks in HEIF** | `WatermarkSubimage` drops the remover data when the watermark covers nothing (the HEIF path crashed without it), so the Gallery can't strip frame watermarks later. JPEG behaves the same. | Low value. Fill the missing source of the XMP helper (`Qg.r`) instead of dropping the data. |
@@ -22,7 +22,7 @@ These depend on support the Xiaomi 14's 2024 camera HAL doesn't have. A module c
 | Item | What's missing |
 | --- | --- |
 | **Real Ultra HDR / HDR display photos** | The HAL never produces Xiaomi's XDR gain map, even with `xiaomi.snapshot.XDREnable` requested. The module's gain map is an estimate. |
-| **Leica Legendary / Leica Essential without the Leica port** (M9 CCD, M3 film, M10R looks) | The looks are rendered by the HAL through `com.xiaomi.sessionparams.legendMode`, which houji doesn't define. With the community Leica port in Download they are rendered in the app instead (`LeicaLegendary`). |
+| **Leica Essential without the Leica port** (M9 CCD, M3 film, M10R looks) | The looks are rendered by the HAL through `com.xiaomi.sessionparams.legendMode`, which houji doesn't define. With the community Leica port's files (copied by the installer, or in the ROM device tree) they are rendered in the app instead. |
 | **Original portrait on the telephoto** | Portrait sessions are identical for Original and Master (`bokehRole` 63 at 2.6x) except `stylizationType` 2; with 2 the HAL's capture result reports `xiaomi.bokeh.triggerFallback=1` and renders from the main camera. Sending another style value would just be Master or Leica portrait. |
 | **Open Gate in Video mode** | Video mode's recording pipeline aborts the camera service at 4096x3072, on the multi-lens camera and on the main camera alone. Pro video's Open Gate works. |
 | **Movie at 4K, video HDR at 4K60 or on the front** | The HAL lists none of them (video bokeh stops at 1080p30, HDR at 4K30, front HDR unsupported); forcing them crashed. |
@@ -51,7 +51,7 @@ These came up as worries and checked out:
 
 ## Building it into ROMs
 
-Shipping the camera in a ROM without KernelSU or LSPosed means turning each hook into a patch of the APK, re-signed with the platform key, plus a device-tree folder. [aosp-integration.md](aosp-integration.md) has the research and a proposed `aosp/` kit (about one to two weeks of work).
+Done: the patched APK and its device tree ([aosp-integration.md](aosp-integration.md)). Still to do: a full ROM build with the tree, a test of the camera as `platform_app`, and offering it to the houji-miuicamera tree ([aosp/UPSTREAM.md](../aosp/UPSTREAM.md)).
 
 ## Not yet looked at
 

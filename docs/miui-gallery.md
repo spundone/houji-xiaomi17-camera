@@ -1,6 +1,6 @@
 # MIUI Gallery alongside the camera
 
-The camera hands photos to Xiaomi's Gallery: the thumbnail next to the shutter opens Gallery's photo view, and Gallery's editor and watermark tools expect Xiaomi's metadata. On the test phone this runs with a separate KernelSU module that installs MIUI Gallery on the AOSP ROM. This repo doesn't ship or depend on it, but this is how the two are used together.
+The camera hands photos to Xiaomi's Gallery: the thumbnail next to the shutter opens Gallery's photo view, and Gallery's editor and watermark tools expect Xiaomi's metadata. On the test phone this runs with a separate KernelSU module that installs MIUI Gallery on the AOSP ROM. The camera doesn't depend on it, and releases don't ship it; a locally built KernelSU-only zip can install it alongside (`scripts/build-kit-zip.sh --gallery`).
 
 ## The module
 

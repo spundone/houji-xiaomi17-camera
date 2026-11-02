@@ -1,125 +1,61 @@
-# Shipping the camera in an AOSP ROM build
+# Building the camera into a ROM
 
-Research notes on building this camera into a ROM out of the box, with no KernelSU or LSPosed. The kit these notes proposed is in [`aosp/`](../aosp/README.md); [Using the kit](#using-the-kit) at the end says how to use it and what's been checked.
+This covers shipping camera 6.8.002090.2 inside an AOSP ROM build for houji, with no KernelSU or LSPosed. The camera APK is patched ahead of time (the LSPosed hooks become code patches plus a small helper dex), then installed as a privileged app signed with the platform key.
 
-## How ROMs ship Xiaomi's camera today
+## Quick route: the device tree
 
-ROMs take Xiaomi's camera APK and unpack it with apktool. They apply patches to the decompiled code (smali), repack it, and ship it as a prebuilt system app signed with the **platform key**. A device-tree folder alongside it carries SELinux policy, permission XMLs and properties.
+[android_device_xiaomi_houji-miuicamera-port](https://github.com/spundone/android_device_xiaomi_houji-miuicamera-port) has the patched APK, Leica Essential's files and everything else the build needs. Its README has the three steps: sync it, add one line to `BoardConfig.mk`, one to `device.mk`.
 
-### Closest template: houji on Android 17
+It layers on the 6.4 [houji-miuicamera](https://github.com/Nissivardhan/android_device_xiaomi_houji-miuicamera) device and vendor trees, which houji ROMs such as Infinity X already include. 6.8 loads `libcamera_algoup_jni.xiaomi.so` and `libcamera_mianode_jni.xiaomi.so` from `/system`, and those trees ship and shim them.
 
-The repos are [Nissivardhan/android_device_xiaomi_houji-miuicamera](https://github.com/Nissivardhan/android_device_xiaomi_houji-miuicamera) (lineage-24.0) and its [vendor repo](https://github.com/Nissivardhan/android_vendor_xiaomi_houji-miuicamera).
-
-- **APK source:** houji's own HyperOS firmware (OS3.0.303.0.WNCMIXM).
-- **Patching:** LineageOS extract-utils applies the smali patches in `patches/` to `MiuiCamera.apk` (`blob_fixup().apktool_patch('patches')`). It signs the result with `certificate: "platform"` (see [bp_builder.py](https://github.com/LineageOS/android_tools_extract-utils/blob/lineage-24.0/extract_utils/bp_builder.py)).
-- **Patches that match fixes in this repo:**
-  - "Assume that mod_device is global" and "Remove Leica permissions limited popup": the consent dialog.
-  - "Stop setting NAL-length prefixed encoder output": the same fix as `AnnexBVideo`.
-  - "Provide Leica camera client name" and "Preserve client name in MIVI capture requests": the same fix as `Entry.hookClientName`. They add a `LeicaClientName` helper class, the one the ROM's 6.4 camera also has.
-- **Native shims:** `libgui_shim_miuicamera`, `libts_graphicbuffer_shim`, and a byte patch on `libcamera_algoup_jni`.
-- **SELinux:** `sepolicy/vendor/platform_app.te` gives `platform_app` / `platform_app_36` the access this repo's `module/sepolicy.rule` gives `priv_app_36`:
-  - the background save service;
-  - binder calls and fds with the camera HAL and Xiaomi's post-processing HAL;
-  - the camera and display properties.
-- **Other files:**
-  - privapp permissions;
-  - a hidden-API allowlist;
-  - `system.prop` with `ro.miui.build.region`, `ro.product.mod_device` and `persist.vendor.camera.privapp.list`.
-
-### Other examples
-
-- [gitea vherawidatama/vendor_xiaomi_camera](https://gitea.com/vherawidatama/vendor_xiaomi_camera) (houji and the 14 Pro / Ultra, lineage-22.2): `android_app_import` with platform certificate and `privileged: true`, overriding the stock camera packages.
-- [PocoF3Releases/device_xiaomi_camera](https://github.com/PocoF3Releases/device_xiaomi_camera): gives the camera its own SELinux domain through `seapp_contexts` instead of widening `platform_app`.
-- [Evolution-X-Devices/device_xiaomi_miuicamera](https://github.com/Evolution-X-Devices/device_xiaomi_miuicamera), and a [MiuiCamera 6.8 tree for Redmi devices](https://github.com/AbdoAhmedElbanaa/android_device_xiaomi_miuicamera_v6.8_miatoll).
-
-### A framework-side option for the client name
-
-LineageOS-derived `frameworks/av` can fill a vendor tag with the client package name (`CAMERA_PACKAGE_NAME`, set with `soong_config_set,camera,package_name,...`). It only sets the session parameter at stream configuration, not every request, so the houji tree uses the APK patch instead.
-
-## Replacing each hook
-
-Patching the APK is the practical route. Because a patched APK must be re-signed, it then runs as `platform_app`, which the ROM's policy mostly covers already. No signature self-check was found in the camera. Xiaomi cloud features (sticker downloads, account features) may not work with another signer; that hasn't been checked.
-
-| Current piece | In a ROM build | Effort |
-| --- | --- | --- |
-| Client name (`Entry.hookClientName`) | APK patch: helper class plus calls in the request builders, as in the houji tree | Low |
-| `AnnexBVideo` | APK patch: skip the NAL-length branch in the recorder setup | Low |
-| `SaliencyOff` | APK patch: the checker's init/process return false | Low |
-| Consent region | APK patch: the consent region returns GLOBAL | Low |
-| Missing profile, marketing name | APK patch: load `CommonFlagship` and clear the missing-profile flag (or add a Houji profile class); name from `ro.product.marketname` | Medium |
-| `DeviceFeatures` flags | APK patches generated from the flag table: constant returns on the profile classes | Medium |
-| Lens switching while recording, front Dolby 4K, `NaturalStyle`, `OpenGate` | APK patches: small return-value edits | Low to medium |
-| `MutexDrop`, `WatermarkSubimage`, `VideoFilterLuts`, `MovieRecorder`, `CameraHaptics` | Java helpers compiled into an extra dex, plus call sites patched in | Medium |
-| `FillLight60`, `UltraHdLenses`, `UltraHdrJpeg` | Same, with more call sites | Medium to high |
-| KernelSU swap, profile and package-cache steps | Not needed: the ROM ships the app | None |
-| `module/sepolicy.rule` | Device tree, rewritten for the platform domain (or a dedicated one) | Low |
-
-Other routes considered:
-- **Framework patches** (`frameworks/av`, `frameworks/base`): they change behaviour for every app and are harder to land. They're only worth it for the client name, where an option already exists.
-- **[LSPatch](https://github.com/JingMatrix/LSPatch):** embeds this LSPosed module into the APK so it runs without root. It's quick as a stopgap, but ships a hooking runtime inside a system app, which ROM maintainers are unlikely to accept.
-
-## Redistribution
-
-ROM vendor repos commonly carry Xiaomi's APKs and libraries. That is tolerated, not licensed; LineageOS only asks that blobs come from a public stock image. This project keeps its rule: it never publishes the APK. Smali patch files include small fragments of decompiled code as context. Patches that find methods by fingerprint and are written in code avoid that, and also survive name changes between camera builds better.
-
-## Proposed kit
-
-An `aosp/` folder in this repo:
-
-- `device/`: a drop-in `device/xiaomi/houji-miuicamera` with:
-  - `Android.bp` (`android_app_import`, platform certificate, privileged, overriding the ROM's camera);
-  - the makefiles;
-  - permission and sysconfig XMLs;
-  - `sepolicy/vendor/platform_app.te`;
-  - properties.
-- `patches/6.8.002090.2/`: apktool smali patches, in the format extract-utils applies.
-- `helpers/`: the hook logic rewritten as plain static Java methods, compiled into an extra dex that the patches call.
-- `tools/patch-apk.sh`: checks the user's APK against `module/known-apks.sha256`, then decompiles it, applies the patches, adds the helper dex, rebuilds and aligns it. The ROM build signs it with the platform key.
-
-Estimated at one to two weeks to port and re-test everything in the feature table. Each new camera build needs the patches rebased.
-
-Infinity X 4.0's houji build (read over adb, Nov 1) uses Nissivardhan's houji-miuicamera tree, or a copy of it. Its props are that tree's `system.prop` exactly (`ro.product.mod_device=shennong`, `persist.vendor.camera.privapp.list=com.android.camera,org.lineageos.aperture`, `ro.miui.ui.version.name=V816`). Its files are there too: `privapp-permissions-miuicamera.xml` and `-miuiscanner.xml`, `miuicamera-hiddenapi-package-allowlist.xml`, both public-library lists, and `libgui_shim_miuicamera.so` beside the camera JNI libraries in `/system/lib64`.
-
-Not verified yet:
-- whether 6.8 needs newer camera JNI libraries than houji's firmware has (the KernelSU swap working suggests not);
-- whether 6.8 behaves differently when platform-signed.
-
-## Using the kit
-
-The kit was built from `main` at v1.7.0 (2f8c709). Two things differ from the proposal above:
-
-- **Patches are data, not smali diffs.** `aosp/patches/6.8.002090.2/patches.json` (generated by `patches.py`) lists each method by class, name and prototype, with fingerprint strings it must contain, and what to do to it. `aosp/tools/xcampatch.py` applies it. The repo carries no decompiled code, and a patch whose method has moved or changed fails the build instead of patching the wrong thing. extract-utils' `apktool_patch` takes `git am` style patches, so the kit runs as its own step (`patch-apk.sh`) before the ROM build instead.
-- **The device tree layers on the 6.4 tree.** 6.8 loads `libcamera_algoup_jni.xiaomi.so` and `libcamera_mianode_jni.xiaomi.so` from `/system`, not from its APK, and the existing houji-miuicamera device and vendor trees extract and shim those. So the kit's tree goes to `device/xiaomi/houji-miuicamera-68`, and its `MiuiCamera68` module overrides their `MiuiCamera`.
-
-### Steps
+## Building the tree yourself
 
 1. Get the camera APK (6.8.002090.2, SHA-256 `729b0b19…2c48`); see [houji-camera.md](houji-camera.md#4-getting-the-camera-apks).
 2. Patch it:
 
    ```bash
-   aosp/tools/patch-apk.sh MiuiCamera.apk out/MiuiCamera.apk
+   aosp/tools/patch-apk.sh MiuiCamera.apk patched.apk
    ```
 
-   Needs JDK 11+, Python 3, an Android SDK (build-tools, a platform 34 or newer) apktool (tested with 3.0.3) and about 1 GB of free disk. It stops on any other APK, and on any patch that doesn't match exactly.
-3. Copy `aosp/device/` to `device/xiaomi/houji-miuicamera-68` in the ROM tree, and the patched APK to its `prebuilt/MiuiCamera.apk`.
-4. Include it after the houji-miuicamera tree: `-include device/xiaomi/houji-miuicamera-68/BoardConfig.mk` in `BoardConfig.mk`, and `$(call inherit-product-if-exists, device/xiaomi/houji-miuicamera-68/device.mk)` in `device.mk`.
-5. Build. The ROM build signs the APK with the platform key; the camera then runs as `platform_app` (or `platform_app_36`), which `sepolicy/vendor/platform_app.te` covers.
+   Needs JDK 11+, Python 3, an Android SDK (build-tools and a platform 34 or newer), apktool (tested with 3.0.3) and about 1 GB of free disk. It stops on any other APK, and on any patch that doesn't match exactly. [aosp/README.md](../aosp/README.md) explains how the patches work and lists what each hook became.
+3. Write the device tree, optionally with the Leica port's files:
 
-Upgrading from the KernelSU build: remove the KernelSU and LSPosed modules first, and clear the camera's data once (`pm clear com.android.camera`), since the app's signer changes.
+   ```bash
+   aosp/tools/make-device-tree.sh patched.apk OUT_DIR [--leica LEICA_PORT.apk]
+   ```
 
-### What each hook became
+4. Put `OUT_DIR` at `device/xiaomi/houji-miuicamera-port` and add the two lines from its README.
 
-[aosp/README.md](../aosp/README.md#ported-hooks) has the table. Every hook in v1.7.0 is ported (71 patches, including two fixes found on the phone), plus HEIC Ultra HDR from 1b4f7b6. Hooks that re-ran the original method under different conditions (`UltraHdLenses`) call the renamed original (`<name>$xcam`) through reflection, and two of its hooks skip the original through a "guard".
+Users coming from the KernelSU module should remove it and the LSPosed module, then clear the camera's data once (`pm clear com.android.camera`), since the app's signer changes.
 
-### Status
+## Status
 
-- `patch-apk.sh` runs end to end on 6.8.002090.2 in under a minute. All 53 patches match exactly the methods they expect. The rebuilt APK keeps its package name and version, gains the helper dex as `classes11.dex`, and passes `zipalign -c`.
-- The script's own check (the rebuilt APK decoded again) finds all 59 generated methods and all 44 redirected call sites, with no calls to the original framework methods left outside the helpers.
-- The dex files were also checked independently with `dexdump -d`. Each patched method has its new body, each wrapper calls its `$xcam` original and its helper, and the helper dex holds the 15 helper and stand-in classes.
-- The output is the original APK with only its dex files replaced (and the helper dex added). The first build repacked everything through apktool. On macOS's case-insensitive disk that merged 131 resource files whose obfuscated names differ only in case (`res/NSC.xml` and `res/nsc.xml`), and the camera crashed loading one.
-- On the phone (Nov 1, Infinity X 4.0) the patched APK ran debug-signed in place of the KernelSU module's APK, with the LSPosed module disabled. The camera opens, the helpers log the profile swap and haptics, and the user's checks passed: 50MP lens switching, haptics, Portrait's 2.6x button and the rest. JPEG photos carry the Ultra HDR gain map.
-- Portrait 2.6x showed a main-camera crop, for two reasons, both also in the LSPosed build:
-  - Original portrait. Portrait offers it when style-mask bit 3 is set (`l9.h.E2`), and `NaturalStyle` forces that bit to add Original to Photo. Original portrait also needs bit 0, and houji's HAL reports a mask of 6 (bits 1 and 2) on every camera, so it rendered Original portrait from the main camera. The kit hides Original portrait in Portrait's style list and keeps Original in Photo. Tested: Master and Leica portrait use the telephoto at 2.6x.
-  - Adaptive telephoto off was never sent. The camera sends `com.xiaomi.teleFallback.isDisable` only when `com.xiaomi.teleFallback.isSupported` is listed (`l9.h.r5`), and houji's HAL doesn't list it. The LSPosed hook answers the availability of the disable tag, a check 6.8 doesn't use for this. The kit answers `r5` yes on rear cameras, so the setting now reaches the HAL.
-- Not tested as `platform_app`: that needs the ROM's platform key, so in a ROM build.
-- The run needs about 1 GB of free disk: apktool decodes the APK twice (to patch, then to verify).
+- `patch-apk.sh` applies all 89 patches to 6.8.002090.2 in under a minute, decodes the result again and checks every generated method, redirected call and added field is in it.
+- The output is the original APK with only its dex files replaced, plus the helper dex. (Repacking everything through apktool merged resource files whose obfuscated names differ only in case on macOS, and the camera crashed.)
+- On the phone (Infinity X 4.0, Android 17), the patched APK runs in place of the 6.4 camera, signed with a test key and installed by the KernelSU-only zips. Checked: Photo on all lenses, 50MP switching, Pro 50MP RAW on the telephoto (8160x6144 DNG), Portrait 2.6x, Short film, Essential Moment (M3, M10R), Ultra HDR, haptics.
+- Not yet tested: a full ROM build with the device tree, and the camera running as `platform_app`.
+
+## How ROMs ship Xiaomi's camera
+
+ROMs take Xiaomi's camera APK, patch its decompiled code (smali) with apktool, and ship it as a prebuilt system app signed with the platform key. A device-tree folder beside it carries SELinux policy, permission XMLs and properties.
+
+The houji template is [Nissivardhan/android_device_xiaomi_houji-miuicamera](https://github.com/Nissivardhan/android_device_xiaomi_houji-miuicamera) (lineage-24.0) with its [vendor repo](https://github.com/Nissivardhan/android_vendor_xiaomi_houji-miuicamera):
+
+- The APK comes from houji's own HyperOS firmware (OS3.0.303.0.WNCMIXM), patched by LineageOS extract-utils (`blob_fixup().apktool_patch('patches')`) and signed with `certificate: "platform"`.
+- Its patches overlap this project's fixes: consent ("Assume that mod_device is global", "Remove Leica permissions limited popup"), Annex-B video ("Stop setting NAL-length prefixed encoder output") and the client name ("Provide Leica camera client name", "Preserve client name in MIVI capture requests").
+- Native shims: `libgui_shim_miuicamera`, `libts_graphicbuffer_shim`, and a byte patch on `libcamera_algoup_jni`.
+- `sepolicy/vendor/platform_app.te` gives `platform_app` and `platform_app_36` what `module/sepolicy.rule` gives `priv_app_36` here.
+- Infinity X 4.0's houji build uses that tree or a copy: its props and files match exactly (read over adb).
+
+Other examples: [vherawidatama/vendor_xiaomi_camera](https://gitea.com/vherawidatama/vendor_xiaomi_camera) (`android_app_import`, platform certificate, privileged), [PocoF3Releases/device_xiaomi_camera](https://github.com/PocoF3Releases/device_xiaomi_camera) (its own SELinux domain through `seapp_contexts`), [Evolution-X-Devices/device_xiaomi_miuicamera](https://github.com/Evolution-X-Devices/device_xiaomi_miuicamera), and a [MiuiCamera 6.8 tree for Redmi devices](https://github.com/AbdoAhmedElbanaa/android_device_xiaomi_miuicamera_v6.8_miatoll).
+
+## Design choices
+
+- **Patches are data, not smali diffs.** `aosp/patches/6.8.002090.2/patches.json` (generated by `patches.py`) names each method by class, name and prototype, with fingerprint strings it must contain. `aosp/tools/xcampatch.py` applies it. The repo holds no decompiled code, and a method that moved or changed fails the build instead of being patched wrong. extract-utils' `apktool_patch` takes `git am` smali diffs, so the patcher runs as its own step.
+- **Hooks on framework classes become call-site rewrites.** The camera's calls to `CameraDevice.createCaptureRequest`, `MediaCodec.configure` or `DngCreator` are redirected to static helpers. A constructor call stays, with the helper called right after it.
+- **Code loaded at run time gets what it expects.** The Leica port's processor reads two fields it added to the camera's photo task; a patch adds those fields to the camera's own class.
+- **The launcher icon overlay targets SDK 28.** The camera declares nothing overlayable, which Android lets only a preinstalled overlay targeting an SDK before 29 ignore.
+- **The client name** could also come from LineageOS's `frameworks/av` (`soong_config_set,camera,package_name,...`), but that sets it only at stream configuration, not on every request, so the APK patch is used.
+- **Not chosen:** framework patches (they change every app's behaviour), and [LSPatch](https://github.com/JingMatrix/LSPatch), which would ship a hooking runtime inside a system app.
+
+Each new camera build needs its patches rebased: `patches.py` keeps the obfuscated names in one place per hook. [aosp/UPSTREAM.md](../aosp/UPSTREAM.md) drafts how this could be offered to the houji-miuicamera tree.

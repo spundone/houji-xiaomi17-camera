@@ -27,5 +27,5 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: xcam17-debug
+          name: houji-miuicamera-port-debug
           path: dist/

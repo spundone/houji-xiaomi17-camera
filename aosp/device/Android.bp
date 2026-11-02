@@ -1,11 +1,12 @@
 //
-// SPDX-FileCopyrightText: 2026 The houji-xiaomi17-camera authors
+// SPDX-FileCopyrightText: 2026 The houji-miuicamera-port authors
 // SPDX-License-Identifier: Apache-2.0
 //
 // Xiaomi camera 6.8.002090.2 (Xiaomi 18 Pro, CN) for the Xiaomi 14 (houji).
 //
-// prebuilt/MiuiCamera.apk is not in this repository: build it from your own copy of the APK
-// with aosp/tools/patch-apk.sh. The ROM build signs it with the platform key.
+// The patched APK (aosp/tools/patch-apk.sh in houji-miuicamera-port) is stored in parts under
+// prebuilt/, since GitHub refuses files over 100 MB; the build joins them. The ROM build signs
+// it with the platform key.
 //
 // This tree layers on the 6.4 houji-miuicamera device and vendor trees, which keep providing
 // the camera's JNI libraries and shims; MiuiCamera68 takes the place of their MiuiCamera.
@@ -13,10 +14,17 @@
 soong_namespace {
 }
 
+genrule {
+    name: "MiuiCamera68-apk",
+    srcs: ["prebuilt/MiuiCamera.apk.part-*"],
+    out: ["MiuiCamera.apk"],
+    cmd: "cat $(in) > $(out)",
+}
+
 android_app_import {
     name: "MiuiCamera68",
     owner: "xiaomi",
-    apk: "prebuilt/MiuiCamera.apk",
+    apk: ":MiuiCamera68-apk",
     certificate: "platform",
     privileged: true,
     dex_preopt: {
@@ -33,8 +41,11 @@ android_app_import {
     ],
 }
 
+// The camera declares nothing overlayable. Android lets an overlay ignore that only when it is
+// preinstalled (here in /product/overlay) and targets an SDK before 29.
 runtime_resource_overlay {
     name: "MiuiCameraIconOverlay",
+    sdk_version: "28",
     manifest: "overlay/MiuiCameraIconOverlay/AndroidManifest.xml",
     resource_dirs: ["overlay/MiuiCameraIconOverlay/res"],
     product_specific: true,

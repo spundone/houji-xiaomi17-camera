@@ -1,144 +1,134 @@
-# Xiaomi 17 camera for the Xiaomi 14 (houji)
+# houji-miuicamera-port
 
-Runs Xiaomi's newer camera app on AOSP-based ROMs for the Xiaomi 14, in place of the older MiuiCamera the ROM ships. Two CN builds are supported: **6.8.002090.2** from the Xiaomi 18 Pro (recommended) and **6.7.000280.0** from the Xiaomi 17. You get the newer interface, Leica looks and filters, lens switching while recording (including 4K60 and 4K30 Dolby Vision), and switching to the front camera mid-recording. With 6.8 you also get film grain, a Leica-off style and 50MP in Photo mode.
+Xiaomi's newer camera app on AOSP ROMs for the Xiaomi 14 (houji), in place of the 6.4 MiuiCamera those ROMs ship.
 
-It's two pieces that work together:
+Two CN builds are supported:
 
-| Piece | What it does |
-| --- | --- |
-| `xiaomi17_camera-<version>.zip` (KernelSU module) | Swaps the ROM's camera APK for the Xiaomi 17 one at boot, adds the SELinux rules it needs, and stops KernelSU hiding the swap from the camera |
-| `xcam17-lsposed-<version>.apk` (LSPosed module) | Patches the camera at runtime: skips the China-only consent screen, fixes a HAL crash at 2x, unlocks lens and front-camera switching while recording, and makes Xiaomi's recorder write standard video files |
+- **6.8.002090.2** from the Xiaomi 18 Pro (recommended)
+- **6.7.000280.0** from the Xiaomi 17
 
-Xiaomi's camera APK is not included. You supply it.
+With 6.8 you get the newer interface, Leica styles and filters, film grain, 50MP on all three rear lenses, 50MP RAW, lens and front/rear switching while recording, Dolby Vision in the viewfinder, Ultra HDR photos, Fastshot, Short film, Dual video and Open Gate.
+
+| Photo, 50MP lenses and Style | Pro at 50MP with RAW | Essential Moment (Leica looks) | Short film |
+| --- | --- | --- | --- |
+| ![Photo mode](docs/screenshots/photo.jpg) | ![Pro mode](docs/screenshots/pro.jpg) | ![Essential Moment](docs/screenshots/essential-moment.jpg) | ![Short film](docs/screenshots/short-film.jpg) |
+
+## Choose how to install
+
+| You are | Use | Needs |
+| --- | --- | --- |
+| A rooted user | The KernelSU module from [Releases](https://github.com/spundone/houji-miuicamera-port/releases), which installs an LSPosed module | KernelSU (or KernelSU Next) and an LSPosed framework (Vector or LSPosed); the camera APK in `Download` |
+| A rooted user without LSPosed | A KernelSU-only zip you build yourself ([Build](#build)) | KernelSU only. The zip carries the patched camera, so it is never published |
+| A ROM maintainer | [android_device_xiaomi_houji-miuicamera-port](https://github.com/spundone/android_device_xiaomi_houji-miuicamera-port), a device tree with the patched APK and Leica Essential | A houji tree that includes the 6.4 houji-miuicamera trees |
+
+All three apply the same fixes. The KernelSU module hooks the camera at runtime with LSPosed; the other two use a copy of the camera patched ahead of time by [`aosp/`](aosp/README.md).
+
+## Install (KernelSU module)
+
+1. Root with KernelSU and install an LSPosed framework.
+2. Copy the camera APK to the phone's `Download` folder. [Getting the camera APKs](docs/houji-camera.md#4-getting-the-camera-apks) lists where to find them and their SHA-256.
+3. Optional, for Essential Moment's Leica looks: also copy the community Leica port of camera 6.8 (`com.kobbin.leica` 6.8.001960.0, SHA-256 `b2bf1186e6c0004621e19d914feb1d0e8106e2d976edc0634e01c30d6bc90082`). The installer copies what it needs from it; the port app itself isn't installed.
+4. Install `houji-miuicamera-port-<version>.zip` in the KernelSU manager. It checks the phone and the APK, then installs the LSPosed module it carries. With Vector it also enables it for the camera; with other LSPosed builds, enable **MiuiCamera port for houji** yourself (its scope is preset).
+5. Reboot.
+
+The adaptive launcher icon needs a mount module (such as Hybrid Mount) with this zip; the KernelSU-only zips mount it themselves.
+
+To uninstall, remove the module in the KernelSU manager, reboot, then uninstall the LSPosed module. The ROM's camera comes back.
 
 ## Tested on
 
 - Xiaomi 14 (houji), Infinity X 4.0, Android 17, kernel 6.1
-- KernelSU Next 3.4.2 with the Hybrid Mount metamodule
-- Vector (LSPosed fork) 2.2
-- MIUI Gallery 4.3.1.15-global from the "Miui Gallery Global" KernelSU module ([docs/miui-gallery.md](docs/miui-gallery.md)), optional
-- MiuiCamera 6.8.002090.2 (Xiaomi 18 Pro), SHA-256 `729b0b193d1684e7c14ed0ca56ba15247d58016c70164329de233b49727a2c48`
-- MiuiCamera 6.7.000280.0 (Xiaomi 17), SHA-256 `1cec1ff2203d9d1c358b7ea24f6db5b62adeb5d3f6ceca48b0fa1df932d685d9`
+- KernelSU Next 3.4.2 with Hybrid Mount, Vector 2.2
+- MIUI Gallery 4.3.1.15-global from the Miui Gallery Global module ([docs/miui-gallery.md](docs/miui-gallery.md)), optional
+- MiuiCamera 6.8.002090.2, SHA-256 `729b0b193d1684e7c14ed0ca56ba15247d58016c70164329de233b49727a2c48`
+- MiuiCamera 6.7.000280.0, SHA-256 `1cec1ff2203d9d1c358b7ea24f6db5b62adeb5d3f6ceca48b0fa1df932d685d9`
 
-Other houji ROMs should work if they ship Xiaomi's camera stack (`/system/priv-app/MiuiCamera` plus the stock camera HAL). The installer refuses other devices and other camera builds.
+Other houji ROMs with Xiaomi's camera stack (`/system/priv-app/MiuiCamera` and the stock camera HAL) should work. The installer refuses other phones and other camera builds.
 
-## What works
+## Features
 
-| Feature | Status |
-| --- | --- |
-| Photo (main, 0.6x, 2x, 3.2x), saved through Xiaomi's background processing | Works |
-| Leica Vibrant / Authentic, filters, watermarks | Works |
-| Video up to 4K60, Dolby Vision (profile 8.4, HLG) | Works |
-| Switching lenses while recording, including 4K60 and 4K30 Dolby Vision | Works |
-| Switching between rear and front camera while recording (720p, 1080p, 4K30) | Works, with a ~0.2 s hitch at the switch |
-| Dolby Vision toggle in the viewfinder's quick menu (17 Ultra layout), instead of in Settings | Works |
-| Dolby Vision on the front camera at 1080p30 and 4K30 | Works |
-| Live moments (motion photos with a 3 s clip) from the snapshot button while recording | Works |
-| Subject tracking focus in Pro photo and Pro video, not just Photo and Video | Works |
-| Film grain (Noise), with the 18 Pro's filter parameters, palette and presets | Works (6.8) |
-| Style ORIG (no Leica look) beside Leica Vibrant and Authentic | Works (6.8) |
-| 50MP Photo Resolution toggle in Photo mode, keeping Leica Authentic or Style ORIG | Works (6.8) |
-| Front screen fill light at a steady 60 fps | Works (6.8) |
-| Watermark shows "Xiaomi 14" | Works (6.8) |
-| Watermarks with HEIF photos (crashed before) | Works (6.8) |
-| 50MP on the ultra-wide, main and telephoto, in Photo (4:3 or 1:1) and Pro | Works (6.8) |
-| 50MP RAW (DNG) in Pro on all three lenses, and 12.5MP RAW on the telephoto (both saved empty files before) | Works (6.8) |
-| 50MP zoom works as in Pro: the lens changes at each stop (0.6x, 1x, 3.2x), no 2x | Works (6.8) |
-| Telemacro: Super Macro in Photo's menu uses the telephoto | Works (6.8) |
-| Video filters limited to the ones the phone has colour tables for | Works (6.8) |
-| Video filters up to 4K (default 1080p30) | Works (6.8) |
-| Front camera video filters (Xiaomi 14's own set: Mild, Fresh, KC64, H400 and others) | Works (6.8) |
-| Open Gate video (Pro video, 4096x3072 at 30/60 fps) | Works (6.8) |
-| Dual video (front and rear together) | Works (6.8) |
-| Haptics (shutter, zoom, mode switch, dials, sliders) | Works (6.8) |
-| Fastshot (Street) mode, with 28 / 35 / 50 / 75 mm presets | Works (6.8) |
-| Portrait zoom buttons 1x and 2.6x, and 1/8000 s shutter in Pro (Xiaomi 14's own profile values) | Works (6.8) |
-| Short film (More > Short film): template clips (Nostalgia, Party, ...) recorded segment by segment, as on the stock Xiaomi 14 | Works (6.8) |
-| Short video (from Short film's start screen) | Partly (6.8): records and saves; zoom and multi-clip recording don't work |
-| Ultra HDR JPEG photos, with an estimated gain map (set the photo format to JPEG) | Works (6.8) |
-| Ultra HDR HEIF photos (opt-in with the module's Action button in KernelSU; Google Photos can't back them up, and macOS and ffmpeg can't open them) | Works (6.8) |
-| Movie mode (swipe up on the viewfinder > Movie) | Works (6.8), 1080p 24 fps |
-| Live moments while recording, tracking focus in Pro photo | Works (6.7 and 6.8) |
-| Import LUT for Pro video Log | Works (6.8) |
-| Essential Moment (Leica Essential): M9 Iconic CCD, M3 B&W film and M10R Modern vintage looks, rendered in the app by the Leica port's processor (see Install, step 2) | Works (6.8), JPEG, about 3 to 5 s per photo |
+Everything below works on 6.8. Items marked (6.7 too) also work on 6.7.
 
-## Install
+**Photo**
+- Main, 0.6x, 2x and 3.2x, saved through Xiaomi's background processing (6.7 too)
+- Leica Vibrant and Authentic, filters, watermarks (6.7 too), plus Style ORIG (no Leica look) and film grain with the 18 Pro's presets
+- 50MP on the ultra-wide, main and telephoto, in Photo (4:3 or 1:1) and Pro. At 50MP the lens changes at each stop (0.6x, 1x, 3.2x)
+- 50MP RAW (DNG) in Pro on all three lenses, and 12.5MP RAW on the telephoto
+- Ultra HDR JPEG with a gain map; Ultra HDR HEIF as an opt-in (the module's Action button), since Google Photos can't back those up and macOS can't open them
+- Telemacro (Super Macro uses the telephoto), Portrait's 1x and 2.6x buttons, 1/8000 s in Pro
+- Watermarks print "Xiaomi 14" and work with HEIF photos
+- Essential Moment: the M9 Iconic CCD, M3 B&W film and M10R Modern vintage looks, with the Leica port installed. JPEG only, 3 to 5 s per photo
 
-1. Root with **KernelSU** (KernelSU Next works) and install an **LSPosed** framework (Vector or LSPosed).
-2. Copy a supported camera APK (6.8.002090.2 or 6.7.000280.0) to the phone's `Download` folder. [docs/houji-camera.md](docs/houji-camera.md#4-getting-the-camera-apks) says where to find them and lists their SHA-256.
-   Optional, for Essential Moment's Leica looks: also copy the community Leica port of camera 6.8 (package `com.kobbin.leica`, 6.8.001960.0; tested SHA-256 `b2bf1186e6c0004621e19d914feb1d0e8106e2d976edc0634e01c30d6bc90082`). The installer copies the port's processor, libraries and models from it into the module; the port app itself doesn't need to be installed. Updates keep the copied files if the APK is no longer there.
-3. In the KernelSU manager, install `xiaomi17_camera-<version>.zip`. It checks the device and the APK's SHA-256, then installs the LSPosed module it carries (and, with Vector, enables it for the camera).
-4. With an LSPosed build other than Vector, enable **Xiaomi 17 Camera for houji** in LSPosed. Its scope is set to the camera already.
-5. Reboot. The camera gets an adaptive icon on AOSP launchers; this needs a KernelSU mount module (such as hybrid_mount) to mount the module's system/ folder.
+**Video**
+- Up to 4K60, and Dolby Vision (profile 8.4, HLG) up to 4K60 (6.7 too)
+- Switching lenses while recording, including 4K60 and 4K30 Dolby Vision (6.7 too)
+- Switching between rear and front camera while recording at 720p, 1080p and 4K30, with a 0.2 s hitch (6.7 too)
+- Dolby Vision toggle in the viewfinder, and Dolby Vision on the front camera at 1080p30 and 4K30
+- Live moments (motion photos) from the snapshot button while recording, tracking focus in Pro (6.7 too)
+- Open Gate in Pro video (4096x3072 at 30 or 60 fps), Import LUT for Log
+- Video filters up to 4K, limited to those the phone has tables for; the front camera gets the Xiaomi 14's own set
+- Front screen fill light at a steady 60 fps
 
-From a computer with Vector, steps 4 and 5 can be scripted:
+**Modes**
+- Fastshot (Street) with 28, 35, 50 and 75 mm presets
+- Short film: template clips recorded segment by segment, as on the stock Xiaomi 14
+- Dual video (front and rear together), Movie (1080p 24 fps)
+- Short video: records and saves, but zoom and multi-clip recording don't work
 
-```bash
-adb install xcam17-lsposed-1.8.0.apk
-```
-
-```bash
-adb shell su -c '/data/adb/modules/zygisk_vector/cli modules enable dev.spundone.xcam17 && /data/adb/modules/zygisk_vector/cli scope set dev.spundone.xcam17 com.android.camera/0'
-```
-
-```bash
-adb reboot
-```
-
-## Uninstall
-
-Remove the module in the KernelSU manager and reboot. The uninstaller restores the camera's default KernelSU profile and clears the cached package data, so the ROM's own camera comes back. Then uninstall the LSPosed module.
+**Also**
+- Haptics for the shutter, zoom, dials and sliders
 
 ## Known limitations
 
-- **Front camera while recording** isn't offered at 4K60, or with Dolby Vision at 4K, matching Xiaomi's own rules. Switching drops about 0.2 s of video at the switch point.
-- **All video now goes through Xiaomi's own recorder** (needed for the front-camera switch). Every mode was tested to produce valid files: 720p30, 1080p30/60, 4K24/30/60, with and without Dolby Vision.
-- **4K60 lens switching isn't advertised by the hardware.** The Xiaomi 14's camera HAL lists multi-lens video for 720p, 1080p30, 1080p60, 4K24 and 4K30, not 4K60. The LSPosed module overrides that. In testing the lens changed cleanly and files stayed 3840x2160 at about 58 fps, but long 4K60 clips may run hot.
-- **Camera 6.8 runs on a shared profile.** It has no Xiaomi 14 profile, so the module gives it Xiaomi's generic flagship profile plus the flags above. Some 18 Pro features stay off: the separate Ultra-pixel mode, and Essential Moment unless the Leica port is installed (its looks are otherwise rendered by HAL support the Xiaomi 14 lacks). There's no 25MP option; this sensor offers 12.5MP and 50MP.
-- **Switching camera builds** resets the camera's saved mode. If the camera closes with "invalid module index" after switching, clear its data (`pm clear com.android.camera`).
-- **The telephoto falls back to the main camera up close** in Photo and Portrait (12.5MP), below the telephoto's focus distance. Settings > Adaptive telephoto (off by default) now reaches the HAL. 50MP opens the telephoto directly.
-- **No Original portrait.** Portrait offers Master and Leica portrait. With Original portrait's natural style, houji's HAL falls back to the main camera at 2.6x (it reports `xiaomi.bokeh.triggerFallback`), whatever the app requests; the stock Xiaomi 14 doesn't offer it either.
-- **Not possible on this HAL:** Open Gate in normal Video mode (Pro video has it), Movie at 4K, video HDR at 4K60 or on the front camera. Each crashed the camera service when forced.
-- **Grain and Leica-off need 6.8.** Camera 6.7 has no UI for either.
-- **Essential Moment** renders each look in the app after the shot, which takes about 3 to 5 seconds, and only for JPEG photos (Settings > Photo format). The port's AI style model and person mask need the Snapdragon 8 Elite Gen 5's DSP, so on the Xiaomi 14 its fallback tone is used, without a toast. Watermarks work: the camera draws its own over the finished look.
-- **HDR vs Dolby Vision.** They're separate. Dolby Vision records 10-bit HLG video with Dolby Vision profile 8.4 metadata. The HDR tile is multi-frame video HDR: it merges exposures for a wider dynamic range but, with Dolby Vision off, still records standard 8-bit SDR (BT.709). They can be on together.
-- **Region.** The CN build's China-only extras stay on. Only the consent check is redirected.
-- **The camera app shows Xiaomi's terms on first launch.** Accepting them is up to you.
+- **Camera 6.8 has no Xiaomi 14 profile.** It runs on Xiaomi's generic flagship profile with the Xiaomi 14's own values from 6.7. The 18 Pro's Ultra-pixel mode stays off, and there's no 25MP option (this sensor offers 12.5MP and 50MP).
+- **No Original portrait.** houji's HAL renders it from the main camera at 2.6x, so Portrait offers Master and Leica portrait only, as on the stock Xiaomi 14.
+- **The telephoto falls back to the main camera up close** in Photo and Portrait at 12.5MP. Settings > Adaptive telephoto (off by default) reaches the HAL; 50MP always uses the telephoto.
+- **Not possible on this HAL:** Open Gate in Video mode, Movie at 4K, video HDR at 4K60 or on the front camera. Each crashed the camera service when forced.
+- **Front camera while recording** isn't offered at 4K60 or with Dolby Vision at 4K, as on Xiaomi's phones.
+- **4K60 lens switching isn't advertised by the HAL.** It worked in testing (files stay 3840x2160 at about 58 fps), but long clips may run hot.
+- **Essential Moment's notices are in Chinese** in the KernelSU-only and ROM builds; the LSPosed build translates them. The port's AI style model needs the Snapdragon 8 Elite Gen 5, so its fallback tone is used.
+- **HDR and Dolby Vision are separate.** Dolby Vision records 10-bit HLG; the HDR tile merges exposures but records 8-bit SDR unless Dolby Vision is on too.
+- **The CN build's China-only extras stay on.** Only the consent check is redirected. The camera shows Xiaomi's terms on first launch.
+- **Switching camera builds** can close the camera with "invalid module index". Clear its data once (`pm clear com.android.camera`).
 
 ## Build
 
 Needs JDK 11+ and an Android SDK with `platforms;android-34` and build-tools.
 
 ```bash
-scripts/build.sh
+scripts/build.sh            # LSPosed APK and KernelSU module zip in dist/, debug-signed
+scripts/build.sh --release  # signed with XCAM17_KEYSTORE, XCAM17_KEYSTORE_PASS, XCAM17_KEY_ALIAS
 ```
 
-Artifacts land in `dist/`. Options:
+`--apk FILE` also writes a `-with-apk.zip` that carries the camera APK. It contains Xiaomi's binary, so keep it to yourself.
 
-- `--release` signs with the key named by `XCAM17_KEYSTORE`, `XCAM17_KEYSTORE_PASS` and `XCAM17_KEY_ALIAS`.
-- `--apk FILE` also writes a `-with-apk.zip` that carries a camera APK, for installing without copying it to the phone first. It contains Xiaomi's binary, so never publish it.
-- `scripts/build-kit-zip.sh PATCHED_APK [--leica PORT_APK] [--gallery GALLERY_ZIP]` (after `build.sh`) writes KernelSU-only zips from a camera APK patched by the AOSP kit (`aosp/tools/patch-apk.sh` on `feature/aosp-kit`): no LSPosed module (the installer turns it off if present), and no mount module, since the module mounts the camera and its icon overlay itself. With `--leica`, the Leica port's files are in the zip too (`-standalone` zips), so nothing needs to be in Download. With `--gallery`, a second zip also installs the MIUI Gallery Global module, which does need a mount module. Local only.
+KernelSU-only zips, after `build.sh`:
 
-Releases are built by GitHub Actions when a `v*` tag matching `VERSION` is pushed.
+```bash
+aosp/tools/patch-apk.sh MiuiCamera.apk patched.apk   # see aosp/README.md for what it needs
+scripts/build-kit-zip.sh patched.apk [--leica LEICA_PORT.apk] [--gallery MIUIGallery.zip]
+```
 
-## Building into a ROM (no root)
+They need no LSPosed and no mount module: the module mounts the camera's folder and a copy of `/product/overlay` with the icon itself. With `--leica` the Leica port's files go in the zip (`-standalone`), so nothing has to be in `Download`. With `--gallery`, a second zip also installs the MIUI Gallery Global module, which does need a mount module. These zips carry Xiaomi's APK; keep them to yourself.
 
-`aosp/` is a kit for ROM maintainers: it ships camera 6.8.002090.2 inside a houji ROM build with no KernelSU or LSPosed. `aosp/tools/patch-apk.sh` turns your own copy of the APK into a patched one (the LSPosed hooks become smali patches plus a small helper dex), and `aosp/device/` is the device tree that installs it as a platform-signed privileged app. It isn't tested on a phone yet. See [aosp/README.md](aosp/README.md) and [docs/aosp-integration.md](docs/aosp-integration.md#using-the-kit).
+The ROM device tree: `aosp/tools/make-device-tree.sh patched.apk OUT_DIR [--leica LEICA_PORT.apk]`.
 
-## How it works
+Pushing a `v*` tag that matches `VERSION` makes GitHub Actions build and publish a release.
 
-- [docs/how-it-works.md](docs/how-it-works.md): each problem found while porting, and the evidence for each fix.
-- [docs/houji-camera.md](docs/houji-camera.md): how the Xiaomi 14's cameras, HAL and the camera app fit together, what each file in this repo does, where to get the camera APKs, and how to investigate.
-- [docs/roadmap.md](docs/roadmap.md): what's still missing, why, and what to try next.
-- [docs/miui-gallery.md](docs/miui-gallery.md): the MIUI Gallery module used alongside, and how the camera works with it.
-- [docs/aosp-integration.md](docs/aosp-integration.md): how this could ship inside an AOSP ROM build without root, based on how existing houji ROM trees ship Xiaomi's camera.
+## Documentation
+
+- [docs/how-it-works.md](docs/how-it-works.md): each problem found while porting, and the evidence for each fix
+- [docs/houji-camera.md](docs/houji-camera.md): the Xiaomi 14's cameras and HAL, what each file here does, where to get the APKs, how to investigate
+- [aosp/README.md](aosp/README.md) and [docs/aosp-integration.md](docs/aosp-integration.md): the patcher and building the camera into a ROM
+- [docs/roadmap.md](docs/roadmap.md): what's missing and what to try next
+- [docs/miui-gallery.md](docs/miui-gallery.md): the MIUI Gallery module used alongside
 
 ## Legal
 
-Not affiliated with Xiaomi or Leica. The camera app and its trademarks belong to Xiaomi. This repo contains only original scripts and hooks. The Leica port's code, libraries and models belong to their authors and to Xiaomi; the installer copies them from your own copy of the port and they are never part of a release.
+Not affiliated with Xiaomi or Leica, who own the camera app and their trademarks. Releases here contain only this project's code. The device tree repo carries Xiaomi's camera APK, patched, and the Leica port's code, libraries and models, which belong to their authors, Xiaomi and Leica. The KernelSU module copies the port's files from your own copy.
 
 ### Release signing
 
-Release APKs are signed with a dedicated key (certificate SHA-256 `9bdc6988c94df28a23c372d6670414588601061a3464ca7fb66d0637e9fa017a`). Every future version has to be signed with the same key, or it won't install over the previous one. The key lives outside the repo at `~/.config/xcam17/release.jks`, with its password in the macOS Keychain as `xcam17-release-keystore`. CI gets it from the repository secrets `XCAM17_KEYSTORE_B64`, `XCAM17_KEYSTORE_PASS` and `XCAM17_KEY_ALIAS`.
+Releases are signed with a dedicated key (certificate SHA-256 `9bdc6988c94df28a23c372d6670414588601061a3464ca7fb66d0637e9fa017a`); every version must use it, or it won't install over the last. The key lives outside the repo at `~/.config/xcam17/release.jks`, with its password in the macOS Keychain as `xcam17-release-keystore`. CI reads it from the secrets `XCAM17_KEYSTORE_B64`, `XCAM17_KEYSTORE_PASS` and `XCAM17_KEY_ALIAS`.
 
-To release: bump `VERSION`, add a `CHANGELOG.md` entry, then push a matching `v*` tag. To check signing without publishing, run the release workflow by hand (Actions → release → Run workflow): it builds, signs and uploads the files as a workflow artifact.
+To release: bump `VERSION`, add a `CHANGELOG.md` entry, push a matching `v*` tag. Actions → release → Run workflow builds and signs without publishing.

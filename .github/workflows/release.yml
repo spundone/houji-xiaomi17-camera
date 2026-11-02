@@ -56,12 +56,12 @@ jobs:
           scripts/build.sh --release
           rm -f "$XCAM17_KEYSTORE"
           "$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)/apksigner" \
-            verify --print-certs "dist/xcam17-lsposed-$(tr -d '[:space:]' < VERSION).apk" | grep 'certificate DN'
+            verify --print-certs "dist/houji-miuicamera-port-lsposed-$(tr -d '[:space:]' < VERSION).apk" | grep 'certificate DN'
 
       - uses: actions/upload-artifact@v4
         if: steps.signing.outputs.ready == 'true' && github.event_name == 'workflow_dispatch'
         with:
-          name: xcam17-release-dry-run
+          name: houji-miuicamera-port-release-dry-run
           path: dist/
 
       - name: Publish release
@@ -70,9 +70,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           v="$(tr -d '[:space:]' < VERSION)"
+          awk -v h="## $v" '$0 == h { on = 1; next } /^## / { on = 0 } on' CHANGELOG.md > "$RUNNER_TEMP/notes.md"
           gh release create "$GITHUB_REF_NAME" \
-            "dist/xcam17-lsposed-$v.apk" \
-            "dist/xiaomi17_camera-$v.zip" \
+            "dist/houji-miuicamera-port-lsposed-$v.apk" \
+            "dist/houji-miuicamera-port-$v.zip" \
             "dist/SHA256SUMS-$v" \
             --title "$GITHUB_REF_NAME" \
-            --notes-file CHANGELOG.md
+            --notes-file "$RUNNER_TEMP/notes.md"

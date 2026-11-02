@@ -1,6 +1,6 @@
 # How the Xiaomi 14 camera stack works
 
-This is the reference for porting newer Xiaomi camera apps to the Xiaomi 14 (houji): what the phone's hardware and HAL offer, how the camera app is organised, what each piece of this repo does, where to get the camera APKs, and how the problems in [how-it-works.md](how-it-works.md) were found. Obfuscated names are for MiuiCamera **6.8.002090.2** unless noted; 6.7.000280.0 names differ (see `CameraBuild.java`).
+The reference for porting newer Xiaomi camera apps to the Xiaomi 14 (houji): what the phone's hardware and HAL offer, how the camera app is organised, what each piece of this repo does, where to get the camera APKs, and how the problems in [how-it-works.md](how-it-works.md) were found. Obfuscated names are for MiuiCamera **6.8.002090.2** unless noted; 6.7.000280.0 names differ (see `CameraBuild.java`).
 
 ## 1. The phone
 
@@ -127,8 +127,9 @@ Features switch each other off through a rule table (`v3.g.b` returns the rules 
 
 | File | Does |
 | --- | --- |
-| `customize.sh` | Checks the device (houji), KernelSU and Android 15+. Takes the camera APK from the zip or `/sdcard/Download` and checks its SHA-256 against `known-apks.sha256`. If the Leica port is in Download, copies its processor dex files, native libraries and models to `system/etc/xcam17/leica`, or keeps the installed copy. |
-| `post-fs-data.sh` | Before zygote: bind-mounts the APK over `/system/priv-app/MiuiCamera/MiuiCamera.apk` and sets the camera's KernelSU profile so module files stay visible to it. |
+| `customize.sh` | Checks the device (houji), KernelSU and Android 15+. Takes the camera APK from the zip or `/sdcard/Download` and checks its SHA-256 against `known-apks.sha256`. Copies the Leica port's processor, libraries and models from the zip (KernelSU-only standalone zips, to `app/leica`) or from the port APK in Download (to `system/etc/xcam17/leica`), or keeps the installed copy. Installs the LSPosed module the zip carries, or turns it off for KernelSU-only zips. |
+| `post-fs-data.sh` | Before zygote: bind-mounts the APK over `/system/priv-app/MiuiCamera/MiuiCamera.apk` (KernelSU-only zips: the whole folder, with the Leica files, and a copy of `/product/overlay` with the icon overlay) and sets the KernelSU profiles so module files stay visible to the camera and launcher. |
+| `service.sh` | Once after an install, after the first unlock: clears the launcher's icon cache so it draws the new icon. |
 | `common.sh` | Shared helpers: APK hash check, package-cache clearing, KernelSU profile edits. |
 | `sepolicy.rule` | Lets the Xiaomi-signed camera (`priv_app_36`) reach the background save service and the camera HAL, as the ROM's platform-signed camera can. |
 | `uninstall.sh` | Restores the camera's KernelSU profile and clears cached package data. |
@@ -160,7 +161,7 @@ Features switch each other off through a rule table (`v3.g.b` returns the rules 
 
 ### Build and release
 
-`scripts/build.sh` builds both pieces; see the README. `--apk FILE` writes a local-only zip that includes the camera APK. Never publish that one.
+`scripts/build.sh` builds both pieces, `scripts/build-kit-zip.sh` the KernelSU-only zips, and `aosp/tools/make-device-tree.sh` the ROM device tree; see the README. Zips that carry the camera APK are for your own use.
 
 ## 4. Getting the camera APKs
 

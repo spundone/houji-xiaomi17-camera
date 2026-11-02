@@ -77,10 +77,10 @@ if [ -n "$leica" ]; then
 fi
 needs="No LSPosed needed"
 [ -n "$leica" ] && needs="No LSPosed, mount module or other downloads needed; Leica Essential included"
-sed -i '' -e "s/^name=.*/name=Xiaomi 17 Camera for houji ($name)/" \
+sed -i '' -e "s/^name=.*/name=MiuiCamera port for houji ($name)/" \
     -e "s/^description=.*/description=Xiaomi's camera 6.8.002090.2, patched by the AOSP kit, in place of MiuiCamera. $needs. Local build: carries Xiaomi's APK./" \
     "$mod/module.prop"
-zip_ksu="$DIST/xiaomi17_camera-$VERSION-$kind.zip"
+zip_ksu="$DIST/houji-miuicamera-port-$VERSION-$kind.zip"
 rm -f "$zip_ksu"
 (cd "$mod" && zip -q -r -X -0 "$zip_ksu" .)
 echo "   $zip_ksu (contains Xiaomi's APK: do not publish)"
@@ -88,8 +88,8 @@ echo "   $zip_ksu (contains Xiaomi's APK: do not publish)"
 if [ -n "$gallery" ]; then
     mkdir -p "$mod/gallery"
     cp "$gallery" "$mod/gallery/MIUIGallery.zip"
-    sed -i '' -e "s/^name=.*/name=Xiaomi 17 Camera for houji ($name, with MIUI Gallery)/" "$mod/module.prop"
-    zip_gallery="$DIST/xiaomi17_camera-$VERSION-$kind-gallery.zip"
+    sed -i '' -e "s/^name=.*/name=MiuiCamera port for houji ($name, with MIUI Gallery)/" "$mod/module.prop"
+    zip_gallery="$DIST/houji-miuicamera-port-$VERSION-$kind-gallery.zip"
     rm -f "$zip_gallery"
     (cd "$mod" && zip -q -r -X -0 "$zip_gallery" .)
     echo "   $zip_gallery (contains Xiaomi's APKs: do not publish)"

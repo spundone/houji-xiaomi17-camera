@@ -62,7 +62,7 @@ else
     sign=(--ks "$debug_ks" --ks-pass pass:android --key-pass pass:android)
     suffix="-debug"
 fi
-lsposed_apk="$DIST/xcam17-lsposed-$VERSION$suffix.apk"
+lsposed_apk="$DIST/houji-miuicamera-port-lsposed-$VERSION$suffix.apk"
 "$BT/apksigner" sign "${sign[@]}" --v4-signing-enabled false --out "$lsposed_apk" "$OUT/aligned.apk" \
     2> >(grep -v '^WARNING' >&2)
 "$BT/apksigner" verify "$lsposed_apk"
@@ -87,13 +87,13 @@ cp "$icon_apk" "$mod/system/product/overlay/XCam17Icon/XCam17Icon.apk"
 cp "$lsposed_apk" "$mod/xcam17-lsposed.apk"
 cat > "$mod/module.prop" <<EOF
 id=xiaomi17_camera
-name=Xiaomi 17 Camera for houji
+name=MiuiCamera port for houji
 version=$VERSION
 versionCode=$VERSION_CODE
 author=spundone
-description=Runs Xiaomi's newer camera (6.8.002090.2 from the 18 Pro, or 6.7.000280.0 from the 17) in place of MiuiCamera on AOSP ROMs for the Xiaomi 14. All in one: installs the LSPosed module and an adaptive launcher icon.
+description=Xiaomi's camera 6.8.002090.2 (Xiaomi 18 Pro) or 6.7.000280.0 (Xiaomi 17) in place of the ROM's MiuiCamera on the Xiaomi 14. Installs its LSPosed module and an adaptive launcher icon.
 EOF
-module_zip="$DIST/xiaomi17_camera-$VERSION.zip"
+module_zip="$DIST/houji-miuicamera-port-$VERSION.zip"
 rm -f "$module_zip"
 (cd "$mod" && zip -q -r -X "$module_zip" .)
 echo "   $module_zip"
@@ -102,7 +102,7 @@ if [ -n "$camera_apk" ]; then
     sum=$(shasum -a 256 "$camera_apk" | cut -d' ' -f1)
     grep -q "^$sum " "$ROOT/module/known-apks.sha256" || { echo "camera APK $sum is not in known-apks.sha256" >&2; exit 1; }
     cp "$camera_apk" "$mod/MiuiCamera.apk"
-    local_zip="$DIST/xiaomi17_camera-$VERSION-with-apk.zip"
+    local_zip="$DIST/houji-miuicamera-port-$VERSION-with-apk.zip"
     rm -f "$local_zip"
     (cd "$mod" && zip -q -r -X -0 "$local_zip" .)
     echo "   $local_zip (contains Xiaomi's APK: do not publish)"

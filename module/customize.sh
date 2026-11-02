@@ -4,7 +4,7 @@ SKIPUNZIP=0
 
 . "$MODPATH/common.sh"
 
-ui_print "- Xiaomi 17 camera for Xiaomi 14 (houji)"
+ui_print "- MiuiCamera port for the Xiaomi 14 (houji)"
 
 device=$(getprop ro.product.vendor.device)
 [ "$device" = "houji" ] || abort "! This module is for the Xiaomi 14 (houji); this phone is '$device'"
@@ -49,7 +49,7 @@ if [ -f "$MODPATH/kit" ]; then
         if [ -x "$vector" ] && "$vector" modules disable dev.spundone.xcam17 >/dev/null 2>&1; then
             ui_print "- Disabled the LSPosed module in Vector"
         else
-            ui_print "! Disable or uninstall the 'Xiaomi 17 Camera for houji' LSPosed module"
+            ui_print "! Disable or uninstall the 'MiuiCamera port for houji' LSPosed module"
         fi
     fi
 fi
@@ -161,5 +161,5 @@ clear_camera_package_cache
 if [ -n "$lsposed_enabled" ] || [ -f "$MODPATH/kit" ]; then
     ui_print "- Done. Reboot"
 else
-    ui_print "- Done. Enable 'Xiaomi 17 Camera for houji' in LSPosed (scope: Camera), then reboot"
+    ui_print "- Done. Enable 'MiuiCamera port for houji' in LSPosed (scope: Camera), then reboot"
 fi
