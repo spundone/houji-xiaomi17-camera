@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The camera saves photos from a background service after the shutter; keep it out of
+    battery restrictions so a photo isn't lost when the app is closed right away.
+-->
+<config>
+    <allow-in-power-save package="com.android.camera" />
+</config>

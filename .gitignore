@@ -5,3 +5,4 @@
 *.apk
 !lsposed/**/*.apk
 .DS_Store
+__pycache__/

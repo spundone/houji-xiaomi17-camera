@@ -1,0 +1,2472 @@
+{
+ "build": "6.8.002090.2",
+ "sha256": "729b0b193d1684e7c14ed0ca56ba15247d58016c70164329de233b49727a2c48",
+ "ported_from": "spundone/houji-xiaomi17-camera v1.7.0 (2f8c709), lsposed/src/dev/spundone/xcam17; UltraHdrJpeg and HeifGainMap from 1b4f7b6 (HEIC Ultra HDR); UltraHdRaw, Dng50 and LeicaLegendary from v1.8.0 and after",
+ "patches": [
+  {
+   "id": "client-name",
+   "hook": "Entry.hookClientName",
+   "effort": "low",
+   "find": null,
+   "action": {
+    "type": "redirect",
+    "helper": "Ldev/spundone/xcam17/aosp/ClientName;",
+    "calls": {
+     "Landroid/hardware/camera2/CameraDevice;->createCaptureRequest(I)Landroid/hardware/camera2/CaptureRequest$Builder;": "createCaptureRequest",
+     "Landroid/hardware/camera2/CameraDevice;->createReprocessCaptureRequest(Landroid/hardware/camera2/TotalCaptureResult;)Landroid/hardware/camera2/CaptureRequest$Builder;": "createReprocessCaptureRequest"
+    }
+   }
+  },
+  {
+   "id": "annexb-video",
+   "hook": "AnnexBVideo",
+   "effort": "low",
+   "find": null,
+   "action": {
+    "type": "redirect",
+    "helper": "Ldev/spundone/xcam17/aosp/AnnexBVideo;",
+    "calls": {
+     "Landroid/media/MediaCodec;->configure(Landroid/media/MediaFormat;Landroid/view/Surface;Landroid/media/MediaCrypto;I)V": "configure",
+     "Landroid/media/MediaCodec;->setParameters(Landroid/os/Bundle;)V": "setParameters"
+    }
+   }
+  },
+  {
+   "id": "saliency-off-init",
+   "hook": "SaliencyOff",
+   "effort": "low",
+   "find": {
+    "class": "Lcom/android/camera/saliencychecker/SaliencyChecker;",
+    "name": "init",
+    "proto": "(Lcom/android/camera/saliencychecker/data/SaliencyInitInputObject;)Z"
+   },
+   "action": {
+    "type": "return",
+    "value": false
+   }
+  },
+  {
+   "id": "saliency-off-process",
+   "hook": "SaliencyOff",
+   "effort": "low",
+   "find": {
+    "class": "Lcom/android/camera/saliencychecker/SaliencyChecker;",
+    "name": "process",
+    "proto": "(Lcom/android/camera/saliencychecker/data/SaliencyProcessInputObject;Lcom/android/camera/saliencychecker/data/SaliencyProcessOutputObject;)Z"
+   },
+   "action": {
+    "type": "return",
+    "value": false
+   }
+  },
+  {
+   "id": "saliency-off-hasInit",
+   "hook": "SaliencyOff",
+   "effort": "low",
+   "find": {
+    "class": "Lcom/android/camera/saliencychecker/SaliencyChecker;",
+    "name": "hasInit",
+    "proto": "()Z"
+   },
+   "action": {
+    "type": "return",
+    "value": false
+   }
+  },
+  {
+   "id": "consent-region",
+   "hook": "Entry.hookConsentRegion",
+   "effort": "low",
+   "find": {
+    "class": "LTh/c;",
+    "name": "a",
+    "proto": "()LTh/c$c;",
+    "static": true,
+    "has": [
+     "\"KR\""
+    ]
+   },
+   "action": {
+    "type": "return",
+    "field": "LTh/c$c;->c:LTh/c$c;"
+   },
+   "check": [
+    {
+     "class": "LTh/c$c;",
+     "has": [
+      "\"CN\"",
+      "\"KR\"",
+      "\"GLOBAL\"",
+      "sput-object v2, LTh/c$c;->c:LTh/c$c;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "missing-profile",
+   "hook": "Entry.hookMissingProfile",
+   "effort": "low",
+   "find": {
+    "class": "LEu/f2;",
+    "name": "l",
+    "proto": "()L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+    "static": true,
+    "has": [
+     "Landroid/os/Build;->MANUFACTURER",
+     "Ljava/lang/Class;->newInstance()",
+     "sput-object v0, LEu/f2;->a:Ljava/lang/Boolean;"
+    ]
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/Profile;->afterLoad(Ljava/lang/Object;Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Class;)Ljava/lang/Object;",
+      "pass": [
+       "result",
+       "class:LEu/f2;",
+       "str:a",
+       "str:b",
+       "class:L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+      ]
+     }
+    ]
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "marketing-name",
+   "hook": "Entry.hookMarketingName",
+   "effort": "low",
+   "find": {
+    "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+    "name": "d",
+    "proto": "()Landroid/util/SparseArray;",
+    "static": false
+   },
+   "action": {
+    "type": "return",
+    "helper": "Ldev/spundone/xcam17/aosp/Profile;->marketingName()Landroid/util/SparseArray;"
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-q0",
+   "hook": "DeviceFeatures q0: style version 2: Filter parameters panel with Noise (grain)",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "q0",
+    "proto": "()I",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": 2
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-W3",
+   "hook": "DeviceFeatures W3: front/rear camera switch while recording",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "W3",
+    "proto": "()Z",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": true
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-P1",
+   "hook": "DeviceFeatures P1: Dolby Vision toggle in the viewfinder",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "P1",
+    "proto": "()Z",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": true
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-d4",
+   "hook": "DeviceFeatures d4: take photos while recording",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "d4",
+    "proto": "()Z",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": true
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-C3",
+   "hook": "DeviceFeatures C3: Motion tracking focus in Pro photo",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "C3",
+    "proto": "()Z",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": true
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-f3",
+   "hook": "DeviceFeatures f3: Import LUT for Pro video Log",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "f3",
+    "proto": "()Z",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": true
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-t1",
+   "hook": "DeviceFeatures t1: Ultra HD toggle in Photo mode",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "t1",
+    "proto": "()Z",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": true
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-W0",
+   "hook": "DeviceFeatures W0: front fill light allowed at 60 fps video",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "W0",
+    "proto": "()Ljava/util/ArrayList;",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "helper": "Ldev/spundone/xcam17/aosp/Values;->intList(Ljava/lang/String;)Ljava/util/ArrayList;",
+    "pass": [
+     "str:30,60"
+    ]
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-w0",
+   "hook": "DeviceFeatures w0: 50MP lens roles: main, telephoto, ultra-wide",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "w0",
+    "proto": "()[I",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/Values;->appendInts([ILjava/lang/String;)[I",
+      "pass": [
+       "result",
+       "str:0,20,21"
+      ]
+     }
+    ]
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-v0",
+   "hook": "DeviceFeatures v0: main camera 50MP size",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "v0",
+    "proto": "()Ljava/lang/String;",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": "4:8192x6144"
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-y0",
+   "hook": "DeviceFeatures y0: ultra-wide 50MP size",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "y0",
+    "proto": "()Ljava/lang/String;",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": "4:8160x6144"
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-u0",
+   "hook": "DeviceFeatures u0: telephoto 50MP size",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "u0",
+    "proto": "()Ljava/lang/String;",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": "4:8160x6144"
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-Z3",
+   "hook": "DeviceFeatures Z3: portrait zoom toggles from the profile table",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "Z3",
+    "proto": "()Z",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": true
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-c2",
+   "hook": "DeviceFeatures c2: Street (Fastshot) mode",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "c2",
+    "proto": "()Z",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": true
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-G2",
+   "hook": "DeviceFeatures G2: Dual video",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "G2",
+    "proto": "()Z",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": true
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-i3",
+   "hook": "DeviceFeatures i3: macro supported",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "i3",
+    "proto": "()Z",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": true
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-Z0",
+   "hook": "DeviceFeatures Z0: macro on the telephoto",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "Z0",
+    "proto": "()Ljava/lang/String;",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": "tele"
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-e2",
+   "hook": "DeviceFeatures e2: label the macro toggle Super macro",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "e2",
+    "proto": "()Z",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": true
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-j3",
+   "hook": "DeviceFeatures j3: macro in mode 172 as well",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "j3",
+    "proto": "()Z",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": true
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-K2",
+   "hook": "DeviceFeatures K2: macro in the fast-mode config list",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "K2",
+    "proto": "()Z",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": true
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-R0",
+   "hook": "DeviceFeatures R0: filter type 16: the 2024 flagship filter sets",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "R0",
+    "proto": "()[I",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "helper": "Ldev/spundone/xcam17/aosp/Values;->ints(Ljava/lang/String;)[I",
+    "pass": [
+     "str:16"
+    ]
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-S0",
+   "hook": "DeviceFeatures S0: filter version 6: front video filters from houji's firmware",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "S0",
+    "proto": "()I",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": 6
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-k1",
+   "hook": "DeviceFeatures k1: Vlog version 2, as houji's 6.7 profile",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "k1",
+    "proto": "()I",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": 2
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-m3",
+   "hook": "DeviceFeatures m3: newer Vlog Pro / Short film modes, as houji's 6.7 profile",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "m3",
+    "proto": "()Z",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": true
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-M3",
+   "hook": "DeviceFeatures M3: 120 fps slow-motion sizes, as houji's 6.7 profile",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "M3",
+    "proto": "()Z",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": true
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-w3",
+   "hook": "DeviceFeatures w3: lens switching while zooming, as houji's 6.7 profile",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "w3",
+    "proto": "()Z",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": true
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-w5",
+   "hook": "DeviceFeatures w5: Ambilight exposure handling, as houji's 6.7 profile",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "w5",
+    "proto": "()Z",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": true
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-G5",
+   "hook": "DeviceFeatures G5: Portrait's own capture action, as houji's 6.7 profile",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "G5",
+    "proto": "()Z",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": true
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-C",
+   "hook": "DeviceFeatures C: Portrait lens version 3 (CvLens), as houji's 6.7 profile",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "C",
+    "proto": "()I",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": 3
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-g1",
+   "hook": "DeviceFeatures g1: Dolby Vision preview colour space, as houji's 6.7 profile",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "g1",
+    "proto": "()I",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": 1
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-e1",
+   "hook": "DeviceFeatures e1: viewfinder colour space, as houji's 6.7 profile",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "e1",
+    "proto": "()I",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "value": 4
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "street-mode",
+   "hook": "Entry.hookStreetMode",
+   "effort": "low",
+   "find": {
+    "class": "Lcom/android/camera/features/mode/street/StreetModuleEntry;",
+    "name": "support",
+    "proto": "()Z"
+   },
+   "action": {
+    "type": "return",
+    "value": true
+   }
+  },
+  {
+   "id": "lens-sat-check",
+   "hook": "Entry.hookVideoLensSwitching (U1)",
+   "effort": "medium",
+   "find": {
+    "class": "Lcom/android/camera/data/data/i;",
+    "name": "U1",
+    "proto": "(ILjava/lang/String;)Z",
+    "static": true,
+    "has": [
+     "\"getVideoSatSupportedQualities  = \""
+    ]
+   },
+   "action": {
+    "type": "wrap",
+    "enter": "Ldev/spundone/xcam17/aosp/VideoLens;->satEnter()V",
+    "exit": "Ldev/spundone/xcam17/aosp/VideoLens;->satExit()V",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/VideoLens;->satResult(ZLjava/lang/String;)Z",
+      "pass": [
+       "result",
+       "arg1"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "lens-hdr-s2.a",
+   "hook": "Entry.hookVideoLensSwitching (HDR10)",
+   "effort": "medium",
+   "find": {
+    "class": "Ls2/a;",
+    "name": "o",
+    "proto": "()Z",
+    "has": []
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/VideoLens;->hdrInsideSatCheck(Z)Z",
+      "pass": [
+       "result"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "lens-hdr-s2.b",
+   "hook": "Entry.hookVideoLensSwitching (HDR10)",
+   "effort": "medium",
+   "find": {
+    "class": "Ls2/b;",
+    "name": "n",
+    "proto": "()Z",
+    "has": [
+     "\"pref_hlg_video_mode_key\""
+    ]
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/VideoLens;->hdrInsideSatCheck(Z)Z",
+      "pass": [
+       "result"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "lens-dolby",
+   "hook": "Entry.hookVideoLensSwitching (Dolby)",
+   "effort": "medium",
+   "find": {
+    "class": "Ls2/c;",
+    "name": "n",
+    "proto": "(ILjava/lang/String;)Z",
+    "has": [
+     "\"getDolbyConfig: \""
+    ]
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/VideoLens;->dolbyInsideSatCheck(ZI)Z",
+      "pass": [
+       "result",
+       "arg0"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "front-dolby-4k",
+   "hook": "Entry.hookFrontDolby4k",
+   "effort": "medium",
+   "find": {
+    "class": "Ll9/h;",
+    "name": "g1",
+    "proto": "(IIILl9/g;)Z",
+    "static": true,
+    "has": [
+     "\"isCurrentQualitySupportHdr10 AVAILABLE_CONFIGURATIONS is not defined\""
+    ]
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/VideoLens;->dolby4k30(ZIII)Z",
+      "pass": [
+       "result",
+       "arg0",
+       "arg1",
+       "arg2"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "natural-style",
+   "hook": "NaturalStyle",
+   "effort": "medium",
+   "find": {
+    "class": "Ll9/g;",
+    "name": "J0",
+    "proto": "(I)Z",
+    "has": [
+     "shr-int/2addr"
+    ]
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/CameraCaps;->styleBit(ZI)Z",
+      "pass": [
+       "result",
+       "arg0"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "natural-style-list",
+   "hook": "NaturalStyle (new: Portrait's style list, tracked)",
+   "effort": "medium",
+   "find": {
+    "class": "Lr2/m;",
+    "name": "u",
+    "proto": "(Lcom/android/camera/data/data/C;)V",
+    "has": [
+     "Ll9/h;->E2(Ll9/g;)Z"
+    ]
+   },
+   "action": {
+    "type": "wrap",
+    "before": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/CameraCaps;->styleListEnter(Ljava/lang/Object;Ljava/lang/String;)V",
+      "pass": [
+       "arg0",
+       "str:a"
+      ]
+     }
+    ],
+    "exit": "Ldev/spundone/xcam17/aosp/CameraCaps;->styleListExit()V"
+   },
+   "check": [
+    {
+     "class": "Lcom/android/camera/data/data/C;",
+     "has": [
+      ".field public final a:I"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "natural-style-portrait",
+   "hook": "NaturalStyle (new: no Original portrait, which houji's HAL lacks)",
+   "effort": "medium",
+   "find": {
+    "class": "Ll9/h;",
+    "name": "E2",
+    "proto": "(Ll9/g;)Z",
+    "static": true,
+    "has": [
+     "Ll9/g;->f2:Ljava/lang/Boolean;"
+    ]
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/CameraCaps;->originalStyle(Z)Z",
+      "pass": [
+       "result"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "open-gate",
+   "hook": "OpenGate",
+   "effort": "medium",
+   "find": {
+    "class": "Ll9/h;",
+    "name": "L4",
+    "proto": "(Ll9/g;)Z",
+    "static": true
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/CameraCaps;->openGate(ZLjava/lang/Object;Ljava/lang/String;)Z",
+      "pass": [
+       "result",
+       "arg0",
+       "str:d"
+      ]
+     }
+    ]
+   },
+   "check": [
+    {
+     "class": "Ll9/g;",
+     "has": [
+      ".field public final d:Landroid/hardware/camera2/CameraCharacteristics;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "tele-fallback-default",
+   "hook": "TeleFallback (default)",
+   "effort": "medium",
+   "find": {
+    "class": "LXh/a;",
+    "name": "h",
+    "proto": "(Ljava/lang/String;Z)Z",
+    "has": [
+     "Landroid/content/SharedPreferences;->getBoolean"
+    ]
+   },
+   "action": {
+    "type": "wrap",
+    "before": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/Settings;->booleanDefault(Ljava/lang/String;Z)Z",
+      "pass": [
+       "arg0",
+       "arg1"
+      ],
+      "set": "arg1"
+     }
+    ]
+   }
+  },
+  {
+   "id": "tele-fallback-tag",
+   "hook": "TeleFallback (tag check)",
+   "effort": "medium",
+   "find": {
+    "class": "Ll9/g;",
+    "name": "S0",
+    "proto": "(Ljava/lang/String;)Z",
+    "has": [
+     "Ljava/util/HashMap;->containsKey"
+    ]
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/CameraCaps;->tagAvailable(ZLjava/lang/String;)Z",
+      "pass": [
+       "result",
+       "arg0"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "tele-fallback-supported",
+   "hook": "TeleFallback (new: fallback control supported on rear cameras)",
+   "effort": "medium",
+   "find": {
+    "class": "Ll9/h;",
+    "name": "r5",
+    "proto": "(Ll9/g;)Z",
+    "static": true,
+    "has": [
+     "Ll9/g;->F2:Ljava/lang/Boolean;"
+    ]
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/CameraCaps;->teleFallbackSupported(ZLjava/lang/Object;Ljava/lang/String;)Z",
+      "pass": [
+       "result",
+       "arg0",
+       "str:d"
+      ]
+     }
+    ]
+   },
+   "check": [
+    {
+     "class": "Ll9/g;",
+     "has": [
+      ".field public final d:Landroid/hardware/camera2/CameraCharacteristics;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "street-focus",
+   "hook": "StreetFocus",
+   "effort": "medium",
+   "find": {
+    "class": "Lr2/b0;",
+    "name": "o",
+    "proto": "()V",
+    "has": [
+     "\"com.xiaomi.sensor.info.depthOfField invalid ,used default value \""
+    ]
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/Modes;->afterDepthOfField(Ljava/lang/Object;Ljava/lang/String;)V",
+      "pass": [
+       "this",
+       "str:c"
+      ]
+     }
+    ]
+   },
+   "check": [
+    {
+     "class": "Lr2/b0;",
+     "has": [
+      ".field public c:[F"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "video-caps-check",
+   "hook": "VideoCaps (quality check)",
+   "effort": "medium",
+   "find": {
+    "class": "Lr2/g0;",
+    "name": "C",
+    "proto": "(Lr2/r1$a;Ljava/util/ArrayList;ILl9/g;I)V",
+    "has": [
+     "\"8,60\""
+    ]
+   },
+   "action": {
+    "type": "wrap",
+    "enter": "Ldev/spundone/xcam17/aosp/CameraCaps;->qualityEnter()V",
+    "exit": "Ldev/spundone/xcam17/aosp/CameraCaps;->qualityExit()V"
+   }
+  },
+  {
+   "id": "video-caps-dolby",
+   "hook": "VideoCaps (all-scenes Dolby)",
+   "effort": "medium",
+   "find": {
+    "class": "Ll9/h;",
+    "name": "f2",
+    "proto": "(Ll9/g;)Z",
+    "static": true
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/CameraCaps;->allScenesDolby(Z)Z",
+      "pass": [
+       "result"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "short-video",
+   "hook": "ShortVideo",
+   "effort": "medium",
+   "find": {
+    "class": "Lcom/android/camera/module/t;",
+    "name": "getOperatingMode",
+    "proto": "()I"
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/Modes;->operatingMode(ILjava/lang/Object;Ljava/lang/String;)I",
+      "pass": [
+       "result",
+       "this",
+       "str:mOperatingMode"
+      ]
+     }
+    ]
+   },
+   "check": [
+    {
+     "class": "Lcom/android/camera/module/t;",
+     "has": [
+      ".field protected mOperatingMode:I"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "profile-exposure",
+   "hook": "ProfileTables (Pro shortest shutter)",
+   "effort": "medium",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "Q0",
+    "proto": "()Ljava/lang/String;",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/Tables;->exposureRanges(Ljava/lang/String;)Ljava/lang/String;",
+      "pass": [
+       "result"
+      ]
+     }
+    ]
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "profile-zoom-toggles",
+   "hook": "ProfileTables (portrait 1x, 2.6x)",
+   "effort": "medium",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "X0",
+    "proto": "()Landroid/util/SparseArray;",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/Tables;->zoomToggles(Landroid/util/SparseArray;)Landroid/util/SparseArray;",
+      "pass": [
+       "result"
+      ]
+     }
+    ]
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "profile-street-presets",
+   "hook": "ProfileTables (Fastshot presets)",
+   "effort": "medium",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "J0",
+    "proto": "()Landroid/util/SparseArray;",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/Tables;->streetPresets(Landroid/util/SparseArray;Ljava/lang/Class;)Landroid/util/SparseArray;",
+      "pass": [
+       "result",
+       "class:LRe/b;"
+      ]
+     }
+    ]
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    },
+    {
+     "class": "LRe/b;",
+     "has": [
+      "constructor <init>()V",
+      "constructor <init>(IFF)V"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "mutex-rules",
+   "hook": "MutexDrop (rule list)",
+   "effort": "medium",
+   "find": {
+    "class": "Lv3/g;",
+    "name": "b",
+    "proto": "(Lv3/c;)Ljava/util/ArrayList;",
+    "has": [
+     "\"findFeatureMutexInfoList: \""
+    ]
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/Photo;->mutexRules(Ljava/util/ArrayList;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/Class;Ljava/lang/String;)Ljava/util/ArrayList;",
+      "pass": [
+       "result",
+       "arg0",
+       "str:a",
+       "class:Lv3/h;",
+       "str:b"
+      ]
+     }
+    ]
+   },
+   "check": [
+    {
+     "class": "Lv3/c;",
+     "has": [
+      ".field public final a:I"
+     ]
+    },
+    {
+     "class": "Lv3/h;",
+     "has": [
+      ".field public final b:I"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "mutex-style",
+   "hook": "MutexDrop (Style kept enabled)",
+   "effort": "medium",
+   "find": {
+    "class": "Lr2/m;",
+    "name": "v",
+    "proto": "(IZ)V",
+    "has": [
+     "Landroid/util/SparseBooleanArray;->put"
+    ]
+   },
+   "action": {
+    "type": "wrap",
+    "before": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/Values;->no(Z)Z",
+      "pass": [
+       "arg1"
+      ],
+      "set": "arg1"
+     }
+    ]
+   }
+  },
+  {
+   "id": "watermark-subimage",
+   "hook": "WatermarkSubimage",
+   "effort": "medium",
+   "find": {
+    "class": "LU8/d;",
+    "name": "f",
+    "proto": "(Lzi/a;ZI)Lzi/f;",
+    "has": [
+     "\"processWatermark: start: \""
+    ]
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/Photo;->afterWatermark(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Object;",
+      "pass": [
+       "result",
+       "arg0",
+       "str:s",
+       "str:t"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "video-filter-luts",
+   "hook": "VideoFilterLuts",
+   "effort": "medium",
+   "find": {
+    "class": "Lr2/a;",
+    "name": "getItems",
+    "proto": "()Ljava/util/List;"
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/Video;->filterItems(Ljava/util/List;)Ljava/util/List;",
+      "pass": [
+       "result"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "fill-light-60-L",
+   "hook": "FillLight60",
+   "effort": "medium",
+   "find": {
+    "class": "Ll9/i0;",
+    "name": "L",
+    "proto": "(Landroid/util/Range;)V",
+    "has": [
+     "\"setFpsRange: \""
+    ]
+   },
+   "action": {
+    "type": "wrap",
+    "before": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/Video;->fillLightRange(Landroid/util/Range;Ljava/lang/Class;Ljava/lang/String;Ljava/lang/Class;)Landroid/util/Range;",
+      "pass": [
+       "arg0",
+       "class:Lg2/a;",
+       "str:a",
+       "class:Lr2/w;"
+      ],
+      "set": "arg0"
+     }
+    ]
+   },
+   "check": [
+    {
+     "class": "Lg2/a;",
+     "has": [
+      ".method public static a()Lr2/n1;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "fill-light-60-f0",
+   "hook": "FillLight60",
+   "effort": "medium",
+   "find": {
+    "class": "Ll9/i0;",
+    "name": "f0",
+    "proto": "(Landroid/util/Range;)V",
+    "has": [
+     "\"setVideoFpsRange: \""
+    ]
+   },
+   "action": {
+    "type": "wrap",
+    "before": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/Video;->fillLightRange(Landroid/util/Range;Ljava/lang/Class;Ljava/lang/String;Ljava/lang/Class;)Landroid/util/Range;",
+      "pass": [
+       "arg0",
+       "class:Lg2/a;",
+       "str:a",
+       "class:Lr2/w;"
+      ],
+      "set": "arg0"
+     }
+    ]
+   },
+   "check": [
+    {
+     "class": "Lg2/a;",
+     "has": [
+      ".method public static a()Lr2/n1;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "uhd-ultra-on",
+   "hook": "UltraHdLenses (Ultra HD reads off while re-reading)",
+   "effort": "high",
+   "find": {
+    "class": "Lcom/android/camera/data/data/p;",
+    "name": "l0",
+    "proto": "()Z",
+    "static": true
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/UltraHdLenses;->ultraOn(Z)Z",
+      "pass": [
+       "result"
+      ]
+     }
+    ]
+   },
+   "check": [
+    {
+     "class": "Lcom/android/camera/data/data/p;",
+     "has": [
+      ".method public static l0()Z",
+      ".method public static m0(I)Z",
+      ".method public static X0()V"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "uhd-ultra-off",
+   "hook": "UltraHdLenses (keep 50M for 1:1 and 4:3)",
+   "effort": "high",
+   "find": {
+    "class": "Lcom/android/camera/data/data/p;",
+    "name": "X0",
+    "proto": "()V",
+    "static": true
+   },
+   "action": {
+    "type": "wrap",
+    "guard": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/UltraHdLenses;->allowUltraOff()Z",
+      "pass": []
+     }
+    ]
+   },
+   "check": [
+    {
+     "class": "Lcom/android/camera/data/data/p;",
+     "has": [
+      ".method public static l0()Z",
+      ".method public static m0(I)Z",
+      ".method public static X0()V"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "uhd-zoom-state",
+   "hook": "UltraHdLenses (lens buttons at 50M)",
+   "effort": "high",
+   "find": {
+    "class": "LH4/p0;",
+    "name": "a",
+    "proto": "(IZZ)Lcom/android/camera/ui/zoom/ZoomRatioToggleView$f;",
+    "static": true
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/UltraHdLenses;->zoomState(Ljava/lang/Object;IZZLjava/lang/Class;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Object;",
+      "pass": [
+       "result",
+       "arg0",
+       "arg1",
+       "arg2",
+       "class:LH4/p0;",
+       "str:a",
+       "str:com.android.camera.data.data.p#l0#m0"
+      ]
+     }
+    ]
+   },
+   "check": [
+    {
+     "class": "Lcom/android/camera/ui/zoom/ZoomRatioToggleView$f;",
+     "has": [
+      ".field public final a:I"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "uhd-zoom-list",
+   "hook": "UltraHdLenses (per-mode lens list at 50M)",
+   "effort": "high",
+   "find": {
+    "class": "Lcom/android/camera/data/data/i;",
+    "name": "S",
+    "proto": "(I)[F",
+    "static": true
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/UltraHdLenses;->zoomList([FILjava/lang/Class;Ljava/lang/String;Ljava/lang/String;)[F",
+      "pass": [
+       "result",
+       "arg0",
+       "class:Lcom/android/camera/data/data/i;",
+       "str:S",
+       "str:com.android.camera.data.data.p#l0#m0"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "uhd-keep-lenses",
+   "hook": "UltraHdLenses (lens bar filter at 50M)",
+   "effort": "high",
+   "find": {
+    "class": "Lcom/android/camera/ui/zoom/ZoomRatioToggleView;",
+    "name": "u",
+    "proto": "([FZZZ)[F"
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/UltraHdLenses;->keepLenses([F[FLjava/lang/String;)[F",
+      "pass": [
+       "result",
+       "arg0",
+       "str:com.android.camera.data.data.p#l0#m0"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "uhd-allow-switch",
+   "hook": "UltraHdLenses (switch camera while zooming)",
+   "effort": "high",
+   "find": {
+    "class": "Lcom/android/camera/module/Camera2Module;",
+    "name": "isCameraSwitchingDuringZoomingAllowed",
+    "proto": "()Z"
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/UltraHdLenses;->allowLensSwitch(ZLjava/lang/Object;Ljava/lang/String;)Z",
+      "pass": [
+       "result",
+       "this",
+       "str:com.android.camera.data.data.p#l0#m0"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "uhd-ratio",
+   "hook": "UltraHdLenses (1:1 at 50M)",
+   "effort": "high",
+   "find": {
+    "class": "Lr2/T;",
+    "name": "getComponentValue",
+    "proto": "(I)Ljava/lang/String;"
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/UltraHdLenses;->ratio(Ljava/lang/String;Ljava/lang/Object;ILjava/lang/String;)Ljava/lang/String;",
+      "pass": [
+       "result",
+       "this",
+       "arg0",
+       "str:com.android.camera.data.data.p#l0#m0"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "uhd-ratio-change",
+   "hook": "UltraHdLenses (ratio change keeps 50M)",
+   "effort": "high",
+   "find": {
+    "class": "Lr6/f0;",
+    "name": "U5",
+    "proto": "(Ljava/lang/String;Z)V"
+   },
+   "action": {
+    "type": "wrap",
+    "before": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/UltraHdLenses;->ratioChangeEnter(Ljava/lang/String;)V",
+      "pass": [
+       "arg0"
+      ]
+     }
+    ],
+    "exit": "Ldev/spundone/xcam17/aosp/UltraHdLenses;->ratioChangeExit()V"
+   }
+  },
+  {
+   "id": "uhd-lens-switch",
+   "hook": "UltraHdLenses (lens changes at each lens's stop)",
+   "effort": "high",
+   "find": {
+    "class": "Li9/g;",
+    "name": "M7",
+    "proto": "(FFLcom/android/camera/module/Y;)Z"
+   },
+   "action": {
+    "type": "wrap",
+    "guard": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/UltraHdLenses;->lensSwitchGo(FLjava/lang/Object;Ljava/lang/String;)Z",
+      "pass": [
+       "arg1",
+       "arg2",
+       "str:com.android.camera.data.data.p#l0#m0"
+      ]
+     }
+    ],
+    "before": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/UltraHdLenses;->lensSwitchFrom(FFLjava/lang/Object;Ljava/lang/String;)F",
+      "pass": [
+       "arg0",
+       "arg1",
+       "arg2",
+       "str:com.android.camera.data.data.p#l0#m0"
+      ],
+      "set": "arg0"
+     }
+    ]
+   },
+   "check": [
+    {
+     "class": "Li9/g;",
+     "has": [
+      ".field public final b:Ljava/lang/ref/WeakReference;",
+      ".field public l:F",
+      ".method public setZoomRatio(F)V"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "uhd-snap-B7",
+   "hook": "UltraHdLenses (zoom snaps to the lens in use)",
+   "effort": "high",
+   "find": {
+    "class": "Lj9/e;",
+    "name": "B7",
+    "proto": "()V"
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/UltraHdLenses;->snapToLens(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V",
+      "pass": [
+       "this",
+       "str:b#l",
+       "str:com.android.camera.data.data.p#l0#m0"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "uhd-snap-n0",
+   "hook": "UltraHdLenses (zoom snaps to the lens in use)",
+   "effort": "high",
+   "find": {
+    "class": "Lj9/t;",
+    "name": "n0",
+    "proto": "(I)V"
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/UltraHdLenses;->snapToLens(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V",
+      "pass": [
+       "this",
+       "str:b#l",
+       "str:com.android.camera.data.data.p#l0#m0"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "uhd-zoom-apply",
+   "hook": "UltraHdLenses (main camera held at 1x at 50M)",
+   "effort": "high",
+   "find": {
+    "class": "Ll9/n0;",
+    "name": "l1",
+    "proto": "(Landroid/hardware/camera2/CaptureRequest$Builder;Ll9/g;Ll9/j0;)V",
+    "static": true
+   },
+   "action": {
+    "type": "wrap",
+    "before": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/UltraHdLenses;->zoomApplyBefore(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
+      "pass": [
+       "arg1",
+       "arg2",
+       "str:l9.h#j",
+       "str:d0",
+       "str:com.android.camera.data.data.p#l0#m0"
+      ]
+     }
+    ],
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/UltraHdLenses;->zoomApplyAfter(Ljava/lang/Object;Ljava/lang/String;)V",
+      "pass": [
+       "arg2",
+       "str:d0"
+      ]
+     }
+    ]
+   },
+   "check": [
+    {
+     "class": "Ll9/j0;",
+     "has": [
+      ".field public d0:F"
+     ]
+    },
+    {
+     "class": "Ll9/h;",
+     "has": [
+      ".method public static j(Ll9/g;)I"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ultra-raw-sizes",
+   "hook": "UltraHdRaw (RAW16 sizes of the 50MP sessions)",
+   "effort": "medium",
+   "find": {
+    "class": "Ll9/g;",
+    "name": "j0",
+    "proto": "(II)Ljava/util/List;",
+    "has": [
+     "Ll9/g;->g:Ljava/util/HashMap;"
+    ]
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/UltraHdRaw;->rawSizes(Ljava/util/List;Ljava/lang/Object;IILjava/lang/String;Ljava/lang/String;)Ljava/util/List;",
+      "pass": [
+       "result",
+       "this",
+       "arg0",
+       "arg1",
+       "str:d",
+       "str:l9.h#j"
+      ]
+     }
+    ]
+   },
+   "check": [
+    {
+     "class": "Ll9/g;",
+     "has": [
+      ".field public final d:Landroid/hardware/camera2/CameraCharacteristics;",
+      ".field public final g:Ljava/util/HashMap;"
+     ]
+    },
+    {
+     "class": "Ll9/h;",
+     "has": [
+      ".method public static j(Ll9/g;)I"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ultra-raw-pro-size",
+   "hook": "UltraHdRaw (Pro's RAW size at 50MP)",
+   "effort": "medium",
+   "find": {
+    "class": "Ll9/g;",
+    "name": "s",
+    "proto": "()Landroid/util/Size;",
+    "has": [
+     "Landroid/hardware/camera2/params/StreamConfiguration;->getFormat()I"
+    ]
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/UltraHdRaw;->proRawSize(Landroid/util/Size;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Landroid/util/Size;",
+      "pass": [
+       "result",
+       "this",
+       "str:d",
+       "str:l9.h#j",
+       "str:com.android.camera.data.data.p#l0"
+      ]
+     }
+    ]
+   },
+   "check": [
+    {
+     "class": "Ll9/g;",
+     "has": [
+      ".field public final d:Landroid/hardware/camera2/CameraCharacteristics;",
+      ".field public final g:Ljava/util/HashMap;"
+     ]
+    },
+    {
+     "class": "Lcom/android/camera/data/data/p;",
+     "has": [
+      ".method public static l0()Z",
+      ".method public static m0(I)Z",
+      ".method public static X0()V"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "dng-50",
+   "hook": "Dng50 (DNG of 50MP and cropped RAW frames)",
+   "effort": "medium",
+   "find": null,
+   "action": {
+    "type": "redirect",
+    "helper": "Ldev/spundone/xcam17/aosp/Dng50;",
+    "calls": {
+     "Landroid/hardware/camera2/DngCreator;-><init>(Landroid/hardware/camera2/CameraCharacteristics;Landroid/hardware/camera2/CaptureResult;)V": "created",
+     "Landroid/hardware/camera2/DngCreator;->setOrientation(I)Landroid/hardware/camera2/DngCreator;": "setOrientation",
+     "Landroid/hardware/camera2/DngCreator;->writeInputStream(Ljava/io/OutputStream;Landroid/util/Size;Ljava/io/InputStream;J)V": "writeInputStream"
+    }
+   }
+  },
+  {
+   "id": "flag-c3",
+   "hook": "DeviceFeatures c3: Leica Essential (Legendary mode): M9 and M3 looks, with the Leica port's files",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "c3",
+    "proto": "()Z",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "helper": "Ldev/spundone/xcam17/aosp/Leica;->installed()Z",
+    "pass": []
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-b3",
+   "hook": "DeviceFeatures b3: Legendary mode's M10R look, with the Leica port's files",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "b3",
+    "proto": "()Z",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "helper": "Ldev/spundone/xcam17/aosp/Leica;->installed()Z",
+    "pass": []
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-G",
+   "hook": "DeviceFeatures G: Legendary (module 256) in the mode list, with the Leica port's files",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "G",
+    "proto": "()[I",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/Leica;->modes([I)[I",
+      "pass": [
+       "result"
+      ]
+     }
+    ]
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "leica-task-fields",
+   "hook": "LeicaLegendary (the port's fields on the photo task, instead of stand-ins)",
+   "effort": "high",
+   "find": null,
+   "action": {
+    "type": "fields",
+    "class": "LSh/t;",
+    "add": [
+     ".field public legendaryStyle:Ljava/lang/String;",
+     ".field public legendaryPreviewResult:Landroid/hardware/camera2/CaptureResult;"
+    ]
+   },
+   "check": [
+    {
+     "class": "LSh/t;",
+     "has": [
+      ".field public final f:LSh/h;",
+      ".method public final Q()Landroid/hardware/camera2/TotalCaptureResult;"
+     ]
+    },
+    {
+     "class": "LSh/h;",
+     "has": [
+      ".field public c:Landroid/hardware/camera2/CaptureResult;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "leica-snapshot",
+   "hook": "LeicaLegendary (look and preview result at the shutter)",
+   "effort": "high",
+   "find": {
+    "class": "Lcom/android/camera/module/Camera2Module;",
+    "name": "updateParallelTaskData",
+    "proto": "(LSh/t;Ll9/q0;)V"
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/Leica;->snapshot(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;)V",
+      "pass": [
+       "this",
+       "arg0",
+       "str:t7.d#a#Sh.t#a#b#e#f#Q#i#g#c#Vh.f#d#Vh.g#a#r2.B#k6.l#T#l9.a#B#g2.a#a"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "leica-render",
+   "hook": "LeicaLegendary (the port renders the look as the photo is saved)",
+   "effort": "high",
+   "find": {
+    "class": "Lt7/d;",
+    "name": "a",
+    "proto": "(LSh/t;)V"
+   },
+   "action": {
+    "type": "wrap",
+    "before": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/Leica;->render(Ljava/lang/Object;)V",
+      "pass": [
+       "arg0"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "ultra-hdr",
+   "hook": "UltraHdrJpeg + HeifGainMap (from 1b4f7b6)",
+   "effort": "high",
+   "find": {
+    "class": "Ll7/k;",
+    "name": "w",
+    "proto": "(Landroid/net/Uri;ZLjava/lang/String;IZ)V"
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/UltraHdrJpeg;->afterNewImage(Landroid/net/Uri;Z)V",
+      "pass": [
+       "arg0",
+       "arg4"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "haptics-strategy",
+   "hook": "CameraHaptics (vibrator strategy)",
+   "effort": "medium",
+   "find": {
+    "class": "LRr/d;",
+    "name": "b",
+    "proto": "()LRr/d;",
+    "static": true
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/CameraHaptics;->fillStrategy(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/Class;)Ljava/lang/Object;",
+      "pass": [
+       "result",
+       "str:e",
+       "class:LRr/a;"
+      ]
+     }
+    ]
+   },
+   "check": [
+    {
+     "class": "LRr/d;",
+     "has": [
+      ".field public e:LRr/a;"
+     ]
+    },
+    {
+     "class": "LRr/a;",
+     "has": [
+      ".class public interface abstract LRr/a;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "haptics-miuix",
+   "hook": "CameraHaptics (miuix haptic ids)",
+   "effort": "medium",
+   "find": {
+    "class": "Lmiuix/view/HapticCompat;",
+    "name": "performHapticFeedback",
+    "proto": "(Landroid/view/View;I)Z",
+    "static": true,
+    "has": [
+     "const/high16 v2, 0x10000000"
+    ]
+   },
+   "action": {
+    "type": "wrap",
+    "before": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/CameraHaptics;->feedbackId(I)I",
+      "pass": [
+       "arg1"
+      ],
+      "set": "arg1"
+     }
+    ]
+   }
+  }
+ ]
+}

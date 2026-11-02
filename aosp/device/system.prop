@@ -1,0 +1,18 @@
+# Properties the camera reads. The 6.4 houji-miuicamera tree sets these already, and the
+# build rejects a duplicate ro. assignment, so they stay commented out here; uncomment the
+# ones your ROM lacks.
+#
+# The consent region is patched to GLOBAL in the APK, so ro.miui.build.region and
+# ro.product.mod_device no longer decide whether the camera asks securitycenter for consent.
+
+# Google Lens
+# ro.com.google.lens.oem_camera_package=com.android.camera
+
+# Framework allowlist: lets the camera see houji's auxiliary cameras
+# persist.vendor.camera.privapp.list=com.android.camera
+
+# MiuiCamera
+# ro.miui.notch=1
+# ro.miui.build.region=CN
+# ro.miui.ui.version.name=V816
+# ro.miui.ui.version.code=816

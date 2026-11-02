@@ -1,0 +1,3 @@
+# Watermarks print the phone's name from this (the patched profile answers {XIAOMI, 14}).
+# Most houji trees set it already; uncomment it if yours doesn't.
+# ro.product.marketname=Xiaomi 14

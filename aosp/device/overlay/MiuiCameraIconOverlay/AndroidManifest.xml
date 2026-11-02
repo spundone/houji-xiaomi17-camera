@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Static overlay that gives the camera an adaptive launcher icon on AOSP launchers.
+    res/ is a copy of the repository's icon/res; keep the two in step.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="dev.spundone.xcam17.icon">
+    <overlay android:targetPackage="com.android.camera" android:isStatic="true" android:priority="10" />
+    <application android:hasCode="false" />
+</manifest>
