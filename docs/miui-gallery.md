@@ -33,7 +33,7 @@ KernelSU's default app profile unmounts module files for apps that aren't grante
 - `com.android.intentresolver`
 - `com.android.documentsui`
 
-This repo's camera module sets this only for `com.android.camera`.
+The camera module sets this on every boot for the camera and the launcher, and, when the MIUI Gallery module is installed, for all the apps above. Without it, MIUI Gallery closes on start ("keeps stopping": `Resources` is null in `GraphicsEnvironment.queryAngleChoice`, because the process can't open its own APK). KernelSU forgets a profile when its app is uninstalled, which happens while the Gallery module is disabled, so a profile set once by hand doesn't last.
 
 ## How the camera uses Gallery
 

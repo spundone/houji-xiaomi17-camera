@@ -9,6 +9,14 @@ KSUD=/data/adb/ksud
 # loads the camera's label and icon (and the icon overlay) from those files as well.
 VISIBLE_PACKAGES="com.android.camera"
 [ -f "$MODDIR_COMMON/launcher" ] && VISIBLE_PACKAGES="$VISIBLE_PACKAGES $(cat "$MODDIR_COMMON/launcher")"
+# MIUI Gallery Global (installed by the gallery zips) is a module too: without this its apps
+# can't open their own APKs and close on start, and the system apps that show its icon, share
+# sheet or picker entries can't load them. KernelSU forgets a profile when its app is
+# uninstalled, such as while the Gallery module is disabled, so it's set on every boot.
+[ -d /data/adb/modules/MIUIGallery ] \
+    && VISIBLE_PACKAGES="$VISIBLE_PACKAGES com.miui.gallery com.miui.mediaeditor com.xiaomi.account \
+com.android.systemui com.android.settings com.android.permissioncontroller com.android.intentresolver \
+com.android.documentsui"
 
 known_apk() {
     # $1: APK path. Matches against the hashes shipped next to this script.
