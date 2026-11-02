@@ -35,6 +35,10 @@ KernelSU's default app profile unmounts module files for apps that aren't grante
 
 The camera module sets this on every boot for the camera and the launcher, and, when the MIUI Gallery module is installed, for all the apps above. Without it, MIUI Gallery closes on start ("keeps stopping": `Resources` is null in `GraphicsEnvironment.queryAngleChoice`, because the process can't open its own APK). KernelSU forgets a profile when its app is uninstalled, which happens while the Gallery module is disabled, so a profile set once by hand doesn't last.
 
+## The editor closing when a list reaches its end
+
+Scrolling one of the Gallery editor's tool bars to its end made the editor stop. The bounce at the end plays a haptic tick, and with `sys.haptic.version` at 2.0 (what houji's firmware reports for its linear motor) the editor's bundled HyperOS code (`miui.util.HapticFeedbackUtil`, `android.provider.MiuiSettings`) handles it, reading a HyperOS framework resource (`0x11060002`) that AOSP doesn't have: `Resources$NotFoundException`. At any other version Xiaomi's apps use Android's own haptics. The camera module sets it to 1.0 at boot when the MIUI Gallery module is installed. The camera's haptics feel the same.
+
 ## How the camera uses Gallery
 
 - **Thumbnail:** tapping the most-recent-photo button opens `com.miui.gallery/.activity.ExternalPhotoPageActivity`. The camera also binds Gallery's service (`com.miui.gallery.permission.BIND_SERVICE`, logged as `MCAM_GalleryHelper`) and lists Gallery and the Editor among the packages it queries.
