@@ -37,7 +37,9 @@ import dalvik.system.DexClassLoader;
  * and method.
  */
 public final class Leica {
-    static final String KIT = "/system/etc/xcam17/leica";
+    /** Next to the camera APK in standalone installs, else mounted by the module manager. */
+    static final String KIT = new File("/system/priv-app/MiuiCamera/leica/classes11.dex").isFile()
+            ? "/system/priv-app/MiuiCamera/leica" : "/system/etc/xcam17/leica";
     static final String LIB = KIT + "/lib";
     static final String ASSETS = KIT + "/assets";
     static final String[] DEX = {KIT + "/classes11.dex", KIT + "/classes12.dex"};
