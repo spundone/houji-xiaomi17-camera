@@ -34,6 +34,7 @@ known_apk "$MODPATH/MiuiCamera.apk" || abort "! Camera APK does not match a test
 
 set_perm "$MODPATH/MiuiCamera.apk" 0 0 0644 u:object_r:system_file:s0
 set_perm "$MODPATH/post-fs-data.sh" 0 0 0755
+set_perm "$MODPATH/service.sh" 0 0 0755
 set_perm "$MODPATH/uninstall.sh" 0 0 0755
 set_perm "$MODPATH/action.sh" 0 0 0755
 # Keep the HEIC Ultra HDR choice across updates.
@@ -120,7 +121,7 @@ case "$home" in
     *.*) echo "$home" > "$MODPATH/launcher" && ui_print "- Launcher: $home" ;;
 esac
 # The launcher caches icons by package and keeps the one it drew before the overlay was
-# mounted; post-fs-data.sh drops that cache once on the next boot.
+# mounted; service.sh drops that cache once, after the next boot's first unlock.
 touch "$MODPATH/reset_icon_cache"
 
 # All in one: install the LSPosed module carried in the zip, and enable it if Vector is the

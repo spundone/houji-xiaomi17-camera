@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- The adaptive launcher icon showed as the old bitmap in a square: the launcher kept the icon it cached before the overlay was mounted. The installer now clears the launcher's icon cache once, on the next boot.
+- The adaptive launcher icon showed as the old bitmap in a square: the launcher kept the icon it cached before the overlay was mounted. The installer now clears the launcher's icon cache once, after the first unlock following the next boot (the launcher's data is encrypted until then).
 - Local KernelSU-only zips (`scripts/build-kit-zip.sh`): the camera APK patched by the AOSP kit, so no LSPosed is needed, optionally with the MIUI Gallery Global module. They carry Xiaomi's APKs and are never published. The patched build has the 1.7.x features plus houji's 6.7 profile values and Short film; Leica Essential, 50MP RAW and the empty-DNG fix need the LSPosed module.
 - Short film (More > Short film; Vlog Pro, as on the stock Xiaomi 14): templates recorded clip by clip, with the reference shot in the corner. It replaces Short video in More; Short video is reachable from its start screen. It gets the standard session, as Short video does (the HAL refused its 0x800c session).
 - More values from the Xiaomi 14's own 6.7 profile, found by matching 6.7's and 6.8's profile methods through their callers: Vlog version 2 and the newer short film modes, Portrait's own capture action, lens switching while zooming, Ambilight exposure handling, 120 fps slow-motion sizes, the Portrait lens version, Dolby Vision preview colour space and viewfinder colour space.
