@@ -79,9 +79,7 @@ fi
 kit="$MODPATH/system/etc/xcam17/leica"
 old_kit=/data/adb/modules/xiaomi17_camera/system/etc/xcam17/leica
 leica_apk=""
-[ -f "$MODPATH/kit" ] && old_kit=/nonexistent
 for f in /sdcard/Download/*.apk; do
-    [ -f "$MODPATH/kit" ] && break
     [ -f "$f" ] || continue
     unzip -l "$f" assets/legend18/provenance.json 2>/dev/null | grep -q provenance.json || continue
     unzip -p "$f" classes11.dex 2>/dev/null | grep -q LegendaryPostProcessor && leica_apk="$f" && break
