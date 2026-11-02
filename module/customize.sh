@@ -79,11 +79,25 @@ fi
 kit="$MODPATH/system/etc/xcam17/leica"
 old_kit=/data/adb/modules/xiaomi17_camera/system/etc/xcam17/leica
 leica_apk=""
-for f in /sdcard/Download/*.apk; do
-    [ -f "$f" ] || continue
-    unzip -l "$f" assets/legend18/provenance.json 2>/dev/null | grep -q provenance.json || continue
-    unzip -p "$f" classes11.dex 2>/dev/null | grep -q LegendaryPostProcessor && leica_apk="$f" && break
-done
+# Standalone zips (scripts/build-kit-zip.sh --leica) carry those files in leica/. They go next
+# to the APK in app/, which post-fs-data.sh mounts as the camera's folder, so no module manager
+# mount is needed.
+if [ -d "$MODPATH/leica" ]; then
+    kit="$MODPATH/app/leica"
+    mkdir -p "$MODPATH/app"
+    mv "$MODPATH/leica" "$kit"
+    ln "$MODPATH/MiuiCamera.apk" "$MODPATH/app/MiuiCamera.apk" 2>/dev/null \
+        || cp "$MODPATH/MiuiCamera.apk" "$MODPATH/app/MiuiCamera.apk"
+    set_perm_recursive "$MODPATH/app" 0 0 0755 0644 u:object_r:system_file:s0
+    ui_print "- Leica Essential looks from the zip"
+    old_kit=/nonexistent
+else
+    for f in /sdcard/Download/*.apk; do
+        [ -f "$f" ] || continue
+        unzip -l "$f" assets/legend18/provenance.json 2>/dev/null | grep -q provenance.json || continue
+        unzip -p "$f" classes11.dex 2>/dev/null | grep -q LegendaryPostProcessor && leica_apk="$f" && break
+    done
+fi
 if [ -n "$leica_apk" ]; then
     ui_print "- Leica Essential looks from $(basename "$leica_apk")"
     mkdir -p "$kit/lib"
