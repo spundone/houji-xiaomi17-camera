@@ -32,11 +32,12 @@ Nothing from Xiaomi is committed: the APK stays yours, and `patches.json` holds 
 
 ## How patches work
 
-Each patch finds its method by class, name and prototype, and checks fingerprints first: strings the method body or a related class must contain (a log message, a vendor tag, a field). Three kinds:
+Each patch finds its method by class, name and prototype, and checks fingerprints first: strings the method body or a related class must contain (a log message, a vendor tag, a field). Four kinds:
 
 - **return**: the body becomes a constant: a boolean, number, string, static field, or a helper's result.
 - **wrap**: the Xposed-style hook. The original method is renamed `<name>$xcam` and made private; a new method under the original name calls it and runs helpers before it (to replace an argument), after it (to replace the result), or around it (enter and exit, with exit also run if it throws).
-- **redirect**: every call to a framework method (`CameraDevice.createCaptureRequest`, `MediaCodec.configure`) is rewritten to call a static helper that takes the receiver first. Those hooks sat on framework classes, so the camera's call sites are patched instead.
+- **redirect**: every call to a framework method (`CameraDevice.createCaptureRequest`, `MediaCodec.configure`) is rewritten to call a static helper that takes the receiver first. Those hooks sat on framework classes, so the camera's call sites are patched instead. For a constructor the call stays, and the helper runs after it with the new object and the constructor's arguments.
+- **fields**: field declarations added to a class, for code loaded at run time that expects them.
 
 ## Ported hooks
 
@@ -48,7 +49,7 @@ Each patch finds its method by class, name and prototype, and checks fingerprint
 | `Entry.hookConsentRegion` | return `Th.c$c.c` (GLOBAL) from `Th.c.a()` | Low |
 | `Entry.hookMissingProfile` | wrap the profile loader `Eu.f2.l()`: clear the flag, use CommonFlagship | Low |
 | `Entry.hookMarketingName` | return `Profile.marketingName()` from CommonFlagship `d()` | Low |
-| `DeviceFeatures` (22 flags) | return constants on Common and CommonFlagship; `w0` wraps to append, `W0` and `R0` use helpers | Low |
+| `DeviceFeatures` (34 flags) | return constants on Common and CommonFlagship; `w0` wraps to append, `W0` and `R0` use helpers | Low |
 | `Entry.hookStreetMode` | return `true` from `StreetModuleEntry.support()` | Low |
 | `Entry.hookVideoLensSwitching` | wrap `data.i.U1` (enter, exit, after) and the HDR10, HDR10 Pro and Dolby checks | Medium |
 | `Entry.hookFrontDolby4k` | wrap `l9.h.g1` | Medium |
@@ -67,8 +68,11 @@ Each patch finds its method by class, name and prototype, and checks fingerprint
 | `UltraHdLenses` | wrap 13 methods: the Ultra HD checks (`data.p.l0`, `X0` guarded), lens buttons and lists (`H4.p0.a`, `data.i.S`, `ZoomRatioToggleView.u`), the lens switch (`i9.g.M7`, guarded), snaps (`j9.e.B7`, `j9.t.n0`), the 1:1 ratio (`r2.T`, `r6.f0`) and the 1x zoom step (`l9.n0.l1`) | High |
 | `UltraHdrJpeg`, `HeifGainMap` (from 1b4f7b6) | wrap the image saver's new-image callback `l7.k.w`; HEIF gain maps only with `debug.xcam17.heic_ultrahdr=1` | High |
 | `CameraHaptics` | wrap `Rr.d.b` (vibrator strategy) and `HapticCompat.performHapticFeedback` (before: HyperOS ids mapped) | Medium |
+| `UltraHdRaw` | wrap `l9.g.j0` (RAW16 sizes of the 50MP sessions) and `l9.g.s` (Pro's RAW size at 50MP) | Medium |
+| `Dng50` | redirect the camera's `DngCreator` constructor (helper after it), `setOrientation` and `writeInputStream`, through `Dng50` | Medium |
+| `LeicaLegendary` | add the port's two fields to the photo task `Sh.t` (instead of stand-in classes); wrap `Camera2Module.updateParallelTaskData` (after) and `t7.d.a` (before); flags `c3`, `b3`, `G` only with the port's files installed. The port's models are added to the app's resources with a `ResourcesLoader` instead of hooking `AssetManager`. Its notices stay in Chinese: they are the port's code, which isn't patched | High |
 | KernelSU swap, profile, package cache | not needed: the ROM ships the app | None |
 
-All 71 patches apply to 6.8.002090.2, and the rebuilt APK was checked with apktool and dexdump, then run on the phone; see the status in [docs/aosp-integration.md](../docs/aosp-integration.md#status).
+All 89 patches apply to 6.8.002090.2, and the rebuilt APK was checked with apktool and dexdump, then run on the phone; see the status in [docs/aosp-integration.md](../docs/aosp-integration.md#status).
 
 For Ultra HDR on HEIF photos in a ROM build, set `debug.xcam17.heic_ultrahdr=1` (for example in `system.prop`). It's off by default because macOS, ffmpeg and Google Photos backup refuse HEIF files with a gain map.

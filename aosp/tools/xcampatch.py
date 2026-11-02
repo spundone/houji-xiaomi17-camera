@@ -21,7 +21,11 @@ Actions:
            are static methods in the helper dex, given values listed in "pass":
              result, this, argN, str:<text>, class:<Ldescriptor;>
   redirect Rewrite every call to a framework method into a call to a static helper taking
-           the receiver as its first argument, for hooks that sat on framework classes.
+           the receiver as its first argument, for hooks that sat on framework classes. For a
+           constructor (<init>) the call stays and the helper is called after it, given the
+           new object and the constructor's arguments.
+  fields   Add field declarations ("add") to a class, for code loaded at run time that
+           expects them.
 
 apply writes REPORT.json: every method it generated, as text, and every redirected call. verify
 decodes nothing itself; give it the smali tree of the rebuilt APK and it checks each generated
@@ -454,24 +458,55 @@ def redirect(tree, patch, report):
         recv, name, proto = split_ref(frm)
         params, ret = split_proto(proto)
         to = f"{a['helper']}->{helper_name}({recv}{''.join(params)}){ret}"
-        pat = re.compile(r"^(\s*)invoke-(?:virtual|interface)(/range)? (\{[^}]*\}), " + re.escape(frm) + "$")
+        ctor = name == "<init>"
+        kind = "direct" if ctor else "(?:virtual|interface)"
+        pat = re.compile(r"^(\s*)invoke-" + kind + r"(/range)? (\{[^}]*\}), " + re.escape(frm) + "$")
         count = 0
         for desc, path in tree.all_paths():
             with open(path, encoding="utf-8") as fh:
                 if frm not in fh.read():
                     continue
             cls = tree.get(desc)
-            for i, line in enumerate(cls.lines):
-                m = pat.match(line)
-                if m:
-                    cls.lines[i] = f"{m.group(1)}invoke-static{m.group(2) or ''} {m.group(3)}, {to}"
-                    cls.dirty = True
-                    count += 1
+            for i in reversed(range(len(cls.lines))):
+                m = pat.match(cls.lines[i])
+                if not m:
+                    continue
+                call = f"{m.group(1)}invoke-static{m.group(2) or ''} {m.group(3)}, {to}"
+                if ctor:
+                    # The new object is usable only once constructed: the helper is called
+                    # after the constructor, with the same registers.
+                    cls.lines.insert(i + 1, call)
+                else:
+                    cls.lines[i] = call
+                cls.dirty = True
+                count += 1
+            if cls.dirty:
+                cls.parse()
         if count == 0:
             die(f"{patch['id']}: no calls to {frm}")
-        report["redirects"].append({"patch": patch["id"], "from": frm, "to": to, "count": count})
+        report["redirects"].append({"patch": patch["id"], "from": frm, "to": to, "count": count, "after": ctor})
         total += count
     return total
+
+
+# ---------------------------------------------------------------------------------------
+# Fields
+
+
+def add_fields(tree, patch, report):
+    a = patch["action"]
+    cls = tree.get(a["class"])
+    # Before the first method: a field may be followed by its annotations and .end field.
+    at = next((i for i, ln in enumerate(cls.lines) if ln.startswith(".method ")), len(cls.lines))
+    for decl in a["add"]:
+        name = decl.split()[-1].split(":")[0]
+        if any(ln.startswith(".field ") and ln.split()[-1].split(":")[0] == name for ln in cls.lines):
+            die(f"{patch['id']}: {a['class']} already has a field {name}")
+    cls.lines[at:at] = a["add"] + [""]
+    cls.dirty = True
+    cls.parse()
+    report.setdefault("fields", []).append({"patch": patch["id"], "class": a["class"], "fields": a["add"]})
+    return len(a["add"])
 
 
 # ---------------------------------------------------------------------------------------
@@ -489,6 +524,10 @@ def apply(tree_dir, patches_file, report_file):
         if kind == "redirect":
             n = redirect(tree, patch, report)
             print(f"  {pid}: {n} call sites")
+            continue
+        if kind == "fields":
+            n = add_fields(tree, patch, report)
+            print(f"  {pid}: {n} fields in {patch['action']['class']}")
             continue
         methods = find_methods(tree, patch)
         for m in methods:
@@ -553,8 +592,16 @@ def verify(tree_dir, report_file):
                 s = fh.read()
             left += s.count(", " + r["from"] + "\n")
             to += s.count(", " + r["to"] + "\n")
-        ok = left == 0 and to == r["count"]
+        if r.get("after"):
+            ok = to == r["count"] and left >= to
+        else:
+            ok = left == 0 and to == r["count"]
         print(f"  {'ok ' if ok else 'BAD'} {r['patch']}: {r['to']} x{to} (left: {left})")
+        bad += not ok
+    for e in report.get("fields", []):
+        have = {ln.strip() for ln in tree.get(e["class"]).lines}
+        ok = all(decl.strip() in have for decl in e["fields"])
+        print(f"  {'ok ' if ok else 'BAD'} {e['patch']}: {len(e['fields'])} fields in {e['class']}")
         bad += not ok
     if bad:
         die(f"{bad} patch(es) missing from the rebuilt APK")

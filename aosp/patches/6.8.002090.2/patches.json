@@ -1,7 +1,7 @@
 {
  "build": "6.8.002090.2",
  "sha256": "729b0b193d1684e7c14ed0ca56ba15247d58016c70164329de233b49727a2c48",
- "ported_from": "spundone/houji-xiaomi17-camera v1.7.0 (2f8c709), lsposed/src/dev/spundone/xcam17; UltraHdrJpeg and HeifGainMap from 1b4f7b6 (HEIC Ultra HDR)",
+ "ported_from": "spundone/houji-xiaomi17-camera v1.7.0 (2f8c709), lsposed/src/dev/spundone/xcam17; UltraHdrJpeg and HeifGainMap from 1b4f7b6 (HEIC Ultra HDR); UltraHdRaw, Dng50 and LeicaLegendary from v1.8.0 and after",
  "patches": [
   {
    "id": "client-name",
@@ -2114,6 +2114,273 @@
      ]
     }
    ]
+  },
+  {
+   "id": "ultra-raw-sizes",
+   "hook": "UltraHdRaw (RAW16 sizes of the 50MP sessions)",
+   "effort": "medium",
+   "find": {
+    "class": "Ll9/g;",
+    "name": "j0",
+    "proto": "(II)Ljava/util/List;",
+    "has": [
+     "Ll9/g;->g:Ljava/util/HashMap;"
+    ]
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/UltraHdRaw;->rawSizes(Ljava/util/List;Ljava/lang/Object;IILjava/lang/String;Ljava/lang/String;)Ljava/util/List;",
+      "pass": [
+       "result",
+       "this",
+       "arg0",
+       "arg1",
+       "str:d",
+       "str:l9.h#j"
+      ]
+     }
+    ]
+   },
+   "check": [
+    {
+     "class": "Ll9/g;",
+     "has": [
+      ".field public final d:Landroid/hardware/camera2/CameraCharacteristics;",
+      ".field public final g:Ljava/util/HashMap;"
+     ]
+    },
+    {
+     "class": "Ll9/h;",
+     "has": [
+      ".method public static j(Ll9/g;)I"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ultra-raw-pro-size",
+   "hook": "UltraHdRaw (Pro's RAW size at 50MP)",
+   "effort": "medium",
+   "find": {
+    "class": "Ll9/g;",
+    "name": "s",
+    "proto": "()Landroid/util/Size;",
+    "has": [
+     "Landroid/hardware/camera2/params/StreamConfiguration;->getFormat()I"
+    ]
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/UltraHdRaw;->proRawSize(Landroid/util/Size;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Landroid/util/Size;",
+      "pass": [
+       "result",
+       "this",
+       "str:d",
+       "str:l9.h#j",
+       "str:com.android.camera.data.data.p#l0"
+      ]
+     }
+    ]
+   },
+   "check": [
+    {
+     "class": "Ll9/g;",
+     "has": [
+      ".field public final d:Landroid/hardware/camera2/CameraCharacteristics;",
+      ".field public final g:Ljava/util/HashMap;"
+     ]
+    },
+    {
+     "class": "Lcom/android/camera/data/data/p;",
+     "has": [
+      ".method public static l0()Z",
+      ".method public static m0(I)Z",
+      ".method public static X0()V"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "dng-50",
+   "hook": "Dng50 (DNG of 50MP and cropped RAW frames)",
+   "effort": "medium",
+   "find": null,
+   "action": {
+    "type": "redirect",
+    "helper": "Ldev/spundone/xcam17/aosp/Dng50;",
+    "calls": {
+     "Landroid/hardware/camera2/DngCreator;-><init>(Landroid/hardware/camera2/CameraCharacteristics;Landroid/hardware/camera2/CaptureResult;)V": "created",
+     "Landroid/hardware/camera2/DngCreator;->setOrientation(I)Landroid/hardware/camera2/DngCreator;": "setOrientation",
+     "Landroid/hardware/camera2/DngCreator;->writeInputStream(Ljava/io/OutputStream;Landroid/util/Size;Ljava/io/InputStream;J)V": "writeInputStream"
+    }
+   }
+  },
+  {
+   "id": "flag-c3",
+   "hook": "DeviceFeatures c3: Leica Essential (Legendary mode): M9 and M3 looks, with the Leica port's files",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "c3",
+    "proto": "()Z",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "helper": "Ldev/spundone/xcam17/aosp/Leica;->installed()Z",
+    "pass": []
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-b3",
+   "hook": "DeviceFeatures b3: Legendary mode's M10R look, with the Leica port's files",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "b3",
+    "proto": "()Z",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "return",
+    "helper": "Ldev/spundone/xcam17/aosp/Leica;->installed()Z",
+    "pass": []
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flag-G",
+   "hook": "DeviceFeatures G: Legendary (module 256) in the mode list, with the Leica port's files",
+   "effort": "low",
+   "find": {
+    "classes": [
+     "L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;",
+     "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;"
+    ],
+    "name": "G",
+    "proto": "()[I",
+    "static": false,
+    "count": "+"
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/Leica;->modes([I)[I",
+      "pass": [
+       "result"
+      ]
+     }
+    ]
+   },
+   "check": [
+    {
+     "class": "L晱晽晿昼晿晻昼晶晷晤晻晱晷昼晪晻晳晽晿晻昼晑晽晿晿晽晼晔晾晳晵晡智晻晢;",
+     "has": [
+      ".super L蹈蹄蹆踅蹆蹂踅蹏蹎蹝蹂蹈蹎踅蹈蹄蹆蹆蹄蹅踅蹨蹄蹆蹆蹄蹅;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "leica-task-fields",
+   "hook": "LeicaLegendary (the port's fields on the photo task, instead of stand-ins)",
+   "effort": "high",
+   "find": null,
+   "action": {
+    "type": "fields",
+    "class": "LSh/t;",
+    "add": [
+     ".field public legendaryStyle:Ljava/lang/String;",
+     ".field public legendaryPreviewResult:Landroid/hardware/camera2/CaptureResult;"
+    ]
+   },
+   "check": [
+    {
+     "class": "LSh/t;",
+     "has": [
+      ".field public final f:LSh/h;",
+      ".method public final Q()Landroid/hardware/camera2/TotalCaptureResult;"
+     ]
+    },
+    {
+     "class": "LSh/h;",
+     "has": [
+      ".field public c:Landroid/hardware/camera2/CaptureResult;"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "leica-snapshot",
+   "hook": "LeicaLegendary (look and preview result at the shutter)",
+   "effort": "high",
+   "find": {
+    "class": "Lcom/android/camera/module/Camera2Module;",
+    "name": "updateParallelTaskData",
+    "proto": "(LSh/t;Ll9/q0;)V"
+   },
+   "action": {
+    "type": "wrap",
+    "after": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/Leica;->snapshot(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;)V",
+      "pass": [
+       "this",
+       "arg0",
+       "str:t7.d#a#Sh.t#a#b#e#f#Q#i#g#c#Vh.f#d#Vh.g#a#r2.B#k6.l#T#l9.a#B#g2.a#a"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "leica-render",
+   "hook": "LeicaLegendary (the port renders the look as the photo is saved)",
+   "effort": "high",
+   "find": {
+    "class": "Lt7/d;",
+    "name": "a",
+    "proto": "(LSh/t;)V"
+   },
+   "action": {
+    "type": "wrap",
+    "before": [
+     {
+      "helper": "Ldev/spundone/xcam17/aosp/Leica;->render(Ljava/lang/Object;)V",
+      "pass": [
+       "arg0"
+      ]
+     }
+    ]
+   }
   },
   {
    "id": "ultra-hdr",

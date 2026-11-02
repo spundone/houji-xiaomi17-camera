@@ -316,6 +316,58 @@ add("uhd-zoom-apply", "UltraHdLenses (main camera held at 1x at 50M)", "high",
     [{"class": "Ll9/j0;", "has": [".field public d0:F"]},
      {"class": "Ll9/h;", "has": [".method public static j(Ll9/g;)I"]}])
 
+CAPS_CHECK = {"class": "Ll9/g;", "has": [".field public final d:Landroid/hardware/camera2/CameraCharacteristics;",
+                                        ".field public final g:Ljava/util/HashMap;"]}
+CAMERA_ID = "str:l9.h#j"
+add("ultra-raw-sizes", "UltraHdRaw (RAW16 sizes of the 50MP sessions)", "medium",
+    {"class": "Ll9/g;", "name": "j0", "proto": "(II)Ljava/util/List;", "has": ["Ll9/g;->g:Ljava/util/HashMap;"]},
+    {"type": "wrap", "after": [{"helper": H + "UltraHdRaw;->rawSizes(Ljava/util/List;Ljava/lang/Object;II"
+                                          "Ljava/lang/String;Ljava/lang/String;)Ljava/util/List;",
+                                "pass": ["result", "this", "arg0", "arg1", "str:d", CAMERA_ID]}]},
+    [CAPS_CHECK, {"class": "Ll9/h;", "has": [".method public static j(Ll9/g;)I"]}])
+add("ultra-raw-pro-size", "UltraHdRaw (Pro's RAW size at 50MP)", "medium",
+    {"class": "Ll9/g;", "name": "s", "proto": "()Landroid/util/Size;",
+     "has": ["Landroid/hardware/camera2/params/StreamConfiguration;->getFormat()I"]},
+    {"type": "wrap", "after": [{"helper": H + "UltraHdRaw;->proRawSize(Landroid/util/Size;Ljava/lang/Object;"
+                                          "Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Landroid/util/Size;",
+                                "pass": ["result", "this", "str:d", CAMERA_ID,
+                                         "str:com.android.camera.data.data.p#l0"]}]},
+    [CAPS_CHECK, ULTRA_CHECK])
+
+add("dng-50", "Dng50 (DNG of 50MP and cropped RAW frames)", "medium", None, {
+    "type": "redirect", "helper": H + "Dng50;",
+    "calls": {
+        "Landroid/hardware/camera2/DngCreator;-><init>(Landroid/hardware/camera2/CameraCharacteristics;"
+        "Landroid/hardware/camera2/CaptureResult;)V": "created",
+        "Landroid/hardware/camera2/DngCreator;->setOrientation(I)Landroid/hardware/camera2/DngCreator;":
+            "setOrientation",
+        "Landroid/hardware/camera2/DngCreator;->writeInputStream(Ljava/io/OutputStream;Landroid/util/Size;"
+        "Ljava/io/InputStream;J)V": "writeInputStream",
+    }})
+
+LEICA = H + "Leica;->"
+LEICA_NAMES = "str:t7.d#a#Sh.t#a#b#e#f#Q#i#g#c#Vh.f#d#Vh.g#a#r2.B#k6.l#T#l9.a#B#g2.a#a"
+flag("c3", "Z", None, "Leica Essential (Legendary mode): M9 and M3 looks, with the Leica port's files",
+     helper=LEICA + "installed()Z")
+flag("b3", "Z", None, "Legendary mode's M10R look, with the Leica port's files", helper=LEICA + "installed()Z")
+flag("G", "[I", None, "Legendary (module 256) in the mode list, with the Leica port's files",
+     wrap_after={"helper": LEICA + "modes([I)[I", "pass": ["result"]})
+add("leica-task-fields", "LeicaLegendary (the port's fields on the photo task, instead of stand-ins)", "high", None,
+    {"type": "fields", "class": "LSh/t;",
+     "add": [".field public legendaryStyle:Ljava/lang/String;",
+             ".field public legendaryPreviewResult:Landroid/hardware/camera2/CaptureResult;"]},
+    [{"class": "LSh/t;", "has": [".field public final f:LSh/h;",
+                                 ".method public final Q()Landroid/hardware/camera2/TotalCaptureResult;"]},
+     {"class": "LSh/h;", "has": [".field public c:Landroid/hardware/camera2/CaptureResult;"]}])
+add("leica-snapshot", "LeicaLegendary (look and preview result at the shutter)", "high",
+    {"class": "Lcom/android/camera/module/Camera2Module;", "name": "updateParallelTaskData",
+     "proto": "(LSh/t;Ll9/q0;)V"},
+    {"type": "wrap", "after": [{"helper": LEICA + "snapshot(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;)V",
+                                "pass": ["this", "arg0", LEICA_NAMES]}]})
+add("leica-render", "LeicaLegendary (the port renders the look as the photo is saved)", "high",
+    {"class": "Lt7/d;", "name": "a", "proto": "(LSh/t;)V"},
+    {"type": "wrap", "before": [{"helper": LEICA + "render(Ljava/lang/Object;)V", "pass": ["arg0"]}]})
+
 add("ultra-hdr", "UltraHdrJpeg + HeifGainMap (from 1b4f7b6)", "high",
     {"class": "Ll7/k;", "name": "w", "proto": "(Landroid/net/Uri;ZLjava/lang/String;IZ)V"},
     {"type": "wrap", "after": [{"helper": H + "UltraHdrJpeg;->afterNewImage(Landroid/net/Uri;Z)V",
@@ -336,7 +388,8 @@ spec = {
     "build": "6.8.002090.2",
     "sha256": "729b0b193d1684e7c14ed0ca56ba15247d58016c70164329de233b49727a2c48",
     "ported_from": "spundone/houji-xiaomi17-camera v1.7.0 (2f8c709), lsposed/src/dev/spundone/xcam17; "
-                   "UltraHdrJpeg and HeifGainMap from 1b4f7b6 (HEIC Ultra HDR)",
+                   "UltraHdrJpeg and HeifGainMap from 1b4f7b6 (HEIC Ultra HDR); UltraHdRaw, Dng50 and "
+                   "LeicaLegendary from v1.8.0 and after",
     "patches": patches,
 }
 out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "patches.json")
