@@ -64,7 +64,11 @@ if [ -f "$gallery_zip" ]; then
         for d in system system_ext; do
             [ -d "$staged/$d" ] && set_perm_recursive "$staged/$d" 0 0 0755 0644 u:object_r:system_file:s0
         done
-        [ -d /data/adb/modules/MIUIGallery ] && touch /data/adb/modules/MIUIGallery/update
+        # KernelSU keeps an installed module's disabled state through an update.
+        if [ -d /data/adb/modules/MIUIGallery ]; then
+            touch /data/adb/modules/MIUIGallery/update
+            rm -f /data/adb/modules/MIUIGallery/disable /data/adb/modules/MIUIGallery/remove
+        fi
         ui_print "- MIUI Gallery Global module installed"
     else
         rm -rf "$staged"
