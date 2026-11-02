@@ -9,9 +9,9 @@ Two CN builds are supported:
 
 With 6.8 you get the newer interface, Leica styles and filters, film grain, 50MP on all three rear lenses, 50MP RAW, lens and front/rear switching while recording, Dolby Vision in the viewfinder, Ultra HDR photos, Fastshot, Short film, Dual video and Open Gate.
 
-| Photo, 50MP lenses and Style | Pro at 50MP with RAW | Essential Moment (Leica looks) | Short film |
-| --- | --- | --- | --- |
-| ![Photo mode](docs/screenshots/photo.jpg) | ![Pro mode](docs/screenshots/pro.jpg) | ![Essential Moment](docs/screenshots/essential-moment.jpg) | ![Short film](docs/screenshots/short-film.jpg) |
+| Photo with Style ORIG | Pro, 50MP RAW on the ultra-wide | Essential Moment's Leica looks | Short film | More modes |
+| --- | --- | --- | --- | --- |
+| ![Photo mode](docs/screenshots/photo.jpg) | ![Pro mode](docs/screenshots/pro.jpg) | ![Essential Moment](docs/screenshots/essential-moment.jpg) | ![Short film](docs/screenshots/short-film.jpg) | ![More modes](docs/screenshots/modes.jpg) |
 
 ## Choose how to install
 
