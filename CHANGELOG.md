@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.9.1
+
+Fixes for the MIUI Gallery Global module, used alongside the camera (and installed by the KernelSU-only gallery zips):
+
+- MIUI Gallery no longer closes on start ("keeps stopping"). KernelSU hid the module's files from it, so it couldn't open its own APK; the profile set by hand was lost whenever the Gallery module was disabled, since KernelSU forgets the profiles of uninstalled apps. The module now keeps module files visible to Gallery, its editor, Xiaomi Account and the system apps that show them, on every boot, whenever the Gallery module is installed.
+- The Gallery editor no longer closes when a tool bar is scrolled to its end. The bounce's haptic went through HyperOS code bundled in the editor, which needs HyperOS framework resources; with the Gallery module installed, the module sets `sys.haptic.version` to 1.0 so Xiaomi's apps use Android's haptics. The camera's haptics feel the same.
+- Installing a gallery zip turns the Gallery module back on if it was disabled.
+
 ## 1.9.0
 
 - Renamed to houji-miuicamera-port. Release files are now `houji-miuicamera-port-<version>.zip` and `houji-miuicamera-port-lsposed-<version>.apk`; the module id and LSPosed package stay the same, so this installs over 1.8.0.
